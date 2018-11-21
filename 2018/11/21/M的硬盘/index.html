@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+
+  
+  <title>M的硬盘 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="第一次写自己的题解,希望大家多多包含。 正题：附上题目链接http://acm.csu.edu.cn/csuoj/contest/problem?cid=2157&amp;amp;pid=V 题目讲的是要实现对一个有序序列进行三种操作，并输出操作后的序列。 1.1 u   表示将u置于序列首 2.2 u 表示将u置于序列尾 3.3 u v 表示将u置于v后面 看到这种问题，这些操作，我当然想到的是链表 第">
+<meta name="keywords" content="acm 算法">
+<meta property="og:type" content="article">
+<meta property="og:title" content="M的硬盘">
+<meta property="og:url" content="http://yoursite.com/2018/11/21/M的硬盘/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="第一次写自己的题解,希望大家多多包含。 正题：附上题目链接http://acm.csu.edu.cn/csuoj/contest/problem?cid=2157&amp;amp;pid=V 题目讲的是要实现对一个有序序列进行三种操作，并输出操作后的序列。 1.1 u   表示将u置于序列首 2.2 u 表示将u置于序列尾 3.3 u v 表示将u置于v后面 看到这种问题，这些操作，我当然想到的是链表 第">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==">
+<meta property="og:image" content="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==">
+<meta property="og:image" content="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==">
+<meta property="og:image" content="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==">
+<meta property="og:image" content="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==">
+<meta property="og:updated_time" content="2018-11-21T12:37:32.392Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="M的硬盘">
+<meta name="twitter:description" content="第一次写自己的题解,希望大家多多包含。 正题：附上题目链接http://acm.csu.edu.cn/csuoj/contest/problem?cid=2157&amp;amp;pid=V 题目讲的是要实现对一个有序序列进行三种操作，并输出操作后的序列。 1.1 u   表示将u置于序列首 2.2 u 表示将u置于序列尾 3.3 u v 表示将u置于v后面 看到这种问题，这些操作，我当然想到的是链表 第">
+<meta name="twitter:image" content="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+</html>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-M的硬盘" class="article article-type-post" itemscope="" itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/11/21/M的硬盘/" class="article-date">
+  <time datetime="2018-11-20T16:22:07.000Z" itemprop="datePublished">2018-11-21</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      M的硬盘
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>第一次写自己的题解,希望大家多多包含。</p>
+<p>正题：附上题目链接<a href="http://acm.csu.edu.cn/csuoj/contest/problem?cid=2157&amp;pid=V" target="_blank" rel="noopener">http://acm.csu.edu.cn/csuoj/contest/problem?cid=2157&amp;pid=V</a></p>
+<p>题目讲的是要实现对一个有序序列进行三种操作，并输出操作后的序列。</p>
+<p>1.1 u   表示将u置于序列首</p>
+<p>2.2 u 表示将u置于序列尾</p>
+<p>3.3 u v 表示将u置于v后面</p>
+<p>看到这种问题，这些操作，我当然想到的是链表</p>
+<p>第一个思路：用了双向链表（头指针head，尾指针tail），但是提交time limit exceed.</p>
+<p>仔细考虑之后发现由于后台给的测试数据较大，在用这种传统的指针双向链表时，由于每次操作多了一个“遍历查找”，所以超时是难以避免的。</p>
+<p>换一个思路：用两个数组来模拟双向链表，lef[i]表示i左边的数据，righ[i]表示i右边的数据。这样一来，每次都能在O（1）的时间内找到源操作数，快速的多。而实现两个数的连接，可以用以下函数</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">link</span><span class="params">(<span class="keyword">int</span> L,<span class="keyword">int</span> R)</span></span></span><br><span class="line"><span class="function"></span>&#123; </span><br><span class="line">  righ[L]=R;</span><br><span class="line">  lef[R]=L;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="点击并拖拽以移动"></p>
+<p>直接附上源代码(C++)</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;cstdio&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"><span class="keyword">const</span> <span class="keyword">int</span> maxn=<span class="number">300000</span>+<span class="number">5</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/*这题中的用两个数组模拟双向链表的思想与操作尤为金桥</span></span><br><span class="line"><span class="comment">特别是对于头指针、尾指针的设置*/</span></span><br><span class="line"><span class="keyword">int</span> lef[maxn];</span><br><span class="line"><span class="keyword">int</span> righ[maxn];</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">link</span><span class="params">(<span class="keyword">int</span> L,<span class="keyword">int</span> R)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> T;</span><br><span class="line">    <span class="keyword">int</span> n,m;</span><br><span class="line">    <span class="keyword">int</span> order,a,b;</span><br><span class="line">    <span class="built_in">cin</span>&gt;&gt;T;</span><br><span class="line">    <span class="keyword">while</span>(T--)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">cin</span>&gt;&gt;n&gt;&gt;m;</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">1</span>;i&lt;=n+<span class="number">1</span>;i++)</span><br><span class="line">        &#123;</span><br><span class="line">            lef[i]=i<span class="number">-1</span>;</span><br><span class="line">            righ[i]=(i+<span class="number">1</span>)%(n+<span class="number">2</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        lef[<span class="number">0</span>]=n+<span class="number">1</span>;</span><br><span class="line">        righ[<span class="number">0</span>]=<span class="number">1</span>;</span><br><span class="line">       righ[n+<span class="number">1</span>]=<span class="number">0</span>;</span><br><span class="line">     <span class="keyword">while</span>(m--)</span><br><span class="line">     &#123;</span><br><span class="line">     <span class="built_in">cin</span>&gt;&gt;order;</span><br><span class="line">       <span class="keyword">if</span>(order==<span class="number">1</span>)</span><br><span class="line">       &#123;</span><br><span class="line">           <span class="built_in">cin</span>&gt;&gt;a;</span><br><span class="line"></span><br><span class="line">          link(lef[a],righ[a]);<span class="comment">//置顶前奏</span></span><br><span class="line"></span><br><span class="line">           <span class="comment">//置顶的操作</span></span><br><span class="line">          link(a,righ[<span class="number">0</span>]);</span><br><span class="line">          link(<span class="number">0</span>,a);</span><br><span class="line"></span><br><span class="line">       &#125;</span><br><span class="line">       <span class="keyword">else</span> <span class="keyword">if</span>(order==<span class="number">2</span>)</span><br><span class="line">       &#123;</span><br><span class="line">           <span class="built_in">cin</span>&gt;&gt;a;</span><br><span class="line">           link(lef[a],righ[a]);<span class="comment">//至尾前奏</span></span><br><span class="line"></span><br><span class="line">           <span class="comment">//至尾操作</span></span><br><span class="line">           <span class="comment">//注意先后顺序</span></span><br><span class="line">           link(lef[n+<span class="number">1</span>],a);</span><br><span class="line">           link(a,n+<span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">       &#125;</span><br><span class="line">       <span class="keyword">else</span> <span class="keyword">if</span>(order==<span class="number">3</span>)</span><br><span class="line">       &#123;</span><br><span class="line">           <span class="built_in">cin</span>&gt;&gt;a&gt;&gt;b;</span><br><span class="line">           link(lef[a],righ[a]);</span><br><span class="line">           link(a,righ[b]);</span><br><span class="line">           link(b,a);</span><br><span class="line"></span><br><span class="line">       &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">int</span> b=<span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">1</span>;i&lt;n;i++)</span><br><span class="line">    &#123;</span><br><span class="line">        b=righ[b];</span><br><span class="line">           <span class="built_in">cout</span>&lt;&lt;b&lt;&lt;<span class="string">" "</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    b=righ[b];</span><br><span class="line">    <span class="built_in">cout</span>&lt;&lt;b&lt;&lt;<span class="built_in">endl</span>;</span><br><span class="line">     &#125;</span><br><span class="line"><span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">link</span><span class="params">(<span class="keyword">int</span> L,<span class="keyword">int</span> R)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line"></span><br><span class="line">    righ[L]=R;</span><br><span class="line">    lef[R]=L;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="点击并拖拽以移动"></p>
+<p>另外解释一下为什么两个数组名没用left,right.因为本人的编译器的原因，似乎是ios_base::right已经存在关键词，具体也不懂。</p>
+<p>哪位能解释一下，在下小白感激不尽！！</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="点击并拖拽以移动"></p>
+<p>第一次写自己的题解,希望大家多多包含。</p>
+<p>正题：附上题目链接<a href="http://acm.csu.edu.cn/csuoj/contest/problem?cid=2157&amp;pid=V" target="_blank" rel="noopener">http://acm.csu.edu.cn/csuoj/contest/problem?cid=2157&amp;pid=V</a></p>
+<p>题目讲的是要实现对一个有序序列进行三种操作，并输出操作后的序列。</p>
+<p>1.1 u   表示将u置于序列首</p>
+<p>2.2 u 表示将u置于序列尾</p>
+<p>3.3 u v 表示将u置于v后面</p>
+<p>看到这种问题，这些操作，我当然想到的是链表</p>
+<p>第一个思路：用了双向链表（头指针head，尾指针tail），但是提交time limit exceed.</p>
+<p>仔细考虑之后发现由于后台给的测试数据较大，在用这种传统的指针双向链表时，由于每次操作多了一个“遍历查找”，所以超时是难以避免的。</p>
+<p>换一个思路：用两个数组来模拟双向链表，lef[i]表示i左边的数据，righ[i]表示i右边的数据。这样一来，每次都能在O（1）的时间内找到源操作数，快速的多。而实现两个数的连接，可以用以下函数</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">link</span><span class="params">(<span class="keyword">int</span> L,<span class="keyword">int</span> R)</span></span></span><br><span class="line"><span class="function"></span>&#123; </span><br><span class="line">  righ[L]=R;</span><br><span class="line">  lef[R]=L;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="点击并拖拽以移动"></p>
+<p>直接附上源代码(C++)</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;cstdio&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"><span class="keyword">const</span> <span class="keyword">int</span> maxn=<span class="number">300000</span>+<span class="number">5</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/*这题中的用两个数组模拟双向链表的思想与操作尤为金桥</span></span><br><span class="line"><span class="comment">特别是对于头指针、尾指针的设置*/</span></span><br><span class="line"><span class="keyword">int</span> lef[maxn];</span><br><span class="line"><span class="keyword">int</span> righ[maxn];</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">link</span><span class="params">(<span class="keyword">int</span> L,<span class="keyword">int</span> R)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> T;</span><br><span class="line">    <span class="keyword">int</span> n,m;</span><br><span class="line">    <span class="keyword">int</span> order,a,b;</span><br><span class="line">    <span class="built_in">cin</span>&gt;&gt;T;</span><br><span class="line">    <span class="keyword">while</span>(T--)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">cin</span>&gt;&gt;n&gt;&gt;m;</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">1</span>;i&lt;=n+<span class="number">1</span>;i++)</span><br><span class="line">        &#123;</span><br><span class="line">            lef[i]=i<span class="number">-1</span>;</span><br><span class="line">            righ[i]=(i+<span class="number">1</span>)%(n+<span class="number">2</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        lef[<span class="number">0</span>]=n+<span class="number">1</span>;</span><br><span class="line">        righ[<span class="number">0</span>]=<span class="number">1</span>;</span><br><span class="line">       righ[n+<span class="number">1</span>]=<span class="number">0</span>;</span><br><span class="line">     <span class="keyword">while</span>(m--)</span><br><span class="line">     &#123;</span><br><span class="line">     <span class="built_in">cin</span>&gt;&gt;order;</span><br><span class="line">       <span class="keyword">if</span>(order==<span class="number">1</span>)</span><br><span class="line">       &#123;</span><br><span class="line">           <span class="built_in">cin</span>&gt;&gt;a;</span><br><span class="line"></span><br><span class="line">          link(lef[a],righ[a]);<span class="comment">//置顶前奏</span></span><br><span class="line"></span><br><span class="line">           <span class="comment">//置顶的操作</span></span><br><span class="line">          link(a,righ[<span class="number">0</span>]);</span><br><span class="line">          link(<span class="number">0</span>,a);</span><br><span class="line"></span><br><span class="line">       &#125;</span><br><span class="line">       <span class="keyword">else</span> <span class="keyword">if</span>(order==<span class="number">2</span>)</span><br><span class="line">       &#123;</span><br><span class="line">           <span class="built_in">cin</span>&gt;&gt;a;</span><br><span class="line">           link(lef[a],righ[a]);<span class="comment">//至尾前奏</span></span><br><span class="line"></span><br><span class="line">           <span class="comment">//至尾操作</span></span><br><span class="line">           <span class="comment">//注意先后顺序</span></span><br><span class="line">           link(lef[n+<span class="number">1</span>],a);</span><br><span class="line">           link(a,n+<span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">       &#125;</span><br><span class="line">       <span class="keyword">else</span> <span class="keyword">if</span>(order==<span class="number">3</span>)</span><br><span class="line">       &#123;</span><br><span class="line">           <span class="built_in">cin</span>&gt;&gt;a&gt;&gt;b;</span><br><span class="line">           link(lef[a],righ[a]);</span><br><span class="line">           link(a,righ[b]);</span><br><span class="line">           link(b,a);</span><br><span class="line"></span><br><span class="line">       &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">int</span> b=<span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">1</span>;i&lt;n;i++)</span><br><span class="line">    &#123;</span><br><span class="line">        b=righ[b];</span><br><span class="line">           <span class="built_in">cout</span>&lt;&lt;b&lt;&lt;<span class="string">" "</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    b=righ[b];</span><br><span class="line">    <span class="built_in">cout</span>&lt;&lt;b&lt;&lt;<span class="built_in">endl</span>;</span><br><span class="line">     &#125;</span><br><span class="line"><span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">link</span><span class="params">(<span class="keyword">int</span> L,<span class="keyword">int</span> R)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line"></span><br><span class="line">    righ[L]=R;</span><br><span class="line">    lef[R]=L;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="点击并拖拽以移动"></p>
+<p>另外解释一下为什么两个数组名没用left,right.因为本人的编译器的原因，似乎是ios_base::right已经存在关键词，具体也不懂。</p>
+<p>哪位能解释一下，在下小白感激不尽！！</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/11/21/M的硬盘/" data-id="cjorg7gqu0001t0tvwyp7uww8" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/acm-算法/">acm 算法</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2018/11/21/hello-world/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Hello World
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2018/11/21/PE--导入导出表/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">PE 导入导出表</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Security/">Security</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/acm-算法/">acm 算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pwn/">pwn</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/reverse/">reverse</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Security/" style="font-size: 10px;">Security</a> <a href="/tags/acm-算法/" style="font-size: 15px;">acm 算法</a> <a href="/tags/pwn/" style="font-size: 10px;">pwn</a> <a href="/tags/reverse/" style="font-size: 20px;">reverse</a> <a href="/tags/算法/" style="font-size: 15px;">算法</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">November 2018</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/11/22/Mini-Horse/">Mini_Horse</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/21/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/21/M的硬盘/">M的硬盘</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/21/PE--导入导出表/">PE 导入导出表</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/21/ROP专项总结/">ROP专项总结</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 treebacker<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>

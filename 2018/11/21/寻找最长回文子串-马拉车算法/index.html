@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+
+  
+  <title>寻找最长回文子串--马拉车算法 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="这篇文章算是在CSDN的公众号上看到的一个面试题目的总结与记录。 回文串的定义：满足从左到右的字符序列和从右到左的字符序列相同的字符串就是回文串 一个很经典的问题，判断一个字符串是不是回文串 12345678910bool isParamString(string src)&amp;#123;    int len = src.length();    for(int i=0;i&amp;lt;len - i -">
+<meta name="keywords" content="算法">
+<meta property="og:type" content="article">
+<meta property="og:title" content="寻找最长回文子串--马拉车算法">
+<meta property="og:url" content="http://yoursite.com/2018/11/21/寻找最长回文子串-马拉车算法/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="这篇文章算是在CSDN的公众号上看到的一个面试题目的总结与记录。 回文串的定义：满足从左到右的字符序列和从右到左的字符序列相同的字符串就是回文串 一个很经典的问题，判断一个字符串是不是回文串 12345678910bool isParamString(string src)&amp;#123;    int len = src.length();    for(int i=0;i&amp;lt;len - i -">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==">
+<meta property="og:image" content="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==">
+<meta property="og:updated_time" content="2018-11-21T13:42:18.300Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="寻找最长回文子串--马拉车算法">
+<meta name="twitter:description" content="这篇文章算是在CSDN的公众号上看到的一个面试题目的总结与记录。 回文串的定义：满足从左到右的字符序列和从右到左的字符序列相同的字符串就是回文串 一个很经典的问题，判断一个字符串是不是回文串 12345678910bool isParamString(string src)&amp;#123;    int len = src.length();    for(int i=0;i&amp;lt;len - i -">
+<meta name="twitter:image" content="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+</html>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-寻找最长回文子串-马拉车算法" class="article article-type-post" itemscope="" itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/11/21/寻找最长回文子串-马拉车算法/" class="article-date">
+  <time datetime="2018-11-20T16:12:18.000Z" itemprop="datePublished">2018-11-21</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      寻找最长回文子串--马拉车算法
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>这篇文章算是在CSDN的公众号上看到的一个面试题目的总结与记录。</p>
+<p>回文串的定义：满足从左到右的字符序列和从右到左的字符序列相同的字符串就是回文串</p>
+<p>一个很经典的问题，判断一个字符串是不是回文串</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">bool isParamString(string src)</span><br><span class="line">&#123;</span><br><span class="line">    int len = src.length();</span><br><span class="line">    for(int i=0;i&lt;len - i -1;i++)</span><br><span class="line">    &#123;</span><br><span class="line">        if(src[i]!=src[len-i-1])</span><br><span class="line">            return false;</span><br><span class="line">    &#125;</span><br><span class="line">    return true;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="点击并拖拽以移动"></p>
+<p>这个判断是很简单的，时间空间复杂度都是0(N)，完全没问题。</p>
+<p>那么，如何在给定的任意字符串中找到最长的回文子串？</p>
+<p>不考虑复杂度，很容易想到的就是维护一个</p>
+<p>不考虑复杂度，很容易想到的就是遍历字符串，记录以每一个字符为中心的回文串的长度。</p>
+<p>时间复杂度0(N^2）,空间复杂度0(N^2);有点难以接受</p>
+<p>那么来看看马拉车算法的优化原理；</p>
+<p>看一个简单的例子：</p>
+<p>eg[9] = “cabadabae”</p>
+<table>
+<thead>
+<tr>
+<th>c</th>
+<th>a</th>
+<th>b</th>
+<th>a</th>
+<th>d</th>
+<th>a</th>
+<th>b</th>
+<th>a</th>
+<th>e</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+<td>3</td>
+<td>4</td>
+<td>5</td>
+<td>6</td>
+<td>7</td>
+<td>8</td>
+</tr>
+</tbody>
+</table>
+<p>分析</p>
+<p>当我们知道1-7位是回文串，1-3位是回文串，很容易推测5-7位是回文串；而不能推测eg[6]的回文串长度，因为对于eg[4]所在的回文串来说，不能判断eg[4]和eg[8]是否相等（没有eg[8]的信息）</p>
+<p>启发：维护一个右边界，在右边界以内的可以直接得出结论，否则需要扩展计算。</p>
+<p>代码实现：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br></pre></td><td class="code"><pre><span class="line">#include&lt;bits/stdc++.h&gt;</span><br><span class="line">using namespace std;</span><br><span class="line">//判断是不是回文串</span><br><span class="line">bool isParamString(string src);</span><br><span class="line">//初始化处理串</span><br><span class="line">string firstHandle(string src);</span><br><span class="line">int main()</span><br><span class="line">&#123;</span><br><span class="line">    //右边界初始化</span><br><span class="line"></span><br><span class="line">    string src;</span><br><span class="line">    cout&lt;&lt;&quot;输入字符串:&quot;;</span><br><span class="line">    while(cin&gt;&gt;src)</span><br><span class="line">    &#123;</span><br><span class="line"></span><br><span class="line">        src=firstHandle(src);</span><br><span class="line">        int len = src.length();</span><br><span class="line">        int rightside= 0;</span><br><span class="line">        //右边界对应的串中心初始化</span><br><span class="line">        int rightsidecenter = 0;</span><br><span class="line">        //最长回文串的中心</span><br><span class="line">        int center = 0;</span><br><span class="line">        //最长回文串的长度右边长度</span><br><span class="line">        int rightHalfLong = 0;</span><br><span class="line">        //目前回文串的最大长度</span><br><span class="line">        int longestHalf = 0;</span><br><span class="line">        //记录以每个字符为中心的回文串的长度</span><br><span class="line">        int *eachHalfLong ;</span><br><span class="line">        eachHalfLong = new int [len];</span><br><span class="line">        for (int i=0;i&lt;len;i++)</span><br><span class="line">            eachHalfLong[i] = 0;</span><br><span class="line">        for(int i=0;i&lt;len;i++)</span><br><span class="line">        &#123;</span><br><span class="line">            bool needed = true;</span><br><span class="line">            if(rightside &gt; i)</span><br><span class="line">            &#123;</span><br><span class="line">                 //根据回文串的对称性，求得i对应的对称字符</span><br><span class="line">                 int i_middle_index = 2 * rightsidecenter - i;</span><br><span class="line">                 eachHalfLong[i] = eachHalfLong[i_middle_index];</span><br><span class="line"></span><br><span class="line">                //越界,由于超出部分的信息未知，需要扩展处理</span><br><span class="line">                if(i + eachHalfLong[i] &gt; rightside)</span><br><span class="line">                &#123;</span><br><span class="line">                    eachHalfLong[i] = rightside - i;</span><br><span class="line">                &#125;</span><br><span class="line">                //没有越界，无需扩展处理</span><br><span class="line">                if(i + eachHalfLong[i] &lt;= rightside)</span><br><span class="line">                &#123;</span><br><span class="line">                    needed = false;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            if(needed)</span><br><span class="line">            &#123;</span><br><span class="line">                while(i - eachHalfLong[i] -1&gt;=0 &amp;&amp; i + eachHalfLong[i] + 1&lt;len)</span><br><span class="line">                &#123;</span><br><span class="line">                    if(src[i-eachHalfLong[i]-1] == src[i+eachHalfLong[i]+1])</span><br><span class="line">                        eachHalfLong[i]++;</span><br><span class="line">                    else break;</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                //更新右边界、右中心点</span><br><span class="line">                rightside = i + eachHalfLong[i];</span><br><span class="line">                rightsidecenter = i;</span><br><span class="line">                if(eachHalfLong[i] &gt; longestHalf)</span><br><span class="line">                &#123;</span><br><span class="line">                    longestHalf = eachHalfLong[i];</span><br><span class="line">                    center = i;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        string result = &quot;&quot;;</span><br><span class="line">        for(int i=center-longestHalf +1;i&lt;=center + longestHalf; i += 2)</span><br><span class="line">        &#123;</span><br><span class="line">            result += src[i];</span><br><span class="line">        &#125;</span><br><span class="line">        cout&lt;&lt;&quot;其中最长回文串是: &quot;&lt;&lt;result&lt;&lt;&quot;   长度是: &quot;&lt;&lt;longestHalf&lt;&lt;endl;</span><br><span class="line">        cout&lt;&lt;&quot;输入字符串:&quot;;</span><br><span class="line">    &#125;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br><span class="line">bool isParamString(string src)</span><br><span class="line">&#123;</span><br><span class="line">    int len = src.length();</span><br><span class="line">    for(int i=0;i&lt;len - i -1;i++)</span><br><span class="line">    &#123;</span><br><span class="line">        if(src[i]!=src[len-i-1])</span><br><span class="line">            return false;</span><br><span class="line">    &#125;</span><br><span class="line">    return true;</span><br><span class="line">&#125;</span><br><span class="line">string firstHandle(string src)</span><br><span class="line">&#123;</span><br><span class="line">    string result = &quot;#&quot;;</span><br><span class="line">    int len = src.length();</span><br><span class="line">    for(int i=0;i&lt;len;i++)</span><br><span class="line">    &#123;</span><br><span class="line">        result += src[i];</span><br><span class="line">        result += &apos;#&apos;;</span><br><span class="line">    &#125;</span><br><span class="line">    return result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="点击并拖拽以移动"></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/11/21/寻找最长回文子串-马拉车算法/" data-id="cjorg7grh0009t0tvefmilh5x" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/算法/">算法</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2018/11/21/快速幂总结拓展/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          快速幂总结拓展
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2018/11/21/一次手动脱壳/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">一次手动脱壳</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Security/">Security</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/acm-算法/">acm 算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pwn/">pwn</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/reverse/">reverse</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Security/" style="font-size: 10px;">Security</a> <a href="/tags/acm-算法/" style="font-size: 15px;">acm 算法</a> <a href="/tags/pwn/" style="font-size: 10px;">pwn</a> <a href="/tags/reverse/" style="font-size: 20px;">reverse</a> <a href="/tags/算法/" style="font-size: 15px;">算法</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">November 2018</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/11/22/Mini-Horse/">Mini_Horse</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/21/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/21/M的硬盘/">M的硬盘</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/21/PE--导入导出表/">PE 导入导出表</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/21/ROP专项总结/">ROP专项总结</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 treebacker<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>

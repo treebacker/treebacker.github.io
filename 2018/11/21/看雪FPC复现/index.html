@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+
+  
+  <title>看雪FPC复现 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="很长时间没有在这里记录Writeup了，这次这道题目实在太让我兴奋了。有感而记。 拖进IDA；  惊奇的发现，除了scanf之外，只需要两个函数就执行到了”Bad…..”； 依次查看两个验证函数； 1.sub_401080    会发现  a1与v2是恒等的，if 不会成立，也就是永远不会“YouGetIt” 2.sub_4010D0  同样的道理，这里也永远不会”Yougetit” 困惑：这就很">
+<meta name="keywords" content="reverse">
+<meta property="og:type" content="article">
+<meta property="og:title" content="看雪FPC复现">
+<meta property="og:url" content="http://yoursite.com/2018/11/21/看雪FPC复现/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="很长时间没有在这里记录Writeup了，这次这道题目实在太让我兴奋了。有感而记。 拖进IDA；  惊奇的发现，除了scanf之外，只需要两个函数就执行到了”Bad…..”； 依次查看两个验证函数； 1.sub_401080    会发现  a1与v2是恒等的，if 不会成立，也就是永远不会“YouGetIt” 2.sub_4010D0  同样的道理，这里也永远不会”Yougetit” 困惑：这就很">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="f:/blog/source/_posts/看雪FPC复现/1.png">
+<meta property="og:image" content="f:/blog/source/_posts/看雪FPC复现/2.png">
+<meta property="og:image" content="f:/blog/source/_posts/看雪FPC复现/3.png">
+<meta property="og:image" content="f:/blog/source/_posts/看雪FPC复现/4.png">
+<meta property="og:image" content="f:/blog/source/_posts/看雪FPC复现/5.png">
+<meta property="og:image" content="f:/blog/source/_posts/看雪FPC复现/6.png">
+<meta property="og:image" content="f:/blog/source/_posts/看雪FPC复现/7.png">
+<meta property="og:updated_time" content="2018-11-21T13:34:59.171Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="看雪FPC复现">
+<meta name="twitter:description" content="很长时间没有在这里记录Writeup了，这次这道题目实在太让我兴奋了。有感而记。 拖进IDA；  惊奇的发现，除了scanf之外，只需要两个函数就执行到了”Bad…..”； 依次查看两个验证函数； 1.sub_401080    会发现  a1与v2是恒等的，if 不会成立，也就是永远不会“YouGetIt” 2.sub_4010D0  同样的道理，这里也永远不会”Yougetit” 困惑：这就很">
+<meta name="twitter:image" content="f:/blog/source/_posts/看雪FPC复现/1.png">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+</html>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-看雪FPC复现" class="article article-type-post" itemscope="" itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/11/21/看雪FPC复现/" class="article-date">
+  <time datetime="2018-11-20T16:15:55.000Z" itemprop="datePublished">2018-11-21</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      看雪FPC复现
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>很长时间没有在这里记录Writeup了，这次这道题目实在太让我兴奋了。有感而记。</p>
+<p>拖进IDA；</p>
+<p><img src="F:\blog\source\_posts\看雪FPC复现\1.png" alt=""></p>
+<p>惊奇的发现，除了scanf之外，只需要两个函数就执行到了”Bad…..”；</p>
+<p>依次查看两个验证函数；</p>
+<p>1.sub_401080</p>
+<p> <img src="F:\blog\source\_posts\看雪FPC复现\2.png" alt=""></p>
+<p> 会发现  a1与v2是恒等的，if 不会成立，也就是永远不会“YouGetIt”</p>
+<p>2.sub_4010D0</p>
+<p><img src="F:\blog\source\_posts\看雪FPC复现\3.png" alt=""></p>
+<p>同样的道理，这里也永远不会”Yougetit”</p>
+<p>困惑：这就很不正常了，就是说程序的正常执行流程下，永远不会pass；</p>
+<p>暗示，可能需要特殊的输入，改变程序的执行流程（栈溢出）</p>
+<p>拖进OD，在scanf入flag后通过观察栈，得知，12个字符恰好覆盖返回地址以上部分。</p>
+<p><img src="F:\blog\source\_posts\看雪FPC复现\4.png" alt=""></p>
+<p>那么，要把程序带到什么地方呢（用哪个地址来覆盖原来的返回地址）；<br>由于输入的全部是可打印字符，可以在IDA中手动查看可疑的地址字段。发现00413131，是一段很像花指令的东西。</p>
+<p><img src="F:\blog\source\_posts\看雪FPC复现\5.png" alt=""></p>
+<p>尝试一下，输入‘aaaabbbbcccc11A’;<br>惊奇的发现，程序执行了验证算法，（证实了思路）</p>
+<p><img src="F:\blog\source\_posts\看雪FPC复现\6.png" alt=""></p>
+<p>由于花指令的存在，我选择了动态调试<br>在OD中开启RUN TRACE,单步跟入调试(F8或者f7跟踪，遇到跳转，jz,jl   可以改变z标志位改变流程，继续跟踪）</p>
+<p>最后查看执行过的指令。</p>
+<p><img src="F:\blog\source\_posts\看雪FPC复现\7.png" alt=""></p>
+<p>拷贝下来，过滤得到有效的指令</p>
+<p>分析汇编代码：</p>
+<p>add esp,-0x10<br>xor eax,eax<br>mov dword ptr ds:[0x41B034],eax<br>pop eax<br>mov ecx,eax<br>pop eax<br>repne jae short 00413266<br>mov ebx,eax<br>pop eax<br>mov edx,eax<br>mov edx,eax<br>mov eax,ecx<br>sub eax,ebx<br>shl eax,0x2<br>add eax,ecx<br>add eax,edx<br>sub eax,0xEAF917E2</p>
+<p>对应的方程：</p>
+<p>(x-y0&lt;&lt;2 + x + z == 0xEAF917E2</p>
+<p>add eax,ecx<br>sub eax,ebx<br>mov ebx,eax<br>shl eax,1<br>add eax,ebx<br>add eax,ecx<br>mov ecx,eax<br>add eax,edx<br>sub eax,0xE8F508C8</p>
+<p>对应的方程：</p>
+<p>(x-y) &lt;&lt; 1 + (x-y) + x + z ==0XE8F508C8</p>
+<p>mov eax,ecx<br>mov eax,ecx<br>sub eax,edx<br>sub eax,0xC0A3C68</p>
+<p>对应的方程：</p>
+<p>(x-y) &lt;&lt; 1 + (x-y) + x  - z == 0xC0A3C68</p>
+<p>其实就是解三元方程组<br>用Z3求解器，或者在线求解<br>得到x,y,z,在加上’11A’就是flag</p>
+<h2 id="Just0For0Fun11A"><a href="#Just0For0Fun11A" class="headerlink" title="Just0For0Fun11A"></a>Just0For0Fun11A</h2>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/11/21/看雪FPC复现/" data-id="cjorg7gro000at0tvjkd3zjyo" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/reverse/">reverse</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2018/11/21/锋芒不漏/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          锋芒不漏
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2018/11/21/快速幂总结拓展/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">快速幂总结拓展</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Security/">Security</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/acm-算法/">acm 算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pwn/">pwn</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/reverse/">reverse</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Security/" style="font-size: 10px;">Security</a> <a href="/tags/acm-算法/" style="font-size: 15px;">acm 算法</a> <a href="/tags/pwn/" style="font-size: 10px;">pwn</a> <a href="/tags/reverse/" style="font-size: 20px;">reverse</a> <a href="/tags/算法/" style="font-size: 15px;">算法</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">November 2018</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/11/22/Mini-Horse/">Mini_Horse</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/21/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/21/M的硬盘/">M的硬盘</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/21/PE--导入导出表/">PE 导入导出表</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/21/ROP专项总结/">ROP专项总结</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 treebacker<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>

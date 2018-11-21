@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+
+  
+  <title>PE 导入导出表 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="最近在看《黑卡免杀攻防》，对讲解的PE文件导入表、导出表的作用与原理有了更深刻的理解，特此记录。首先，要知道什么是导入表？导入表机制是PE文件从其他第三方程序（一般是DLL动态链接库）中导入API，以提供本程序调用的机制。而在Windows平台下，PE文件中的导入表结构就承担了完成这一工作的引导者角色。 IMAGE_IMPORT_DESCRIPTOR结构 123456789101112131415">
+<meta name="keywords" content="reverse">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PE 导入导出表">
+<meta property="og:url" content="http://yoursite.com/2018/11/21/PE--导入导出表/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="最近在看《黑卡免杀攻防》，对讲解的PE文件导入表、导出表的作用与原理有了更深刻的理解，特此记录。首先，要知道什么是导入表？导入表机制是PE文件从其他第三方程序（一般是DLL动态链接库）中导入API，以提供本程序调用的机制。而在Windows平台下，PE文件中的导入表结构就承担了完成这一工作的引导者角色。 IMAGE_IMPORT_DESCRIPTOR结构 123456789101112131415">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==">
+<meta property="og:image" content="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==">
+<meta property="og:image" content="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==">
+<meta property="og:image" content="c:/WINDOWS/TEMP/1541779029041.png">
+<meta property="og:image" content="https://img-blog.csdn.net/20181007134000155?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2Nhb2JvX2xxNjY2/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70">
+<meta property="og:image" content="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==">
+<meta property="og:image" content="https://img-blog.csdn.net/20181007135217790?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2Nhb2JvX2xxNjY2/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70">
+<meta property="og:image" content="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==">
+<meta property="og:image" content="https://img-blog.csdn.net/20181007142703859?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2Nhb2JvX2xxNjY2/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70">
+<meta property="og:image" content="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==">
+<meta property="og:image" content="https://img-blog.csdn.net/20181007142740377?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2Nhb2JvX2xxNjY2/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70">
+<meta property="og:image" content="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==">
+<meta property="og:updated_time" content="2018-11-21T12:37:42.895Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="PE 导入导出表">
+<meta name="twitter:description" content="最近在看《黑卡免杀攻防》，对讲解的PE文件导入表、导出表的作用与原理有了更深刻的理解，特此记录。首先，要知道什么是导入表？导入表机制是PE文件从其他第三方程序（一般是DLL动态链接库）中导入API，以提供本程序调用的机制。而在Windows平台下，PE文件中的导入表结构就承担了完成这一工作的引导者角色。 IMAGE_IMPORT_DESCRIPTOR结构 123456789101112131415">
+<meta name="twitter:image" content="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+</html>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-PE--导入导出表" class="article article-type-post" itemscope="" itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/11/21/PE--导入导出表/" class="article-date">
+  <time datetime="2018-11-20T16:20:53.000Z" itemprop="datePublished">2018-11-21</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      PE 导入导出表
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>最近在看《黑卡免杀攻防》，对讲解的PE文件导入表、导出表的作用与原理有了更深刻的理解，特此记录。<br>首先，要知道什么是导入表？<br>导入表机制是PE文件从其他第三方程序（一般是DLL动态链接库）中导入API，以提供本程序调用的机制。而在Windows平台下，PE文件中的导入表结构就承担了完成这一工作的引导者角色。</p>
+<p>IMAGE_IMPORT_DESCRIPTOR结构</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">typedef struct _IMAGE_IMPORT_DESCRIPTOR &#123;</span><br><span class="line">    union &#123;</span><br><span class="line">        DWORD   Characteristics;            // 0 for terminating null import descriptor</span><br><span class="line">        DWORD   OriginalFirstThunk;         // RVA to original unbound IAT (PIMAGE_THUNK_DATA)</span><br><span class="line">    &#125; DUMMYUNIONNAME;</span><br><span class="line">    DWORD   TimeDateStamp;                  // 0 if not bound,</span><br><span class="line">                                            // -1 if bound, and real date\time stamp</span><br><span class="line">                                            //     in IMAGE_DIRECTORY_ENTRY_BOUND_IMPORT (new BIND)</span><br><span class="line">                                            // O.W. date/time stamp of DLL bound to (Old BIND)</span><br><span class="line"> </span><br><span class="line">    DWORD   ForwarderChain;                 // -1 if no forwarders</span><br><span class="line">    DWORD   Name;</span><br><span class="line">    DWORD   FirstThunk;                     // RVA to IAT (if bound this IAT has actual addresses)</span><br><span class="line">&#125; IMAGE_IMPORT_DESCRIPTOR;</span><br><span class="line">typedef IMAGE_IMPORT_DESCRIPTOR UNALIGNED *PIMAGE_IMPORT_DESCRIPTOR;</span><br></pre></td></tr></table></figure>
+<p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="点击并拖拽以移动"></p>
+<p>一般来说，对于导入表，我们只需要关注它的两个字段，分别是OriginalFirstThunk与FirstThunk,这两个字段分别指向了包含导出名称和导出地址的IMAGE_THUNK_DATA结构数组，这个数组以空的IMAGE_THUNK_DATA结构结尾。</p>
+<p>IMAGE_THUNK_DATA结构</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">typedef struct _IMAGE_THUNK_DATA32 &#123;</span><br><span class="line">    union &#123;</span><br><span class="line">        PBYTE ForwarderString;      // 转发字符串的RAV</span><br><span class="line">        PDWORD Function;             // 被导入函数的地址</span><br><span class="line">        DWORD Ordinal;</span><br><span class="line">        PIMAGE_IMPORT_BY_NAME AddressOfData;        // 指向输入名称表</span><br><span class="line">    &#125; u1;</span><br><span class="line">&#125; IMAGE_THUNK_DATA32;</span><br><span class="line">typedef IMAGE_THUNK_DATA32 * PIMAGE_THUNK_DATA32;</span><br></pre></td></tr></table></figure>
+<p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="点击并拖拽以移动"></p>
+<p>ForwarderString是转发用的，暂时不用考虑，Function表示函数地址，如果是按序号导入Ordinal就有用了，若是按名字导入AddressOfData便指向名字信息。可以看出这个结构体就是一个大的union，大家都知道union虽包含多个域但是在不同时刻代表不同的意义那到底应该是名字还是序号，该如何区分呢？可以通过Ordinal判断，如果Ordinal的最高位是1，就是按序号导入的，这时候，低16位就是导入序号，如果最高位是0，则AddressOfData是一个RVA，指向一个IMAGE_IMPORT_BY_NAME结构，用来保存名字信息，由于Ordinal和AddressOfData实际上是同一个内存空间，所以AddressOfData其实只有低31位可以表示RVA，但是一个PE文件不可能超过2G，所以最高位永远为0，这样设计很合理的利用了空间。实际编写代码的时候微软提供两个宏定义处理序号导入：IMAGE_SNAP_BY_ORDINAL判断是否按序号导入，IMAGE_ORDINAL用来获取导入序号。</p>
+<p>了解一下IMAGE_IMPORT_BY_NAME结构。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">typedef struct _IMAGE_THUNK_DATA32 &#123;</span><br><span class="line">    	union &#123; </span><br><span class="line">		PBYTE ForwarderString;</span><br><span class="line">            	PDWORD Function;</span><br><span class="line">            	DWORD Ordinal;</span><br><span class="line">            	PIMAGE_IMPORT_BY_NAME AddressOfData;</span><br><span class="line">         &#125; u1;</span><br><span class="line">&#125; IMAGE_THUNK_DATA32;</span><br></pre></td></tr></table></figure>
+<p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="点击并拖拽以移动"></p>
+<p>Hint: 保存着需要导入函数的序号<br>Name: 保存着需要导入函数的名称</p>
+<p>知道了基本的组成，那么导入表又是怎样尽职尽责的工作呢？<br>记录一个实例流程。</p>
+<p>借助LordPE工具，快速定位导入表的位置。</p>
+<p><img src="C:\WINDOWS\TEMP\1541779029041.png" alt="1541779029041"></p>
+<p>Importtable的RVA地址是0x0000233C；那么它的文件OFFSET是多少？<br>首先查看各个段的RVA和OFFSET：</p>
+<p><img src="https://img-blog.csdn.net/20181007134000155?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2Nhb2JvX2xxNjY2/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70" alt="img"><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="点击并拖拽以移动"></p>
+<p> 显然,Importtable在.rdata区段<br>.rdata区段的RVA为0x2000,.rdata区段的起始Offset是0x00001000<br>RVA到Offset的转化：<br>导出表Offset = 导出表RVA - 导出表所在区段的RVA + 导出表所在区段的 Offset<br>求得导出表Offset = 0x0000133c<br>导出表地址计算参照值 d = 导出表RVA - 导出表Offset = 0x00001000    (便于计算各个字段的Offset)</p>
+<p>得到Offset就可以在winhex里面找到importtable的内容了：</p>
+<p><img src="https://img-blog.csdn.net/20181007135217790?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2Nhb2JvX2xxNjY2/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70" alt="img"><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="点击并拖拽以移动"></p>
+<p><img src="https://img-blog.csdn.net/20181007142703859?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2Nhb2JvX2xxNjY2/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70" alt="img"><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="点击并拖拽以移动"></p>
+<p> <img src="https://img-blog.csdn.net/20181007142740377?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2Nhb2JvX2xxNjY2/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70" alt="img"><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="点击并拖拽以移动"></p>
+<p> 由于是以空的结构体结尾的，很清楚的看到是有三个IMAGE_IMPORT_DESCRIPTOR结构：<br>TABLE1：</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>OriginalFirstThunk</th>
+<th>TimeDataStamp</th>
+<th>ForwarderChain</th>
+<th>Name</th>
+<th>FirstThunk</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>值(RVA)</td>
+<td>0x0000238c</td>
+<td>0x00000000</td>
+<td>0x00000000</td>
+<td>0x000023dc</td>
+<td>0x00002000</td>
+</tr>
+<tr>
+<td>转化为Offset</td>
+<td>0x0000138c</td>
+<td></td>
+<td></td>
+<td>0x000013dc</td>
+<td>0x00001000</td>
+</tr>
+</tbody>
+</table>
+<p>TABLE2：</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>OriginalFirstThunk</th>
+<th>TimeDataStamp</th>
+<th>ForwarderChain</th>
+<th>Name</th>
+<th>FirstThunk</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>值(RVA)</td>
+<td>0x00002450</td>
+<td>0x00000000</td>
+<td>0x00000000</td>
+<td>0x000024f8</td>
+<td>0x000020c4</td>
+</tr>
+<tr>
+<td>转化为Offset</td>
+<td>0x00001450</td>
+<td></td>
+<td></td>
+<td>0x000013dc</td>
+<td>0x000010c4</td>
+</tr>
+</tbody>
+</table>
+<p>TABLE3：</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>OriginalFirstThunk</th>
+<th>TimeDataStamp</th>
+<th>ForwarderChain</th>
+<th>Name</th>
+<th>FirstThunk</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>值(RVA)</td>
+<td>0x000023cc</td>
+<td>0x00000000</td>
+<td>0x00000000</td>
+<td>0x0000252e</td>
+<td>0x00002040</td>
+</tr>
+<tr>
+<td>转化为Offset</td>
+<td>0x000013cc</td>
+<td></td>
+<td></td>
+<td>0x0000152e</td>
+<td>0x00001040</td>
+</tr>
+</tbody>
+</table>
+<p>由这些信息（INT、IAT、映像名的起始Offset）;就可以找它们的具体结构了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">映像名、INT、IAT</span><br></pre></td></tr></table></figure>
+<table>
+<thead>
+<tr>
+<th>NAME</th>
+<th>OriginalFirstThunk1</th>
+<th>OriginalFirstThunk2</th>
+<th></th>
+<th>FirstThunk1</th>
+<th>FirstThunk2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>KERNEL32.dll</td>
+<td>0x00002458</td>
+<td>0x00002466</td>
+<td></td>
+<td>0x00002458</td>
+<td>0x00002466</td>
+</tr>
+<tr>
+<td>USER32.dll</td>
+<td>0x000024ea</td>
+<td>NULL</td>
+<td></td>
+<td>0x000024ea</td>
+<td>NULL</td>
+</tr>
+<tr>
+<td>MSVCR110.dll</td>
+<td>0x00002558</td>
+<td>0x00002568</td>
+<td></td>
+<td>0x00002558</td>
+<td>0x00002568</td>
+</tr>
+</tbody>
+</table>
+<p> 根据上述的导入信息，转化为Offset；再从文件中找到导入函数和倒入序号：</p>
+<table>
+<thead>
+<tr>
+<th>NAME</th>
+<th>序号1</th>
+<th>函数名1</th>
+<th></th>
+<th>序号2</th>
+<th>函数名2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>KERNEL32.dll</td>
+<td>0x016d</td>
+<td>ExitProcess</td>
+<td></td>
+<td>0x0223</td>
+<td>GetCurrentProcess</td>
+</tr>
+<tr>
+<td>USER32.dll</td>
+<td>0X010a</td>
+<td>FindWindowW</td>
+<td></td>
+<td>NULL</td>
+<td>NULL</td>
+</tr>
+<tr>
+<td>MSVCR110.dll</td>
+<td>0x01a4</td>
+<td>__getmainorgs</td>
+<td></td>
+<td>0x01e0</td>
+<td>__set_app_type</td>
+</tr>
+</tbody>
+</table>
+<p> 总结：</p>
+<p>导入表的工作原理步骤：</p>
+<p>1、根据IMANE_IMPORT_DESCRIPTOR的字段（NAME,OriginalFirstThunk,FirstThunk），来找到映像名、INT、IAT；</p>
+<p>2、根据INT表的信息(OriginalFirstThunk字段)，找到_IMAGE_IMPORT_BY_NAME结构的位置，从而得出函数的函数名、函数序号。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/11/21/PE--导入导出表/" data-id="cjorg7gsw000jt0tvuoq8dl83" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/reverse/">reverse</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2018/11/21/M的硬盘/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          M的硬盘
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2018/11/21/ROP专项总结/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">ROP专项总结</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Security/">Security</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/acm-算法/">acm 算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pwn/">pwn</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/reverse/">reverse</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Security/" style="font-size: 10px;">Security</a> <a href="/tags/acm-算法/" style="font-size: 15px;">acm 算法</a> <a href="/tags/pwn/" style="font-size: 10px;">pwn</a> <a href="/tags/reverse/" style="font-size: 20px;">reverse</a> <a href="/tags/算法/" style="font-size: 15px;">算法</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">November 2018</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/11/22/Mini-Horse/">Mini_Horse</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/21/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/21/M的硬盘/">M的硬盘</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/21/PE--导入导出表/">PE 导入导出表</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/21/ROP专项总结/">ROP专项总结</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 treebacker<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>
