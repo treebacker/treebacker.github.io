@@ -161,32 +161,32 @@
             </div>
             <h2 class="post-title">看雪FPC复现</h2>
             <div class="post-meta">
-                本文总共1146个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
+                本文总共1145个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
             </div>
         </div>
         <div class="post-content markdown-body">
             <p>很长时间没有在这里记录Writeup了，这次这道题目实在太让我兴奋了。有感而记。</p>
 <p>拖进IDA；</p>
-<p><img src="F:\blog\source\_posts\看雪FPC复现\1.png" alt=""></p>
+<img src="/2018/11/21/看雪FPC复现/1.png" title="[]">
 <p>惊奇的发现，除了scanf之外，只需要两个函数就执行到了”Bad…..”；</p>
 <p>依次查看两个验证函数；</p>
 <p>1.sub_401080</p>
-<p> <img src="F:\blog\source\_posts\看雪FPC复现\2.png" alt=""></p>
+<img src="/2018/11/21/看雪FPC复现/2.png" title="[]">
 <p> 会发现  a1与v2是恒等的，if 不会成立，也就是永远不会“YouGetIt”</p>
 <p>2.sub_4010D0</p>
-<p><img src="F:\blog\source\_posts\看雪FPC复现\3.png" alt=""></p>
+<img src="/2018/11/21/看雪FPC复现/3.png" title="[]">
 <p>同样的道理，这里也永远不会”Yougetit”</p>
 <p>困惑：这就很不正常了，就是说程序的正常执行流程下，永远不会pass；</p>
 <p>暗示，可能需要特殊的输入，改变程序的执行流程（栈溢出）</p>
 <p>拖进OD，在scanf入flag后通过观察栈，得知，12个字符恰好覆盖返回地址以上部分。</p>
-<p><img src="F:\blog\source\_posts\看雪FPC复现\4.png" alt=""></p>
+<img src="/2018/11/21/看雪FPC复现/4.png" title="[]">
 <p>那么，要把程序带到什么地方呢（用哪个地址来覆盖原来的返回地址）；<br>由于输入的全部是可打印字符，可以在IDA中手动查看可疑的地址字段。发现00413131，是一段很像花指令的东西。</p>
-<p><img src="F:\blog\source\_posts\看雪FPC复现\5.png" alt=""></p>
+<img src="/2018/11/21/看雪FPC复现/5.png" title="[]">
 <p>尝试一下，输入‘aaaabbbbcccc11A’;<br>惊奇的发现，程序执行了验证算法，（证实了思路）</p>
-<p><img src="F:\blog\source\_posts\看雪FPC复现\6.png" alt=""></p>
+<img src="/2018/11/21/看雪FPC复现/6.png" title="[]">
 <p>由于花指令的存在，我选择了动态调试<br>在OD中开启RUN TRACE,单步跟入调试(F8或者f7跟踪，遇到跳转，jz,jl   可以改变z标志位改变流程，继续跟踪）</p>
 <p>最后查看执行过的指令。</p>
-<p><img src="F:\blog\source\_posts\看雪FPC复现\7.png" alt=""></p>
+<img src="/2018/11/21/看雪FPC复现/7.png" title="[]">
 <p>拷贝下来，过滤得到有效的指令</p>
 <p>分析汇编代码：</p>
 <p>add esp,-0x10<br>xor eax,eax<br>mov dword ptr ds:[0x41B034],eax<br>pop eax<br>mov ecx,eax<br>pop eax<br>repne jae short 00413266<br>mov ebx,eax<br>pop eax<br>mov edx,eax<br>mov edx,eax<br>mov eax,ecx<br>sub eax,ebx<br>shl eax,0x2<br>add eax,ecx<br>add eax,edx<br>sub eax,0xEAF917E2</p>
