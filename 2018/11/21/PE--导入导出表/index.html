@@ -161,7 +161,7 @@
             </div>
             <h2 class="post-title">PE 导入导出表</h2>
             <div class="post-meta">
-                本文总共4094个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
+                本文总共4093个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
             </div>
         </div>
         <div class="post-content markdown-body">
@@ -180,14 +180,14 @@
 <p>Hint: 保存着需要导入函数的序号<br>Name: 保存着需要导入函数的名称</p>
 <p>知道了基本的组成，那么导入表又是怎样尽职尽责的工作呢？<br>记录一个实例流程。</p>
 <p>借助LordPE工具，快速定位导入表的位置。</p>
-<p><img src="C:\WINDOWS\TEMP\1541779029041.png" alt="1541779029041"></p>
+
 <p>Importtable的RVA地址是0x0000233C；那么它的文件OFFSET是多少？<br>首先查看各个段的RVA和OFFSET：</p>
-<p><img src="https://img-blog.csdn.net/20181007134000155?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2Nhb2JvX2xxNjY2/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70" alt="img"><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="点击并拖拽以移动"></p>
+
 <p> 显然,Importtable在.rdata区段<br>.rdata区段的RVA为0x2000,.rdata区段的起始Offset是0x00001000<br>RVA到Offset的转化：<br>导出表Offset = 导出表RVA - 导出表所在区段的RVA + 导出表所在区段的 Offset<br>求得导出表Offset = 0x0000133c<br>导出表地址计算参照值 d = 导出表RVA - 导出表Offset = 0x00001000    (便于计算各个字段的Offset)</p>
 <p>得到Offset就可以在winhex里面找到importtable的内容了：</p>
-<p><img src="https://img-blog.csdn.net/20181007135217790?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2Nhb2JvX2xxNjY2/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70" alt="img"><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="点击并拖拽以移动"></p>
-<p><img src="https://img-blog.csdn.net/20181007142703859?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2Nhb2JvX2xxNjY2/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70" alt="img"><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="点击并拖拽以移动"></p>
-<p> <img src="https://img-blog.csdn.net/20181007142740377?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2Nhb2JvX2xxNjY2/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70" alt="img"><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="点击并拖拽以移动"></p>
+
+
+
 <p> 由于是以空的结构体结尾的，很清楚的看到是有三个IMAGE_IMPORT_DESCRIPTOR结构：<br>TABLE1：</p>
 <table>
 <thead>
