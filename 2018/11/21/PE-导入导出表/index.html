@@ -50,7 +50,7 @@
 <link rel="shortcut icon" href="../../../../images/favicon.png">
 
 
-<title>pe 导入导出表 - Watch Security</title>
+<title>pe-导入导出表 - Watch Security</title>
 
 <meta name="keywords" content="Reverse, Security, New">
 
@@ -159,7 +159,7 @@
                 </p>
                 <p></p>
             </div>
-            <h2 class="post-title">PE 导入导出表</h2>
+            <h2 class="post-title">PE-导入导出表</h2>
             <div class="post-meta">
                 本文总共4093个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
             </div>
@@ -180,14 +180,14 @@
 <p>Hint: 保存着需要导入函数的序号<br>Name: 保存着需要导入函数的名称</p>
 <p>知道了基本的组成，那么导入表又是怎样尽职尽责的工作呢？<br>记录一个实例流程。</p>
 <p>借助LordPE工具，快速定位导入表的位置。</p>
-
+<img src="/2018/11/21/PE-导入导出表/1.png" title="[]">
 <p>Importtable的RVA地址是0x0000233C；那么它的文件OFFSET是多少？<br>首先查看各个段的RVA和OFFSET：</p>
-
+<img src="/2018/11/21/PE-导入导出表/2.png" title="[]">
 <p> 显然,Importtable在.rdata区段<br>.rdata区段的RVA为0x2000,.rdata区段的起始Offset是0x00001000<br>RVA到Offset的转化：<br>导出表Offset = 导出表RVA - 导出表所在区段的RVA + 导出表所在区段的 Offset<br>求得导出表Offset = 0x0000133c<br>导出表地址计算参照值 d = 导出表RVA - 导出表Offset = 0x00001000    (便于计算各个字段的Offset)</p>
 <p>得到Offset就可以在winhex里面找到importtable的内容了：</p>
-
-
-
+<img src="/2018/11/21/PE-导入导出表/3.png" title="[]">
+<img src="/2018/11/21/PE-导入导出表/4.png" title="[]">
+<img src="/2018/11/21/PE-导入导出表/5.png" title="[]">
 <p> 由于是以空的结构体结尾的，很清楚的看到是有三个IMAGE_IMPORT_DESCRIPTOR结构：<br>TABLE1：</p>
 <table>
 <thead>
