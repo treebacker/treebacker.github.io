@@ -167,37 +167,37 @@
         <div class="post-content markdown-body">
             <p>这个题目的分值是200，对我来说是个不小的挑战啊。</p>
 <p>查了一下壳，没有发现什么</p>
-<p><img src="F:\blog\source\_posts\一次手动脱壳\1.png" alt=""></p>
+<img src="/2018/11/21/一次手动脱壳/1.png" title="[]">
 <p>真的这么简单？拖入IDA观察：</p>
-<p><img src="F:\blog\source\_posts\一次手动脱壳\2.png" alt=""></p>
+<img src="/2018/11/21/一次手动脱壳/2.png" title="[]">
 <p>呃呃呃，果然不简单；在IDA里面没有任何函数的痕迹。只有一个.text段。</p>
 <p>猜测，应该是加了某种壳对源程序加密过。用OD载入。</p>
-<p><img src="F:\blog\source\_posts\一次手动脱壳\3.png" alt=""></p>
+<img src="/2018/11/21/一次手动脱壳/3.png" title="[]">
 <p>看到OD的提示，再看到这里的循环pushad，看来应该是有壳，可是工具又查不出来，手动？<br>这时想到了ESP定律，记录个大佬的ESP定律讲解链接：<a href="https://blog.csdn.net/D_R_L_T/article/details/74625872" target="_blank" rel="noopener">https://blog.csdn.net/D_R_L_T/article/details/74625872</a><br>将的很详细具体。<br>我就抱着试一试的态度开始了ESP大法的操作。</p>
 <p>1、先F8到pushad下一条指令，找到此时的ESP<br>2、转到ESP地址出的数据，下硬件内存访问断点。<br>3、F9到popad附近<br>4、F8单步寻找popad<br>5、附近找到jmp指令（一般是大的jmp）<br>6、跳过去就是OEP啦</p>
-<p><img src="F:\blog\source\_posts\一次手动脱壳\4.png" alt=""></p>
-<p><img src="F:\blog\source\_posts\一次手动脱壳\5.png" alt=""></p>
+<img src="/2018/11/21/一次手动脱壳/4.png" title="[]">
+<img src="/2018/11/21/一次手动脱壳/5.png" title="[]">
 <p>嗯哼，接下来就可以用OD的插件Ollydump脱壳dump下来啦：</p>
-<p><img src="F:\blog\source\_posts\一次手动脱壳\6.png" alt=""></p>
+<img src="/2018/11/21/一次手动脱壳/6.png" title="[]">
 <p>到底是不是呢？我们将dump下来的程序拖进IDA查看，会发现已经建立了函数。</p>
-<p><img src="F:\blog\source\_posts\一次手动脱壳\7.png" alt=""></p>
+<img src="/2018/11/21/一次手动脱壳/7.png" title="[]">
 <p> 接下来就是F5啦：</p>
-<p><img src="F:\blog\source\_posts\一次手动脱壳\8.png" alt=""></p>
+<img src="/2018/11/21/一次手动脱壳/8.png" title="[]">
 <p>对这些函数逐个查看（详细的就不讲了）。</p>
 <p>每个函数的功能：<br>sub_4018F0   下载一张图片，得到图片的字节数，返回存储图片数据的缓冲区的首地址。<br>sub_401740    初始化一个byte数组   KEY[264]<br>sub_401800    一个算法，得到与文件等长一段数据存在缓冲区buffer<br>sub_401220    对上述得到的缓冲区的数据进行一个简单的异或</p>
 <p>纪录下自己的掉进的坑：在初始化数组时，自己没有注意到移位运算的优先级低于 加减 ，导致得到了乱码，半天才找到错误（长记性）。</p>
 <p>附送逆向get的代码（C++）：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line">#include&lt;bits/stdc++.h&gt;</span><br><span class="line">using namespace std;</span><br><span class="line">int main()</span><br><span class="line">&#123;</span><br><span class="line">    FILE *fp,*dump;</span><br><span class="line">    fp =fopen(&quot;x.jpg&quot;,&quot;rb&quot;);</span><br><span class="line">    dump = fopen(&quot;shell.txt&quot;,&quot;wb&quot;);</span><br><span class="line"> </span><br><span class="line">    fseek(fp,0,SEEK_END);</span><br><span class="line">    int file_len = ftell(fp);//文件的长度</span><br><span class="line">    fseek(fp,0,SEEK_SET);</span><br><span class="line">    cout&lt;&lt;file_len&lt;&lt;endl;</span><br><span class="line">    char file[file_len];</span><br><span class="line">    fread(file,file_len,1,fp);</span><br><span class="line">   fclose(fp);</span><br><span class="line">    unsigned char key[264];</span><br><span class="line">    long long first = 0x4A8754F5745174;</span><br><span class="line"> </span><br><span class="line">    for(int i=0;i&lt;8;i++)</span><br><span class="line">    &#123;</span><br><span class="line">        key[i] = 0;</span><br><span class="line">    &#125;</span><br><span class="line">    for(int i=0;i&lt;256;i++)</span><br><span class="line">        key[i+8] = ((i + (first &gt;&gt;(i % 8 * 8)))&amp;0xff);//运算符的优先级</span><br><span class="line">    int len = 264;</span><br><span class="line">    int dkey[len/4];</span><br><span class="line"> </span><br><span class="line">    int temp;</span><br><span class="line">    unsigned char temp4,temp5;</span><br><span class="line"> </span><br><span class="line">    for(int i=0;i&lt;len/4;i++)</span><br><span class="line">    &#123;</span><br><span class="line">        temp = 0;</span><br><span class="line">        for(int j=3;j&gt;-1;j--)</span><br><span class="line">        &#123;</span><br><span class="line">            temp = (temp&lt;&lt;8) + key[4 * i + j];</span><br><span class="line">        &#125;</span><br><span class="line">        dkey[i] = temp;</span><br><span class="line">    &#125;</span><br><span class="line">    char flag[file_len];</span><br><span class="line"> </span><br><span class="line">    for(int i=0;i&lt;file_len;i++)</span><br><span class="line">    &#123;</span><br><span class="line">        dkey[0] = (dkey[0]+ 1)%256;</span><br><span class="line">        dkey[1] = (key[dkey[0] + 8] + dkey[1])%256;</span><br><span class="line">        temp4 = key[dkey[0] + 8];</span><br><span class="line">        temp5 = key[dkey[1] + 8];</span><br><span class="line">        key[dkey[0] + 8] = temp5;</span><br><span class="line">        key[dkey[1] + 8] = temp4;</span><br><span class="line">       flag[i] = (key[(temp4 + temp5 )%256 + 8] ^ file[i] ^ i)%256;</span><br><span class="line">       fputc(flag[i],dump);</span><br><span class="line">    &#125;</span><br><span class="line">    fclose(dump);</span><br><span class="line">/*</span><br><span class="line">    for(int i=file_len-1;i&gt;=4;i --)</span><br><span class="line">    &#123;</span><br><span class="line">        if(flag[i]==0x68)</span><br><span class="line">        &#123;</span><br><span class="line">            printf(&quot;%c%c%c%c&quot;,flag[i-4],flag[i-3],flag[i-2],flag[i-1]);</span><br><span class="line">            i -= 4;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    cout&lt;&lt;endl;</span><br><span class="line">*/</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>可以用16进制编辑器打开得到的文件</p>
-<p><img src="F:\blog\source\_posts\一次手动脱壳\9.png" alt=""></p>
+<img src="/2018/11/21/一次手动脱壳/9.png" title="[]">
 <p>可以看到很多字符，但好像是无序的；查看大佬的WP知道这是shellcode（惊）。</p>
 <p>自己在OD找段空白，copy进去：</p>
 <p>啊哈哈，刚好最近看书看到这段类似的代码实现；</p>
-<p><img src="F:\blog\source\_posts\一次手动脱壳\10.png" alt=""></p>
+<img src="/2018/11/21/一次手动脱壳/10.png" title="[]">
 <p>PEB-&gt; PEB_LAR_DATA-&gt; InInitalizationOrderMouduleList-&gt;DLL-&gt;API</p>
 <p>继续往下看；</p>
 <p>push一段字符串</p>
-<p><img src="F:\blog\source\_posts\一次手动脱壳\11.png" alt=""></p>
+<img src="/2018/11/21/一次手动脱壳/11.png" title="[]">
 <h2 id="注意小端序，即可得到了flag"><a href="#注意小端序，即可得到了flag" class="headerlink" title="注意小端序，即可得到了flag."></a>注意小端序，即可得到了flag.</h2><p>作者：还木人<br>来源：CSDN<br>原文：<a href="https://blog.csdn.net/caobo_lq666/article/details/83211242" target="_blank" rel="noopener">https://blog.csdn.net/caobo_lq666/article/details/83211242</a><br>版权声明：本文为博主原创文章，转载请附上博文链接！</p>
 
         </div>
