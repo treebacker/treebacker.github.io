@@ -45,12 +45,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0,user-scalable=no">
 <meta http-equiv="mobile-agent" content="format=html5; url=http://yoursite.com">
 <meta name="author" content="treebacker">
-<link rel="stylesheet" href="../../css/SimpleStyle.min.css">
+<link rel="stylesheet" href="../../../../css/SimpleStyle.min.css">
 
-<link rel="shortcut icon" href="../../images/favicon.png">
+<link rel="shortcut icon" href="../../../../images/favicon.png">
 
 
-<title>归档集- 2018 - Watch Security</title>
+<title>锋芒不漏1 - Watch Security</title>
 
 <meta name="keywords" content="Reverse, Security, New">
 
@@ -104,8 +104,22 @@
 </div>
             <div class="page-title">
     <ul>
-        <li><a href="/" data-name="首页" title="Back Home">首页</a></li>
-        <li><a href="/tags" data-name="标签云" title="标签云">标签</a></li>
+        <li><a href="/">最新</a></li>
+        
+            
+                <li class="active">
+                    <a href="/categories/tech-notes" data-name="技术">技术</a>
+                </li>
+            
+                <li class="">
+                    <a href="/categories/essays" data-name="随笔">随笔</a>
+                </li>
+            
+                <li class="">
+                    <a href="/categories/others" data-name="其他">其他</a>
+                </li>
+            
+        
         <li class="page-search">
     <form id="search" class="search-form">
         <label for="s" class="sr-only">请输入关键字</label>
@@ -135,7 +149,7 @@
             UNTITLED: '(无标题)',
         },
         ROOT_URL: '/',
-        CONTENT_URL: '../../content.json',
+        CONTENT_URL: '../../../../content.json',
     };
     window.INSIGHT_CONFIG = INSIGHT_CONFIG;
 })(window);
@@ -147,95 +161,46 @@
 <div class="main-inner">
     <article class="post" itemscope="" itemtype="http://schema.org/BlogPosting">
         <div class="post-header">
-            <h3 class="post-title">坦率的讲 - 本站目前共计10篇文章</h3>
-        </div>
-        <p>不信，你数数 ：） </p>
-        <div class="post-content markdown-body" itemprop="articleBody">
-            <div class="archives">
-                
-                
-                
-                
-                
-                <div class="archives-item">
-                    <h2>2018年11月</h2>
-                    <ul class="archives_list">
-                        
-                        <li>24日21:42:35
-                            <a href="../../2018/11/24/一次手动脱壳/">一次手动脱壳1</a>
-                        </li>
-                        
-                
-                
-                
-                        <li>24日21:42:18
-                            <a href="../../2018/11/24/寻找最长回文串-马拉车算法/">寻找最长回文串-马拉车算法1</a>
-                        </li>
-                        
-                
-                
-                
-                        <li>24日21:41:40
-                            <a href="../../2018/11/24/快速幂总结拓展/">快速幂总结拓展1</a>
-                        </li>
-                        
-                
-                
-                
-                        <li>24日21:41:11
-                            <a href="../../2018/11/24/看雪FPC复现/">看雪FPC复现1</a>
-                        </li>
-                        
-                
-                
-                
-                        <li>24日21:40:22
-                            <a href="../../2018/11/24/锋芒不漏/">锋芒不漏1</a>
-                        </li>
-                        
-                
-                
-                
-                        <li>24日21:39:36
-                            <a href="../../2018/11/24/ROP专项总结/">ROP专项总结1</a>
-                        </li>
-                        
-                
-                
-                
-                        <li>24日21:39:07
-                            <a href="../../2018/11/24/PE-导入导出表/">PE-导入导出表1</a>
-                        </li>
-                        
-                
-                
-                
-                        <li>24日21:38:32
-                            <a href="../../2018/11/24/M的硬盘/">M的硬盘1</a>
-                        </li>
-                        
-                
-                
-                
-                        <li>22日18:10:08
-                            <a href="../../2018/11/22/Reverse-a-Tree/">Reverse a Tree</a>
-                        </li>
-                        
-                
-                
-                
-                        <li>22日01:27:51
-                            <a href="../../2018/11/22/Mini-Horse/">Mini_Horse</a>
-                        </li>
-                        
-                    </ul>
-                </div>
-                
-                
+            <div class="post-author clearfix">
+                <a class="avatar fleft" href="" target="_blank">
+                    <img width="48" src="/images/favicon.png" alt="avatar">
+                </a>
+                <p><span class="label">作者</span>
+                    <a href="" target="_blank">Treebacker</a>
+                    <span title="最后编辑于2018-11-24">2018-11-24</span>
+                </p>
+                <p></p>
+            </div>
+            <h2 class="post-title">锋芒不漏1</h2>
+            <div class="post-meta">
+                本文总共1120个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
             </div>
         </div>
+        <div class="post-content markdown-body">
+            <p>#include<iostream></iostream></p>
+<p>#include<cstdio></cstdio></p>
+<p>#include<algorithm><br>using namespace std;<br>const int maxn=105;<br>int l[maxn],r[maxn];<br>int main()<br>{<br>    int N;<br>    int a,b;<br>    while(~scanf(“%d”,&amp;N))<br>    {<br>        fill(l,l+maxn,0);<br>        fill(r,r+maxn,0);<br>        if(N==0)break;</algorithm></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line">    for(int i=0;i&lt;N;i++)</span><br><span class="line"> &#123;</span><br><span class="line">     //桶排序</span><br><span class="line">    scanf(&quot;%d%d&quot;,&amp;a,&amp;b);</span><br><span class="line">    l[a]++;</span><br><span class="line">    r[b]++;</span><br><span class="line"></span><br><span class="line">    int max1=-1;</span><br><span class="line">    int kl=0;</span><br><span class="line">    int kr=100;</span><br><span class="line"></span><br><span class="line">    int cntl=l[kl];</span><br><span class="line">    int cntr=r[kr];</span><br><span class="line"></span><br><span class="line">    while(kl&lt;=100&amp;&amp;kr&gt;=0)</span><br><span class="line">    &#123;</span><br><span class="line">        if(cntl&amp;&amp;cntr)//匹配值</span><br><span class="line">            max1=max(max1,kl+kr);</span><br><span class="line"></span><br><span class="line">         if(cntl==cntr)//本就匹配</span><br><span class="line">        &#123;</span><br><span class="line">            kl++;</span><br><span class="line">            kr--;</span><br><span class="line">            cntl=l[kl];</span><br><span class="line">            cntr=r[kr];</span><br><span class="line">            continue;</span><br><span class="line">        &#125;</span><br><span class="line">    </span><br><span class="line">     else if(cntl&gt;cntr)</span><br><span class="line">        &#123;</span><br><span class="line">            kr--;</span><br><span class="line">            cntl-=cntr;//优化</span><br><span class="line">            cntr=r[kr];</span><br><span class="line">        &#125;</span><br><span class="line">        else if(cntr&gt;cntl)</span><br><span class="line">        &#123;</span><br><span class="line">            kl++;</span><br><span class="line">            cntr-=cntl;</span><br><span class="line">            cntl=l[kl];</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">    printf(&quot;%d\n&quot;,max1);</span><br><span class="line">  &#125;</span><br><span class="line">    printf(&quot;\n&quot;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">return 0;</span><br></pre></td></tr></table></figure>
+<p>}</p>
+
+        </div>
+        <div class="post-tool">
+            <a class="btn-thumbs-up" href="javascript:void(0);" data-cid="52" title="95">
+                <i class="fa fa-thumbs-up" aria-hidden="true"></i> 打赏
+            </a>
+        </div>
+        
+        <div class="post-tags">标签：
+            
+        </div>
+        
     </article>
+    
+    <p>本文代表个人观点，内容仅供参考。若有不恰当之处，望不吝赐教！</p>
+    
+    
 </div>
+<script src="../../../../js/busuanzi.pure.mini.js"></script>
 
         </div><!-- end #main-->
     </div><!-- end #body -->
@@ -259,8 +224,8 @@
 
     </div>
 </footer>
-<script src="../../js/InsightSearch.js"></script>
-<script src="../../js/SimpleCore.js"></script>
+<script src="../../../../js/InsightSearch.js"></script>
+<script src="../../../../js/SimpleCore.js"></script>
 
 </div>
 <div class="fixed-btn">

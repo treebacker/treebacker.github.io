@@ -1,0 +1,439 @@
+<!DOCTYPE HTML>
+<html class="no-js" lang="zh-CN">
+<!--
+//                            _ooOoo_
+//                           o8888888o
+//                           88" . "88
+//                           (| -_- |)
+//                            O\ = /O
+//                        ____/`---'\____
+//                      .   ' \\| |// `.
+//                       / \\||| : |||// \
+//                     / _||||| -:- |||||- \
+//                       | | \\\ - /// | |
+//                     | \_| ''\---/'' | |
+//                      \ .-\__ `-` ___/-. /
+//                   ___`. .' /--.--\ `. . __
+//                ."" '< `.___\_<|>_/___.' >'"".
+//               | | : `- \`.;`\ _ /`;.`/ - ` : | |
+//                 \ \ `-. \_ __\ /__ _/ .-` / /
+//         ======`-.____`-.___\_____/___.-`____.-'======
+//                            `=---='
+//                 拦截插件累计拦截逗比攻击"1381438"次！
+//         .............................................
+//                  佛祖保佑             永无BUG
+//          佛曰:
+//                  写字楼里写字间，写字间里程序员；
+//                  程序人员写程序，又拿程序换酒钱。
+//                  酒醒只在网上坐，酒醉还来网下眠；
+//                  酒醉酒醒日复日，网上网下年复年。
+//                  但愿老死电脑间，不愿鞠躬老板前；
+//                  奔驰宝马贵者趣，公交自行程序员。
+//                  别人笑我忒疯癫，我笑自己命太贱；
+//                  不见满街漂亮妹，哪个归得程序员？
+-->
+<head><meta name="generator" content="Hexo 3.8.0">
+    <!--[if lte IE 9]>
+<meta http-equiv="refresh" content="0;url=http://yoursite.com/warn.html">
+<![endif]-->
+<meta charset="utf-8">
+
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+
+<meta http-equiv="X-UA-Compatible" content="IE=Edge">
+<meta name="renderer" content="webkit">
+<meta name="viewport" content="width=device-width, initial-scale=1.0,user-scalable=no">
+<meta http-equiv="mobile-agent" content="format=html5; url=http://yoursite.com">
+<meta name="author" content="treebacker">
+<link rel="stylesheet" href="../../../../css/SimpleStyle.min.css">
+
+<link rel="shortcut icon" href="../../../../images/favicon.png">
+
+
+<title>pe-导入导出表1 - Watch Security</title>
+
+<meta name="keywords" content="Reverse, Security, New">
+
+<meta name="description " content="">
+
+</head>
+<body>
+<div id="nav">
+    <nav class="nav-menu">
+        <a class="site-name current" href="/" title="Tree">Tree</a>
+        <a class="site-index current" href="/"><i class="fa fa-home"></i><span>首页</span></a>
+        <a href="/archives" title="归档"><i class="fa fa-archives"></i><span>归档</span></a>
+        <a href="/tags" title="标签"><i class="fa fa-tags"></i><span>标签</span></a>
+        <!-- custom single page of menus -->
+        
+        
+        <a href="/help" title="帮助">
+            <i class="fa fa-question-circle"></i>
+            <span>帮助</span>
+        </a>
+        
+    </nav>
+</div>
+
+<div class="nav-user">
+    <a class="btn-search" href="#"><i class="fa fa-search"></i></a>
+    <a class="btn-read-mode" href="#"><i class="fa fa-sun-o"></i></a>
+    <a class="btn-sns-qr" href="javascript:"><i class="fa fa-telegram"></i></a>
+</div>
+
+<div id="wrapper" class="clearfix">
+    <div id="body">
+        <div class="main" id="main">
+            <div id="cover">
+    <div class="cover-img"></div>
+    <div class="cover-info">
+        
+        <h1 class="cover-siteName">Treebacker</h1>
+        <h3 class="cover-siteTitle">用代码丈量这个世界</h3>
+        <p class="cover-siteDesc">Tech and Eesay</p>
+        <div class="cover-sns">
+            
+            <div class="btn btn-github">
+                <a href="https://github.com/treebacker" target="_blank" title="github" ref="friend">
+                    <i class="fa fa-github"></i>
+                </a>
+            </div>
+            
+        </div>
+    </div>
+</div>
+            <div class="page-title">
+    <ul>
+        <li><a href="/">最新</a></li>
+        
+            
+                <li class="active">
+                    <a href="/categories/tech-notes" data-name="技术">技术</a>
+                </li>
+            
+                <li class="">
+                    <a href="/categories/essays" data-name="随笔">随笔</a>
+                </li>
+            
+                <li class="">
+                    <a href="/categories/others" data-name="其他">其他</a>
+                </li>
+            
+        
+        <li class="page-search">
+    <form id="search" class="search-form">
+        <label for="s" class="sr-only">请输入关键字</label>
+        <input class="search-field" type="text" name="s" placeholder="请输入关键字">
+        <button type="submit" class="search-form-submit" title="搜索"><i class="fa fa-search"></i></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="请输入关键词...">
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(无标题)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '../../../../content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+</li>
+
+    </ul>
+</div>
+<div class="main-inner">
+    <article class="post" itemscope="" itemtype="http://schema.org/BlogPosting">
+        <div class="post-header">
+            <div class="post-author clearfix">
+                <a class="avatar fleft" href="" target="_blank">
+                    <img width="48" src="/images/favicon.png" alt="avatar">
+                </a>
+                <p><span class="label">作者</span>
+                    <a href="" target="_blank">Treebacker</a>
+                    <span title="最后编辑于2018-11-24">2018-11-24</span>
+                </p>
+                <p></p>
+            </div>
+            <h2 class="post-title">PE-导入导出表1</h2>
+            <div class="post-meta">
+                本文总共4091个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
+            </div>
+        </div>
+        <div class="post-content markdown-body">
+            <p>最近在看《黑卡免杀攻防》，对讲解的PE文件导入表、导出表的作用与原理有了更深刻的理解，特此记录。<br>首先，要知道什么是导入表？<br>导入表机制是PE文件从其他第三方程序（一般是DLL动态链接库）中导入API，以提供本程序调用的机制。而在Windows平台下，PE文件中的导入表结构就承担了完成这一工作的引导者角色。</p>
+<p>IMAGE_IMPORT_DESCRIPTOR结构</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">typedef struct _IMAGE_IMPORT_DESCRIPTOR &#123;</span><br><span class="line">    union &#123;</span><br><span class="line">        DWORD   Characteristics;            // 0 for terminating null import descriptor</span><br><span class="line">        DWORD   OriginalFirstThunk;         // RVA to original unbound IAT (PIMAGE_THUNK_DATA)</span><br><span class="line">    &#125; DUMMYUNIONNAME;</span><br><span class="line">    DWORD   TimeDateStamp;                  // 0 if not bound,</span><br><span class="line">                                            // -1 if bound, and real date\time stamp</span><br><span class="line">                                            //     in IMAGE_DIRECTORY_ENTRY_BOUND_IMPORT (new BIND)</span><br><span class="line">                                            // O.W. date/time stamp of DLL bound to (Old BIND)</span><br><span class="line"> </span><br><span class="line">    DWORD   ForwarderChain;                 // -1 if no forwarders</span><br><span class="line">    DWORD   Name;</span><br><span class="line">    DWORD   FirstThunk;                     // RVA to IAT (if bound this IAT has actual addresses)</span><br><span class="line">&#125; IMAGE_IMPORT_DESCRIPTOR;</span><br><span class="line">typedef IMAGE_IMPORT_DESCRIPTOR UNALIGNED *PIMAGE_IMPORT_DESCRIPTOR;</span><br></pre></td></tr></table></figure>
+<p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="点击并拖拽以移动"></p>
+<p>一般来说，对于导入表，我们只需要关注它的两个字段，分别是OriginalFirstThunk与FirstThunk,这两个字段分别指向了包含导出名称和导出地址的IMAGE_THUNK_DATA结构数组，这个数组以空的IMAGE_THUNK_DATA结构结尾。</p>
+<p>IMAGE_THUNK_DATA结构</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">typedef struct _IMAGE_THUNK_DATA32 &#123;</span><br><span class="line">    union &#123;</span><br><span class="line">        PBYTE ForwarderString;      // 转发字符串的RAV</span><br><span class="line">        PDWORD Function;             // 被导入函数的地址</span><br><span class="line">        DWORD Ordinal;</span><br><span class="line">        PIMAGE_IMPORT_BY_NAME AddressOfData;        // 指向输入名称表</span><br><span class="line">    &#125; u1;</span><br><span class="line">&#125; IMAGE_THUNK_DATA32;</span><br><span class="line">typedef IMAGE_THUNK_DATA32 * PIMAGE_THUNK_DATA32;</span><br></pre></td></tr></table></figure>
+<p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="点击并拖拽以移动"></p>
+<p>ForwarderString是转发用的，暂时不用考虑，Function表示函数地址，如果是按序号导入Ordinal就有用了，若是按名字导入AddressOfData便指向名字信息。可以看出这个结构体就是一个大的union，大家都知道union虽包含多个域但是在不同时刻代表不同的意义那到底应该是名字还是序号，该如何区分呢？可以通过Ordinal判断，如果Ordinal的最高位是1，就是按序号导入的，这时候，低16位就是导入序号，如果最高位是0，则AddressOfData是一个RVA，指向一个IMAGE_IMPORT_BY_NAME结构，用来保存名字信息，由于Ordinal和AddressOfData实际上是同一个内存空间，所以AddressOfData其实只有低31位可以表示RVA，但是一个PE文件不可能超过2G，所以最高位永远为0，这样设计很合理的利用了空间。实际编写代码的时候微软提供两个宏定义处理序号导入：IMAGE_SNAP_BY_ORDINAL判断是否按序号导入，IMAGE_ORDINAL用来获取导入序号。</p>
+<p>了解一下IMAGE_IMPORT_BY_NAME结构。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">typedef struct _IMAGE_THUNK_DATA32 &#123;</span><br><span class="line">    	union &#123; </span><br><span class="line">		PBYTE ForwarderString;</span><br><span class="line">            	PDWORD Function;</span><br><span class="line">            	DWORD Ordinal;</span><br><span class="line">            	PIMAGE_IMPORT_BY_NAME AddressOfData;</span><br><span class="line">         &#125; u1;</span><br><span class="line">&#125; IMAGE_THUNK_DATA32;</span><br></pre></td></tr></table></figure>
+<p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="点击并拖拽以移动"></p>
+<p>Hint: 保存着需要导入函数的序号<br>Name: 保存着需要导入函数的名称</p>
+<p>知道了基本的组成，那么导入表又是怎样尽职尽责的工作呢？<br>记录一个实例流程。</p>
+<p>借助LordPE工具，快速定位导入表的位置。</p>
+<img src="/2018/11/24/PE-导入导出表/1.jpg" title="[]">
+<p>Importtable的RVA地址是0x0000233C；那么它的文件OFFSET是多少？<br>首先查看各个段的RVA和OFFSET：</p>
+<img src="/2018/11/24/PE-导入导出表/2.jpg" title="[]">
+<p> 显然,Importtable在.rdata区段<br>.rdata区段的RVA为0x2000,.rdata区段的起始Offset是0x00001000<br>RVA到Offset的转化：<br>导出表Offset = 导出表RVA - 导出表所在区段的RVA + 导出表所在区段的 Offset<br>求得导出表Offset = 0x0000133c<br>导出表地址计算参照值 d = 导出表RVA - 导出表Offset = 0x00001000    (便于计算各个字段的Offset)</p>
+<p>得到Offset就可以在winhex里面找到importtable的内容了：</p>
+<img src="/2018/11/24/PE-导入导出表/3.jpg" title="[]">
+<img src="/2018/11/24/PE-导入导出表/4.jpg" title="[]">
+<img src="/2018/11/24/PE-导入导出表/5.jpg" title="[]">
+<p> 由于是以空的结构体结尾的，很清楚的看到是有三个IMAGE_IMPORT_DESCRIPTOR结构：<br>TABLE1：</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>OriginalFirstThunk</th>
+<th>TimeDataStamp</th>
+<th>ForwarderChain</th>
+<th>Name</th>
+<th>FirstThunk</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>值(RVA)</td>
+<td>0x0000238c</td>
+<td>0x00000000</td>
+<td>0x00000000</td>
+<td>0x000023dc</td>
+<td>0x00002000</td>
+</tr>
+<tr>
+<td>转化为Offset</td>
+<td>0x0000138c</td>
+<td></td>
+<td></td>
+<td>0x000013dc</td>
+<td>0x00001000</td>
+</tr>
+</tbody>
+</table>
+<p>TABLE2：</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>OriginalFirstThunk</th>
+<th>TimeDataStamp</th>
+<th>ForwarderChain</th>
+<th>Name</th>
+<th>FirstThunk</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>值(RVA)</td>
+<td>0x00002450</td>
+<td>0x00000000</td>
+<td>0x00000000</td>
+<td>0x000024f8</td>
+<td>0x000020c4</td>
+</tr>
+<tr>
+<td>转化为Offset</td>
+<td>0x00001450</td>
+<td></td>
+<td></td>
+<td>0x000013dc</td>
+<td>0x000010c4</td>
+</tr>
+</tbody>
+</table>
+<p>TABLE3：</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>OriginalFirstThunk</th>
+<th>TimeDataStamp</th>
+<th>ForwarderChain</th>
+<th>Name</th>
+<th>FirstThunk</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>值(RVA)</td>
+<td>0x000023cc</td>
+<td>0x00000000</td>
+<td>0x00000000</td>
+<td>0x0000252e</td>
+<td>0x00002040</td>
+</tr>
+<tr>
+<td>转化为Offset</td>
+<td>0x000013cc</td>
+<td></td>
+<td></td>
+<td>0x0000152e</td>
+<td>0x00001040</td>
+</tr>
+</tbody>
+</table>
+<p>由这些信息（INT、IAT、映像名的起始Offset）;就可以找它们的具体结构了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">映像名、INT、IAT</span><br></pre></td></tr></table></figure>
+<table>
+<thead>
+<tr>
+<th>NAME</th>
+<th>OriginalFirstThunk1</th>
+<th>OriginalFirstThunk2</th>
+<th></th>
+<th>FirstThunk1</th>
+<th>FirstThunk2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>KERNEL32.dll</td>
+<td>0x00002458</td>
+<td>0x00002466</td>
+<td></td>
+<td>0x00002458</td>
+<td>0x00002466</td>
+</tr>
+<tr>
+<td>USER32.dll</td>
+<td>0x000024ea</td>
+<td>NULL</td>
+<td></td>
+<td>0x000024ea</td>
+<td>NULL</td>
+</tr>
+<tr>
+<td>MSVCR110.dll</td>
+<td>0x00002558</td>
+<td>0x00002568</td>
+<td></td>
+<td>0x00002558</td>
+<td>0x00002568</td>
+</tr>
+</tbody>
+</table>
+<p> 根据上述的导入信息，转化为Offset；再从文件中找到导入函数和倒入序号：</p>
+<table>
+<thead>
+<tr>
+<th>NAME</th>
+<th>序号1</th>
+<th>函数名1</th>
+<th></th>
+<th>序号2</th>
+<th>函数名2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>KERNEL32.dll</td>
+<td>0x016d</td>
+<td>ExitProcess</td>
+<td></td>
+<td>0x0223</td>
+<td>GetCurrentProcess</td>
+</tr>
+<tr>
+<td>USER32.dll</td>
+<td>0X010a</td>
+<td>FindWindowW</td>
+<td></td>
+<td>NULL</td>
+<td>NULL</td>
+</tr>
+<tr>
+<td>MSVCR110.dll</td>
+<td>0x01a4</td>
+<td>__getmainorgs</td>
+<td></td>
+<td>0x01e0</td>
+<td>__set_app_type</td>
+</tr>
+</tbody>
+</table>
+<p> 总结：</p>
+<p>导入表的工作原理步骤：</p>
+<p>1、根据IMANE_IMPORT_DESCRIPTOR的字段（NAME,OriginalFirstThunk,FirstThunk），来找到映像名、INT、IAT；</p>
+<p>2、根据INT表的信息(OriginalFirstThunk字段)，找到_IMAGE_IMPORT_BY_NAME结构的位置，从而得出函数的函数名、函数序号。</p>
+
+        </div>
+        <div class="post-tool">
+            <a class="btn-thumbs-up" href="javascript:void(0);" data-cid="52" title="95">
+                <i class="fa fa-thumbs-up" aria-hidden="true"></i> 打赏
+            </a>
+        </div>
+        
+        <div class="post-tags">标签：
+            
+        </div>
+        
+    </article>
+    
+    <p>本文代表个人观点，内容仅供参考。若有不恰当之处，望不吝赐教！</p>
+    
+    
+</div>
+<script src="../../../../js/busuanzi.pure.mini.js"></script>
+
+        </div><!-- end #main-->
+    </div><!-- end #body -->
+    <footer class="footer">
+    <div class="footer-inner">
+        <p>
+            <a href="/about" title="关于本站">关于本站</a>&nbsp;&nbsp<em>·</em>&nbsp;&nbsp
+            <!-- 自定义链接 -->
+            <a href="/help" title="help">急救中心</a>&nbsp;&nbsp<em>·</em>&nbsp;&nbsp
+            <a href="/links" title="友情链接">友情链接</a>&nbsp;&nbsp<em>·</em>&nbsp;&nbsp
+            <a href="/app" title="App下载">App下载</a>
+        </p>
+        <p>
+            本站点采用<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享署名-非商业性使用-相同方式共享 4.0 国际许可协议</a>，已建立<a href="/timeline" id="siteBuildingTime"></a>天<br>
+            ©2017 基于<a href="http://hexo.io" target="_blank">Hexo</a>搭建
+            ，主题&nbsp<a href="https://github.com/tangkunyin/hexo-theme-jsimple" target="_blank">JSimple</a>
+            ，作者<a href="https://www.tangkunyin.com" target="_blank">唐先森</a>
+            ，Hosted by <a href="https://pages.coding.me" style="font-weight: bold">Coding Pages</a>
+        </p>
+        
+
+    </div>
+</footer>
+<script src="../../../../js/InsightSearch.js"></script>
+<script src="../../../../js/SimpleCore.js"></script>
+
+</div>
+<div class="fixed-btn">
+    <a class="btn-gotop" href="javascript:"> <i class="fa fa-angle-up"></i></a>
+</div>
+<script>
+    $(function () {
+        SimpleCore.init({
+            buildingTime: '11/22/2018',
+            current: $('.post-tags').length > 0 ? 'post' : 'archive',
+            snsQRCode: '/images/sns-qrcode.png',
+            donateImg: '/images/donate-qr.png',
+        });
+    });
+</script>
+</body>
+</html>

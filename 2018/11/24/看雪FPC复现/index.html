@@ -45,12 +45,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0,user-scalable=no">
 <meta http-equiv="mobile-agent" content="format=html5; url=http://yoursite.com">
 <meta name="author" content="treebacker">
-<link rel="stylesheet" href="../../css/SimpleStyle.min.css">
+<link rel="stylesheet" href="../../../../css/SimpleStyle.min.css">
 
-<link rel="shortcut icon" href="../../images/favicon.png">
+<link rel="shortcut icon" href="../../../../images/favicon.png">
 
 
-<title>归档集- 2018 - Watch Security</title>
+<title>看雪fpc复现1 - Watch Security</title>
 
 <meta name="keywords" content="Reverse, Security, New">
 
@@ -104,8 +104,22 @@
 </div>
             <div class="page-title">
     <ul>
-        <li><a href="/" data-name="首页" title="Back Home">首页</a></li>
-        <li><a href="/tags" data-name="标签云" title="标签云">标签</a></li>
+        <li><a href="/">最新</a></li>
+        
+            
+                <li class="active">
+                    <a href="/categories/tech-notes" data-name="技术">技术</a>
+                </li>
+            
+                <li class="">
+                    <a href="/categories/essays" data-name="随笔">随笔</a>
+                </li>
+            
+                <li class="">
+                    <a href="/categories/others" data-name="其他">其他</a>
+                </li>
+            
+        
         <li class="page-search">
     <form id="search" class="search-form">
         <label for="s" class="sr-only">请输入关键字</label>
@@ -135,7 +149,7 @@
             UNTITLED: '(无标题)',
         },
         ROOT_URL: '/',
-        CONTENT_URL: '../../content.json',
+        CONTENT_URL: '../../../../content.json',
     };
     window.INSIGHT_CONFIG = INSIGHT_CONFIG;
 })(window);
@@ -147,95 +161,75 @@
 <div class="main-inner">
     <article class="post" itemscope="" itemtype="http://schema.org/BlogPosting">
         <div class="post-header">
-            <h3 class="post-title">坦率的讲 - 本站目前共计10篇文章</h3>
-        </div>
-        <p>不信，你数数 ：） </p>
-        <div class="post-content markdown-body" itemprop="articleBody">
-            <div class="archives">
-                
-                
-                
-                
-                
-                <div class="archives-item">
-                    <h2>2018年11月</h2>
-                    <ul class="archives_list">
-                        
-                        <li>24日21:42:35
-                            <a href="../../2018/11/24/一次手动脱壳/">一次手动脱壳1</a>
-                        </li>
-                        
-                
-                
-                
-                        <li>24日21:42:18
-                            <a href="../../2018/11/24/寻找最长回文串-马拉车算法/">寻找最长回文串-马拉车算法1</a>
-                        </li>
-                        
-                
-                
-                
-                        <li>24日21:41:40
-                            <a href="../../2018/11/24/快速幂总结拓展/">快速幂总结拓展1</a>
-                        </li>
-                        
-                
-                
-                
-                        <li>24日21:41:11
-                            <a href="../../2018/11/24/看雪FPC复现/">看雪FPC复现1</a>
-                        </li>
-                        
-                
-                
-                
-                        <li>24日21:40:22
-                            <a href="../../2018/11/24/锋芒不漏/">锋芒不漏1</a>
-                        </li>
-                        
-                
-                
-                
-                        <li>24日21:39:36
-                            <a href="../../2018/11/24/ROP专项总结/">ROP专项总结1</a>
-                        </li>
-                        
-                
-                
-                
-                        <li>24日21:39:07
-                            <a href="../../2018/11/24/PE-导入导出表/">PE-导入导出表1</a>
-                        </li>
-                        
-                
-                
-                
-                        <li>24日21:38:32
-                            <a href="../../2018/11/24/M的硬盘/">M的硬盘1</a>
-                        </li>
-                        
-                
-                
-                
-                        <li>22日18:10:08
-                            <a href="../../2018/11/22/Reverse-a-Tree/">Reverse a Tree</a>
-                        </li>
-                        
-                
-                
-                
-                        <li>22日01:27:51
-                            <a href="../../2018/11/22/Mini-Horse/">Mini_Horse</a>
-                        </li>
-                        
-                    </ul>
-                </div>
-                
-                
+            <div class="post-author clearfix">
+                <a class="avatar fleft" href="" target="_blank">
+                    <img width="48" src="/images/favicon.png" alt="avatar">
+                </a>
+                <p><span class="label">作者</span>
+                    <a href="" target="_blank">Treebacker</a>
+                    <span title="最后编辑于2018-11-24">2018-11-24</span>
+                </p>
+                <p></p>
+            </div>
+            <h2 class="post-title">看雪FPC复现1</h2>
+            <div class="post-meta">
+                本文总共1145个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
             </div>
         </div>
+        <div class="post-content markdown-body">
+            <p>很长时间没有在这里记录Writeup了，这次这道题目实在太让我兴奋了。有感而记。</p>
+<p>拖进IDA；</p>
+<img src="/2018/11/24/看雪FPC复现/1.png" title="[]">
+<p>惊奇的发现，除了scanf之外，只需要两个函数就执行到了”Bad…..”；</p>
+<p>依次查看两个验证函数；</p>
+<p>1.sub_401080</p>
+<img src="/2018/11/24/看雪FPC复现/2.png" title="[]">
+<p> 会发现  a1与v2是恒等的，if 不会成立，也就是永远不会“YouGetIt”</p>
+<p>2.sub_4010D0</p>
+<img src="/2018/11/24/看雪FPC复现/3.png" title="[]">
+<p>同样的道理，这里也永远不会”Yougetit”</p>
+<p>困惑：这就很不正常了，就是说程序的正常执行流程下，永远不会pass；</p>
+<p>暗示，可能需要特殊的输入，改变程序的执行流程（栈溢出）</p>
+<p>拖进OD，在scanf入flag后通过观察栈，得知，12个字符恰好覆盖返回地址以上部分。</p>
+<img src="/2018/11/24/看雪FPC复现/4.png" title="[]">
+<p>那么，要把程序带到什么地方呢（用哪个地址来覆盖原来的返回地址）；<br>由于输入的全部是可打印字符，可以在IDA中手动查看可疑的地址字段。发现00413131，是一段很像花指令的东西。</p>
+<img src="/2018/11/24/看雪FPC复现/5.png" title="[]">
+<p>尝试一下，输入‘aaaabbbbcccc11A’;<br>惊奇的发现，程序执行了验证算法，（证实了思路）</p>
+<img src="/2018/11/24/看雪FPC复现/6.png" title="[]">
+<p>由于花指令的存在，我选择了动态调试<br>在OD中开启RUN TRACE,单步跟入调试(F8或者f7跟踪，遇到跳转，jz,jl   可以改变z标志位改变流程，继续跟踪）</p>
+<p>最后查看执行过的指令。</p>
+<img src="/2018/11/24/看雪FPC复现/7.png" title="[]">
+<p>拷贝下来，过滤得到有效的指令</p>
+<p>分析汇编代码：</p>
+<p>add esp,-0x10<br>xor eax,eax<br>mov dword ptr ds:[0x41B034],eax<br>pop eax<br>mov ecx,eax<br>pop eax<br>repne jae short 00413266<br>mov ebx,eax<br>pop eax<br>mov edx,eax<br>mov edx,eax<br>mov eax,ecx<br>sub eax,ebx<br>shl eax,0x2<br>add eax,ecx<br>add eax,edx<br>sub eax,0xEAF917E2</p>
+<p>对应的方程：</p>
+<p>(x-y0&lt;&lt;2 + x + z == 0xEAF917E2</p>
+<p>add eax,ecx<br>sub eax,ebx<br>mov ebx,eax<br>shl eax,1<br>add eax,ebx<br>add eax,ecx<br>mov ecx,eax<br>add eax,edx<br>sub eax,0xE8F508C8</p>
+<p>对应的方程：</p>
+<p>(x-y) &lt;&lt; 1 + (x-y) + x + z ==0XE8F508C8</p>
+<p>mov eax,ecx<br>mov eax,ecx<br>sub eax,edx<br>sub eax,0xC0A3C68</p>
+<p>对应的方程：</p>
+<p>(x-y) &lt;&lt; 1 + (x-y) + x  - z == 0xC0A3C68</p>
+<p>其实就是解三元方程组<br>用Z3求解器，或者在线求解<br>得到x,y,z,在加上’11A’就是flag</p>
+<h2 id="Just0For0Fun11A"><a href="#Just0For0Fun11A" class="headerlink" title="Just0For0Fun11A"></a>Just0For0Fun11A</h2>
+        </div>
+        <div class="post-tool">
+            <a class="btn-thumbs-up" href="javascript:void(0);" data-cid="52" title="95">
+                <i class="fa fa-thumbs-up" aria-hidden="true"></i> 打赏
+            </a>
+        </div>
+        
+        <div class="post-tags">标签：
+            
+        </div>
+        
     </article>
+    
+    <p>本文代表个人观点，内容仅供参考。若有不恰当之处，望不吝赐教！</p>
+    
+    
 </div>
+<script src="../../../../js/busuanzi.pure.mini.js"></script>
 
         </div><!-- end #main-->
     </div><!-- end #body -->
@@ -259,8 +253,8 @@
 
     </div>
 </footer>
-<script src="../../js/InsightSearch.js"></script>
-<script src="../../js/SimpleCore.js"></script>
+<script src="../../../../js/InsightSearch.js"></script>
+<script src="../../../../js/SimpleCore.js"></script>
 
 </div>
 <div class="fixed-btn">
