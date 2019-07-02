@@ -45,12 +45,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0,user-scalable=no">
 <meta http-equiv="mobile-agent" content="format=html5; url=http://yoursite.com">
 <meta name="author" content="treebacker">
-<link rel="stylesheet" href="../../css/SimpleStyle.min.css">
+<link rel="stylesheet" href="../../../../css/SimpleStyle.min.css">
 
-<link rel="shortcut icon" href="../../images/favicon.png">
+<link rel="shortcut icon" href="../../../../images/favicon.png">
 
 
-<title>标签 - pwn - Watch Security</title>
+<title>堆漏洞（三）之fastbin_attack - Watch Security</title>
 
 <meta name="keywords" content="Reverse, Security, New">
 
@@ -104,25 +104,25 @@
 </div>
             <div class="page-title">
     <ul>
-        <li class="">
-            <a href="/" data-name="最近文章">最近</a>
-        </li>
+        <li><a href="/">最新</a></li>
         
-        <li class="">
-            <a href="/categories/tech-notes" data-name="技术">技术</a>
-        </li>
-        
-        <li class="">
-            <a href="/categories/essays" data-name="随笔">随笔</a>
-        </li>
-        
-        <li class="">
-            <a href="/categories/cdcitizen-of-the-sun" data-name="海子">海子</a>
-        </li>
-        
-        <li class="">
-            <a href="/categories/others" data-name="其他">其他</a>
-        </li>
+            
+                <li class="active">
+                    <a href="/categories/tech-notes" data-name="技术">技术</a>
+                </li>
+            
+                <li class="">
+                    <a href="/categories/essays" data-name="随笔">随笔</a>
+                </li>
+            
+                <li class="">
+                    <a href="/categories/cdcitizen-of-the-sun" data-name="海子">海子</a>
+                </li>
+            
+                <li class="">
+                    <a href="/categories/others" data-name="其他">其他</a>
+                </li>
+            
         
         <li class="page-search">
     <form id="search" class="search-form">
@@ -153,7 +153,7 @@
             UNTITLED: '(无标题)',
         },
         ROOT_URL: '/',
-        CONTENT_URL: '../../content.json',
+        CONTENT_URL: '../../../../content.json',
     };
     window.INSIGHT_CONFIG = INSIGHT_CONFIG;
 })(window);
@@ -163,146 +163,43 @@
     </ul>
 </div>
 <div class="main-inner">
-    
-    
-    
-<article class="post">
-    
-    <div class="post-header">
-        <div class="post-meta">
-            <a href="" target="_blank">
-                <strong>Treebacker</strong>
+    <article class="post" itemscope="" itemtype="http://schema.org/BlogPosting">
+        <div class="post-header">
+            <div class="post-author clearfix">
+                <a class="avatar fleft" href="" target="_blank">
+                    <img width="48" src="/images/favicon.png" alt="avatar">
+                </a>
+                <p><span class="label">作者</span>
+                    <a href="" target="_blank">Treebacker</a>
+                    <span title="最后编辑于2019-04-20">2019-04-20</span>
+                </p>
+                <p></p>
+            </div>
+            <h2 class="post-title">堆漏洞（三）之Fastbin_Attack</h2>
+            <div class="post-meta">
+                本文总共0个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
+            </div>
+        </div>
+        <div class="post-content markdown-body">
+            
+        </div>
+        <div class="post-tool">
+            <a class="btn-thumbs-up" href="javascript:void(0);" data-cid="52" title="95">
+                <i class="fa fa-thumbs-up" aria-hidden="true"></i> 打赏
             </a>
-            <em>·</em>2019-04-20
         </div>
-        <a class="post-title" href="../../2019/04/20/堆漏洞（二）之UAF/" target="_blank" title="堆漏洞（二）之UAF">堆漏洞（二）之UAF</a>
-        <div class="post-meta">
-            <a href="/tags" target="_blank"><i class="fa fa-tags"></i></a>
-            
-                <em>·</em>
-                <a href="http://yoursite.com/tags/pwn/" target="_blank">pwn</a>
+        
+        <div class="post-tags">标签：
             
         </div>
-    </div>
-    <div class="post-desc">
-        堆漏洞（二）之UAF
-    </div>
-</article>
-
-
-
+        
+    </article>
     
+    <p>本文代表个人观点，内容仅供参考。若有不恰当之处，望不吝赐教！</p>
     
-<article class="post">
-    
-    <div class="post-header">
-        <div class="post-meta">
-            <a href="" target="_blank">
-                <strong>Treebacker</strong>
-            </a>
-            <em>·</em>2019-04-03
-        </div>
-        <a class="post-title" href="../../2019/04/03/off-by-one利用/" target="_blank" title="off_by_one利用">off_by_one利用</a>
-        <div class="post-meta">
-            <a href="/tags" target="_blank"><i class="fa fa-tags"></i></a>
-            
-                <em>·</em>
-                <a href="http://yoursite.com/tags/pwn/" target="_blank">pwn</a>
-            
-        </div>
-    </div>
-    <div class="post-desc">
-        off_by_one利用
-    </div>
-</article>
-
-
-
-    
-    
-<article class="post">
-    
-    <div class="post-header">
-        <div class="post-meta">
-            <a href="" target="_blank">
-                <strong>Treebacker</strong>
-            </a>
-            <em>·</em>2019-03-29
-        </div>
-        <a class="post-title" href="../../2019/03/29/整数溢出-数组越界利用/" target="_blank" title="整数溢出+数组越界利用">整数溢出+数组越界利用</a>
-        <div class="post-meta">
-            <a href="/tags" target="_blank"><i class="fa fa-tags"></i></a>
-            
-                <em>·</em>
-                <a href="http://yoursite.com/tags/pwn/" target="_blank">pwn</a>
-            
-        </div>
-    </div>
-    <div class="post-desc">
-        整数溢出+数组越界利用
-    </div>
-</article>
-
-
-
-    
-    
-<article class="post">
-    
-    <div class="post-header">
-        <div class="post-meta">
-            <a href="" target="_blank">
-                <strong>Treebacker</strong>
-            </a>
-            <em>·</em>2019-03-28
-        </div>
-        <a class="post-title" href="../../2019/03/28/ROP-emporium-WP/" target="_blank" title="ROP_emporium_WP">ROP_emporium_WP</a>
-        <div class="post-meta">
-            <a href="/tags" target="_blank"><i class="fa fa-tags"></i></a>
-            
-                <em>·</em>
-                <a href="http://yoursite.com/tags/pwn/" target="_blank">pwn</a>
-            
-        </div>
-    </div>
-    <div class="post-desc">
-        ROP_emporium_WP
-    </div>
-</article>
-
-
-
-    
-    
-<article class="post">
-    
-    <div class="post-header">
-        <div class="post-meta">
-            <a href="" target="_blank">
-                <strong>Treebacker</strong>
-            </a>
-            <em>·</em>2018-11-28
-        </div>
-        <a class="post-title" href="../../2018/11/28/pwn之shellcode变形/" target="_blank" title="pwn之shellcode变形">pwn之shellcode变形</a>
-        <div class="post-meta">
-            <a href="/tags" target="_blank"><i class="fa fa-tags"></i></a>
-            
-                <em>·</em>
-                <a href="http://yoursite.com/tags/pwn/" target="_blank">pwn</a>
-            
-        </div>
-    </div>
-    <div class="post-desc">
-        pwn之shellcode变形
-    </div>
-</article>
-
-
-
     
 </div>
-<!-- 分页开始 -->
-
+<script src="../../../../js/busuanzi.pure.mini.js"></script>
 
         </div><!-- end #main-->
     </div><!-- end #body -->
@@ -325,8 +222,8 @@
 
     </div>
 </footer>
-<script src="../../js/InsightSearch.js"></script>
-<script src="../../js/SimpleCore.js"></script>
+<script src="../../../../js/InsightSearch.js"></script>
+<script src="../../../../js/SimpleCore.js"></script>
 
 </div>
 <div class="fixed-btn">

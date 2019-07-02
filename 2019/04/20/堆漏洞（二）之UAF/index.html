@@ -45,14 +45,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0,user-scalable=no">
 <meta http-equiv="mobile-agent" content="format=html5; url=http://yoursite.com">
 <meta name="author" content="treebacker">
-<link rel="stylesheet" href="../../css/SimpleStyle.min.css">
+<link rel="stylesheet" href="../../../../css/SimpleStyle.min.css">
 
-<link rel="shortcut icon" href="../../images/favicon.png">
+<link rel="shortcut icon" href="../../../../images/favicon.png">
 
 
-<title>标签 - pwn - Watch Security</title>
+<title>堆漏洞（二）之uaf - Watch Security</title>
 
-<meta name="keywords" content="Reverse, Security, New">
+<meta name="keywords" content="pwn heap">
 
 <meta name="description " content="">
 
@@ -104,25 +104,25 @@
 </div>
             <div class="page-title">
     <ul>
-        <li class="">
-            <a href="/" data-name="最近文章">最近</a>
-        </li>
+        <li><a href="/">最新</a></li>
         
-        <li class="">
-            <a href="/categories/tech-notes" data-name="技术">技术</a>
-        </li>
-        
-        <li class="">
-            <a href="/categories/essays" data-name="随笔">随笔</a>
-        </li>
-        
-        <li class="">
-            <a href="/categories/cdcitizen-of-the-sun" data-name="海子">海子</a>
-        </li>
-        
-        <li class="">
-            <a href="/categories/others" data-name="其他">其他</a>
-        </li>
+            
+                <li class="active">
+                    <a href="/categories/tech-notes" data-name="技术">技术</a>
+                </li>
+            
+                <li class="">
+                    <a href="/categories/essays" data-name="随笔">随笔</a>
+                </li>
+            
+                <li class="">
+                    <a href="/categories/cdcitizen-of-the-sun" data-name="海子">海子</a>
+                </li>
+            
+                <li class="">
+                    <a href="/categories/others" data-name="其他">其他</a>
+                </li>
+            
         
         <li class="page-search">
     <form id="search" class="search-form">
@@ -153,7 +153,7 @@
             UNTITLED: '(无标题)',
         },
         ROOT_URL: '/',
-        CONTENT_URL: '../../content.json',
+        CONTENT_URL: '../../../../content.json',
     };
     window.INSIGHT_CONFIG = INSIGHT_CONFIG;
 })(window);
@@ -163,146 +163,49 @@
     </ul>
 </div>
 <div class="main-inner">
-    
-    
-    
-<article class="post">
-    
-    <div class="post-header">
-        <div class="post-meta">
-            <a href="" target="_blank">
-                <strong>Treebacker</strong>
+    <article class="post" itemscope="" itemtype="http://schema.org/BlogPosting">
+        <div class="post-header">
+            <div class="post-author clearfix">
+                <a class="avatar fleft" href="" target="_blank">
+                    <img width="48" src="/images/favicon.png" alt="avatar">
+                </a>
+                <p><span class="label">作者</span>
+                    <a href="" target="_blank">Treebacker</a>
+                    <span title="最后编辑于2019-04-20">2019-04-20</span>
+                </p>
+                <p></p>
+            </div>
+            <h2 class="post-title">堆漏洞（二）之UAF</h2>
+            <div class="post-meta">
+                本文总共572个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
+            </div>
+        </div>
+        <div class="post-content markdown-body">
+            <h3 id="写在前面"><a href="#写在前面" class="headerlink" title="写在前面"></a>写在前面</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*堆分配因为其灵活性、不固定性、受用户输入的影响更大（包括何时请求分配、堆的大小，何时释放），尽管内存分配系统(例如ptmalloc)已经对很多操作进行了安全监测，但仍然有很多可利用的漏洞。*/</span></span><br></pre></td></tr></table></figure>
+<h3 id="Use-After-Free的真面目"><a href="#Use-After-Free的真面目" class="headerlink" title="Use After Free的真面目"></a>Use After Free的真面目</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">尽管英文水平有限，但也能从字面看出来其实就是在程序中使用了一个已经<span class="built_in">free</span>的堆块。一般来说<span class="built_in">free</span>之后会有三种情况（ 以<span class="built_in">free</span>(ptr)为例 ）：</span><br><span class="line">a. 将指针置空即 ptr = null。这时ptr指针是不可用的</span><br><span class="line">b. 不会对prt置空，也不会对ptr指向的内存区域做更改，那么很可能可以重新使用ptr进行相同的操作。</span><br><span class="line">c. 不会对ptr置空，但是会对ptr指向的内存区域进行重写等更改操作，使得ptr可以做一些有意思的事情。</span><br></pre></td></tr></table></figure>
+<p>​    显然，我们能够利用的就是b、c这两种情况。</p>
+<p>UAF利用自己的一点思考：<br>a.    利用的基础是malloc分配得到的缓冲区的数据结构的特殊性，比如存在一个函数指针，<br>b.    利用的漏洞是由于free操作并不会完全改变缓冲区的内容，所以一个未被置null的结构体指针，仍然可以用来进行操作<br>c.    基本的思路是构造chunk，它们的大小要自己控制，使得我们能知道下一次的malloc操作的内存位置。<br>d.    通常对函数指针进行覆写，指向我们需要的函数</p>
+
+        </div>
+        <div class="post-tool">
+            <a class="btn-thumbs-up" href="javascript:void(0);" data-cid="52" title="95">
+                <i class="fa fa-thumbs-up" aria-hidden="true"></i> 打赏
             </a>
-            <em>·</em>2019-04-20
         </div>
-        <a class="post-title" href="../../2019/04/20/堆漏洞（二）之UAF/" target="_blank" title="堆漏洞（二）之UAF">堆漏洞（二）之UAF</a>
-        <div class="post-meta">
-            <a href="/tags" target="_blank"><i class="fa fa-tags"></i></a>
+        
+        <div class="post-tags">标签：
             
-                <em>·</em>
-                <a href="http://yoursite.com/tags/pwn/" target="_blank">pwn</a>
+            <a href="../../../../tags/pwn/">pwn</a>
             
         </div>
-    </div>
-    <div class="post-desc">
-        堆漏洞（二）之UAF
-    </div>
-</article>
-
-
-
+        
+    </article>
     
+    <p>本文代表个人观点，内容仅供参考。若有不恰当之处，望不吝赐教！</p>
     
-<article class="post">
-    
-    <div class="post-header">
-        <div class="post-meta">
-            <a href="" target="_blank">
-                <strong>Treebacker</strong>
-            </a>
-            <em>·</em>2019-04-03
-        </div>
-        <a class="post-title" href="../../2019/04/03/off-by-one利用/" target="_blank" title="off_by_one利用">off_by_one利用</a>
-        <div class="post-meta">
-            <a href="/tags" target="_blank"><i class="fa fa-tags"></i></a>
-            
-                <em>·</em>
-                <a href="http://yoursite.com/tags/pwn/" target="_blank">pwn</a>
-            
-        </div>
-    </div>
-    <div class="post-desc">
-        off_by_one利用
-    </div>
-</article>
-
-
-
-    
-    
-<article class="post">
-    
-    <div class="post-header">
-        <div class="post-meta">
-            <a href="" target="_blank">
-                <strong>Treebacker</strong>
-            </a>
-            <em>·</em>2019-03-29
-        </div>
-        <a class="post-title" href="../../2019/03/29/整数溢出-数组越界利用/" target="_blank" title="整数溢出+数组越界利用">整数溢出+数组越界利用</a>
-        <div class="post-meta">
-            <a href="/tags" target="_blank"><i class="fa fa-tags"></i></a>
-            
-                <em>·</em>
-                <a href="http://yoursite.com/tags/pwn/" target="_blank">pwn</a>
-            
-        </div>
-    </div>
-    <div class="post-desc">
-        整数溢出+数组越界利用
-    </div>
-</article>
-
-
-
-    
-    
-<article class="post">
-    
-    <div class="post-header">
-        <div class="post-meta">
-            <a href="" target="_blank">
-                <strong>Treebacker</strong>
-            </a>
-            <em>·</em>2019-03-28
-        </div>
-        <a class="post-title" href="../../2019/03/28/ROP-emporium-WP/" target="_blank" title="ROP_emporium_WP">ROP_emporium_WP</a>
-        <div class="post-meta">
-            <a href="/tags" target="_blank"><i class="fa fa-tags"></i></a>
-            
-                <em>·</em>
-                <a href="http://yoursite.com/tags/pwn/" target="_blank">pwn</a>
-            
-        </div>
-    </div>
-    <div class="post-desc">
-        ROP_emporium_WP
-    </div>
-</article>
-
-
-
-    
-    
-<article class="post">
-    
-    <div class="post-header">
-        <div class="post-meta">
-            <a href="" target="_blank">
-                <strong>Treebacker</strong>
-            </a>
-            <em>·</em>2018-11-28
-        </div>
-        <a class="post-title" href="../../2018/11/28/pwn之shellcode变形/" target="_blank" title="pwn之shellcode变形">pwn之shellcode变形</a>
-        <div class="post-meta">
-            <a href="/tags" target="_blank"><i class="fa fa-tags"></i></a>
-            
-                <em>·</em>
-                <a href="http://yoursite.com/tags/pwn/" target="_blank">pwn</a>
-            
-        </div>
-    </div>
-    <div class="post-desc">
-        pwn之shellcode变形
-    </div>
-</article>
-
-
-
     
 </div>
-<!-- 分页开始 -->
-
+<script src="../../../../js/busuanzi.pure.mini.js"></script>
 
         </div><!-- end #main-->
     </div><!-- end #body -->
@@ -325,8 +228,8 @@
 
     </div>
 </footer>
-<script src="../../js/InsightSearch.js"></script>
-<script src="../../js/SimpleCore.js"></script>
+<script src="../../../../js/InsightSearch.js"></script>
+<script src="../../../../js/SimpleCore.js"></script>
 
 </div>
 <div class="fixed-btn">
