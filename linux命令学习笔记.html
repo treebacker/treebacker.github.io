@@ -45,12 +45,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0,user-scalable=no">
 <meta http-equiv="mobile-agent" content="format=html5; url=http://yoursite.com">
 <meta name="author" content="treebacker">
-<link rel="stylesheet" href="../../../../css/SimpleStyle.min.css">
+<link rel="stylesheet" href="/css/SimpleStyle.min.css">
 
-<link rel="shortcut icon" href="../../../../images/favicon.png">
+<link rel="shortcut icon" href="/images/favicon.png">
 
 
-<title>堆漏洞（三）之fastbin_attack - Watch Security</title>
+<title>Watch Security</title>
 
 <meta name="keywords" content="Reverse, Security, New">
 
@@ -104,26 +104,7 @@
 </div>
             <div class="page-title">
     <ul>
-        <li><a href="/">最新</a></li>
-        
-            
-                <li class="active">
-                    <a href="/categories/tech-notes" data-name="技术">技术</a>
-                </li>
-            
-                <li class="">
-                    <a href="/categories/essays" data-name="随笔">随笔</a>
-                </li>
-            
-                <li class="">
-                    <a href="/categories/cdcitizen-of-the-sun" data-name="海子">海子</a>
-                </li>
-            
-                <li class="">
-                    <a href="/categories/others" data-name="其他">其他</a>
-                </li>
-            
-        
+        <li><a href="/">最近文章</a></li>
         <li class="page-search">
     <form id="search" class="search-form">
         <label for="s" class="sr-only">请输入关键字</label>
@@ -153,7 +134,7 @@
             UNTITLED: '(无标题)',
         },
         ROOT_URL: '/',
-        CONTENT_URL: '../../../../content.json',
+        CONTENT_URL: 'content.json',
     };
     window.INSIGHT_CONFIG = INSIGHT_CONFIG;
 })(window);
@@ -167,34 +148,83 @@
         <div class="post-header">
             <div class="post-author clearfix">
                 <a class="avatar fleft" href="" target="_blank">
-                    <img width="48" src="/images/favicon.png" alt="avatar">
+                    <img width="48" src="" alt="avatar">
                 </a>
                 <p><span class="label">作者</span>
-                    <a href="" target="_blank">Treebacker</a>
-                    <span title="最后编辑于2019-04-20">2019-04-20</span>
+                    <a href="" target="_blank"></a>
+                    <span title="最后编辑于2019-07-20">2019-07-20</span>
                 </p>
                 <p></p>
             </div>
-            <h2 class="post-title">堆漏洞（三）之Fastbin_Attack</h2>
+            <h2 class="post-title"></h2>
             <div class="post-meta">
-                本文总共273个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
+                本文总共806个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
             </div>
         </div>
         <div class="post-content markdown-body">
-            <h4 id="Use-after-free"><a href="#Use-after-free" class="headerlink" title="Use after free"></a>Use after free</h4><ul>
+            <h3 id="Linux命令学习笔记"><a href="#Linux命令学习笔记" class="headerlink" title="Linux命令学习笔记"></a>Linux命令学习笔记</h3><h4 id="第一天——Cat"><a href="#第一天——Cat" class="headerlink" title="第一天——Cat"></a>第一天——Cat</h4><ul>
+<li>cat读取文件（一个或者多个），将文件内容拼接在一起并将结果发送到stdout<ul>
+<li>cat file1   file2   file3……</li>
+</ul>
+</li>
+<li>管道操作符结合<ul>
+<li>output_from_commands | cat</li>
+<li>echo “treebacker” | cat - file.txt<ul>
+<li>将stdin和文件内容拼接输出</li>
+<li>这里的 - 作为stdin的文本文件名</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>去掉多余的空白行<ul>
+<li>cat -s file</li>
+</ul>
+</li>
+<li>输出行号<ul>
+<li>cat -n file</li>
+</ul>
+</li>
+<li>不可以用重定向来覆盖输入文件，下所示是错误的<ul>
+<li>cat -n filename &gt; filename</li>
+</ul>
+</li>
+<li>使用管道重定向到输入文件会清空输入文件<ul>
+<li>cat -n filename | cat &gt; filename</li>
+</ul>
+</li>
+<li>同样的 &gt; 覆盖文件， &gt;&gt;续写文件也适用于cat<ul>
+<li>cat &gt; file            （如果不存在file，就新生成文件file）</li>
+<li>cat &gt;&gt; file                </li>
+</ul>
+</li>
+</ul>
+<h4 id="第二天——Find"><a href="#第二天——Find" class="headerlink" title="第二天——Find"></a>第二天——Find</h4><ul>
+<li>从指定位置找所有文件以及子目录<ul>
+<li>find base_path  -print<ul>
+<li>base_path可以是任意位置，find从该位置往下查找</li>
+<li>-print   选项以\n分割输出</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>基于文件名的通配符或正则表达式进行搜索<ul>
+<li>find base_path -name ‘*.txt’  -print<ul>
+<li>-iname   忽略大小写</li>
+<li>支持逻辑操作 -a -o（and 和or）</li>
+</ul>
+</li>
+<li>find base_path -regex ‘.*(.py|.sh)$’<ul>
+<li>-regex即正则表达式</li>
+<li>-iregex可以在匹配时忽略大小写</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>否定参数（在匹配调价前加上”!”）<ul>
+<li>find base_path ! -name “*.txt” -print</li>
+</ul>
+</li>
 <li></li>
-</ul>
-<h4 id="Double-free"><a href="#Double-free" class="headerlink" title="Double free"></a>Double free</h4><h4 id="House-of-spirit"><a href="#House-of-spirit" class="headerlink" title="House of spirit"></a>House of spirit</h4><ul>
-<li>控制待分配地址上下区域字段，达到满足free后进入fasbin的条件。</li>
-<li>先free目标地址，再次malloc时即得到</li>
-</ul>
-<h4 id="Alloc-to-stack"><a href="#Alloc-to-stack" class="headerlink" title="Alloc to stack"></a>Alloc to stack</h4><ul>
-<li>将一个已经free的chunk的fd指针指向栈上的地址（size区域合法）</li>
-<li>malloc两次即可在第二次得到指向该栈地址的chunk</li>
-</ul>
-<h4 id="Arbirary-alloc"><a href="#Arbirary-alloc" class="headerlink" title="Arbirary alloc"></a>Arbirary alloc</h4><ul>
-<li>即只要满足size字段要求的都可以malloc（是alloc to stack 的一般形式）</li>
-<li>通过使用字节错位等方法绕过，使用的会更频繁。</li>
 </ul>
 
         </div>
@@ -204,17 +234,11 @@
             </a>
         </div>
         
-        <div class="post-tags">标签：
-            
-        </div>
-        
     </article>
-    
-    <p>本文代表个人观点，内容仅供参考。若有不恰当之处，望不吝赐教！</p>
     
     
 </div>
-<script src="../../../../js/busuanzi.pure.mini.js"></script>
+<script src="js/busuanzi.pure.mini.js"></script>
 
         </div><!-- end #main-->
     </div><!-- end #body -->
@@ -237,8 +261,8 @@
 
     </div>
 </footer>
-<script src="../../../../js/InsightSearch.js"></script>
-<script src="../../../../js/SimpleCore.js"></script>
+<script src="js/InsightSearch.js"></script>
+<script src="js/SimpleCore.js"></script>
 
 </div>
 <div class="fixed-btn">
