@@ -161,7 +161,7 @@
             </div>
             <h2 class="post-title"></h2>
             <div class="post-meta">
-                本文总共2990个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
+                本文总共4511个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
             </div>
         </div>
         <div class="post-content markdown-body">
@@ -202,6 +202,7 @@
 </ul>
 </li>
 <li><h5 id="模拟管理器（Simulation-Managers）"><a href="#模拟管理器（Simulation-Managers）" class="headerlink" title="模拟管理器（Simulation Managers）"></a>模拟管理器（Simulation Managers）</h5><ul>
+<li>simgr = project.factory.simgr(state, veritesting)</li>
 <li>为了尝试多种路径，能够保存原来的状态，使用manager，可以在manager中模拟执行；而不会影响state</li>
 <li>可以针对某一个状态单独前进.step()，也可以查看分支的数目len(.active)，也可以执行到结束.run()</li>
 <li>可以将多个状态组在一起成一个stash，每个stash都是一个state列表</li>
@@ -271,6 +272,11 @@
 <li>.call_state(addr, arg1, arg2, arg3, ……)，指针需要angr.PointerWrapper()包装</li>
 </ul>
 </li>
+<li>状态保存<ul>
+<li>state.copy()可将此刻的状态copy一份副本，对副本做一些“试探性”、”假设性“的操作。而不会影响到原state</li>
+<li></li>
+</ul>
+</li>
 </ul>
 </li>
 <li></li>
@@ -294,13 +300,17 @@
 </li>
 <li><p>调用.step()实际上，在angr实现上，会按照一定的规则，依次遍历可用的引擎来处理状态运行，将结果保存在SimSuccessors中</p>
 <ul>
-<li>successors的类型<ul>
+<li><p>successors的类型</p>
+<ul>
 <li>successors    满足条件的状态</li>
 <li>unsat_successors    不满足约束的状态（永远不会成立）</li>
 <li>flat_successors    满足条件的状态且经过处理（扁平化，确定化，具体化：可能的值的数目在256下）</li>
 <li>unconstrained_successors   满足条件的状态，但是不受约束，或者可能的值的数目在256以上</li>
 <li>all_successors    以上1, 2, 4种状态的合集</li>
 </ul>
+</li>
+<li><p>循环渐进，逐步搜索（将unconstrained移至found，再加约束判断）</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">while</span> (simgr.active <span class="keyword">or</span> simgr.unconstrained) <span class="keyword">and</span> (<span class="keyword">not</span> simgr.found):</span><br><span class="line">	<span class="keyword">for</span> unconstrained <span class="keyword">in</span> simgr.unconstrained:</span><br><span class="line">		<span class="function"><span class="keyword">def</span> <span class="title">move_to_found</span><span class="params">(s)</span>:</span></span><br><span class="line">			<span class="keyword">return</span> s <span class="keyword">is</span> unconstrained  						<span class="comment">#always true</span></span><br><span class="line"></span><br><span class="line">		simgr.move(<span class="string">'unconstrained'</span>, <span class="string">'found'</span>, filter_func = move_to_found)</span><br><span class="line"></span><br><span class="line">	simgr.step()										<span class="comment">#take a step forward</span></span><br></pre></td></tr></table></figure>
 </li>
 </ul>
 </li>
@@ -325,9 +335,22 @@
 </ul>
 <h4 id="常用操作"><a href="#常用操作" class="headerlink" title="常用操作"></a>常用操作</h4><ul>
 <li><h5 id="explore"><a href="#explore" class="headerlink" title="explore"></a>explore</h5><ul>
-<li>simgr.explore(find, avoid)<ul>
+<li><p>simgr.explore(find, avoid)</p>
+<ul>
 <li>当正确路径与错误路径分支明显（都集中在一个或几个），可以直接罗列地址，find与avoid分别为正确分支地址与错误分支地址</li>
 <li>反之，如果分支相对混淆交叉，则可利用stdout输出的差异，利用回调函数进行判断，即find_condition  &amp;   avoid_condition</li>
+</ul>
+</li>
+<li><p>explore.techology也即搜索分支的方法，DFS，……</p>
+</li>
+<li><p>约束条件</p>
+<ul>
+<li><p>向状态添加约束</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">state.add_constraints(expr)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>合并约束，判断状态可行否</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">state.satisfiable(extra_constraints=(条件1,条件2)) =&gt; 合并多个条件计算是否存在满足约束的解(注意两个或多个条件之间是And 合并判断,不是Or )</span><br></pre></td></tr></table></figure>
+</li>
 </ul>
 </li>
 </ul>
@@ -337,7 +360,39 @@
 <li><h5 id="Symbolic-args"><a href="#Symbolic-args" class="headerlink" title="Symbolic args"></a>Symbolic args</h5></li>
 <li><h5 id="Symbolic-input"><a href="#Symbolic-input" class="headerlink" title="Symbolic input"></a>Symbolic input</h5></li>
 <li><h5 id="Breakpoint"><a href="#Breakpoint" class="headerlink" title="Breakpoint"></a>Breakpoint</h5></li>
-<li><h5 id="Hook"><a href="#Hook" class="headerlink" title="Hook"></a>Hook</h5></li>
+<li><h5 id="Hook"><a href="#Hook" class="headerlink" title="Hook"></a>Hook</h5><ul>
+<li><p>Hook的本质是将指定位置、指定长度的代码指令替换为执行我们制定的Hook函数</p>
+</li>
+<li><p>Hook的常用形式——Hook某一地址</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@project.hook(hook_addr, 	hook_toSkip_length)</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">hookFunc</span><span class="params">(state)</span>:</span></span><br><span class="line">	claripy.If(condition,   todo_then,   todo_else )以<span class="keyword">if</span>……then……<span class="keyword">else</span>的形式</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>Hook的常用形式——Hook某一函数（symbol）</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">replaceFunc</span><span class="params">(angr.SimProcedure)</span>:</span></span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">run</span><span class="params">(self, argv1, argv2, ……)</span>:</span></span><br><span class="line">		do anything</span><br><span class="line">Func = <span class="string">"functionName"</span></span><br><span class="line">project.hook_symbol(Func, replaceFunc)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>以上二者区别应用，当对某一函数的调用集中于一个地址的call时，用前者；当分别调用时，不适合hook  call指令的地址，相反，hook该函数更好；hook函数时，我们可以在run函数中获得函数的参数。</p>
+</li>
+<li><p>总之，尽可能使得更少的hook作用到更多的分支</p>
+</li>
+<li><p>Hook库函数——重定向（尤其在静态编译链接的程序中）</p>
+<ul>
+<li>angr为我们提供了一部分的libc的库函数的hook实现</li>
+</ul>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">angr.SIM_PROCEDURES[ 系统库名 ] [ 系统函数名 ] () =&gt; 获取Angr 内部实现的系统函数</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>例如，hook程序中的printf函数</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">project.hook_symbol(<span class="string">"printf"</span>, angr.SIM_PROCEDURES[<span class="string">'libc'</span>][<span class="string">'printf'</span>]())</span><br><span class="line">或者</span><br><span class="line">project.hook(printf_addr, angr.SIM_PROCEDURES[<span class="string">'libc'</span>][<span class="string">'printf'</span>]())</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="实际使用"><a href="#实际使用" class="headerlink" title="实际使用"></a>实际使用</h4><ul>
+<li>hackme的what-the-hell<ul>
+<li>基本思路，hook两个函数check_prime和what</li>
+<li>之后就遍历分支</li>
+</ul>
+</li>
 </ul>
 
         </div>

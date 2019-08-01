@@ -45,12 +45,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0,user-scalable=no">
 <meta http-equiv="mobile-agent" content="format=html5; url=http://yoursite.com">
 <meta name="author" content="treebacker">
-<link rel="stylesheet" href="../../css/SimpleStyle.min.css">
+<link rel="stylesheet" href="/css/SimpleStyle.min.css">
 
-<link rel="shortcut icon" href="../../images/favicon.png">
+<link rel="shortcut icon" href="/images/favicon.png">
 
 
-<title>Watch Security - 且行且乐</title>
+<title>Watch Security</title>
 
 <meta name="keywords" content="Reverse, Security, New">
 
@@ -104,26 +104,7 @@
 </div>
             <div class="page-title">
     <ul>
-        <li class="active">
-            <a href="/" data-name="最近文章">最近</a>
-        </li>
-        
-        <li class="">
-            <a href="/categories/tech-notes" data-name="技术">技术</a>
-        </li>
-        
-        <li class="">
-            <a href="/categories/essays" data-name="随笔">随笔</a>
-        </li>
-        
-        <li class="">
-            <a href="/categories/cdcitizen-of-the-sun" data-name="海子">海子</a>
-        </li>
-        
-        <li class="">
-            <a href="/categories/others" data-name="其他">其他</a>
-        </li>
-        
+        <li><a href="/">最近文章</a></li>
         <li class="page-search">
     <form id="search" class="search-form">
         <label for="s" class="sr-only">请输入关键字</label>
@@ -153,7 +134,7 @@
             UNTITLED: '(无标题)',
         },
         ROOT_URL: '/',
-        CONTENT_URL: '../../content.json',
+        CONTENT_URL: 'content.json',
     };
     window.INSIGHT_CONFIG = INSIGHT_CONFIG;
 })(window);
@@ -163,216 +144,120 @@
     </ul>
 </div>
 <div class="main-inner">
-    
-    <!-- 首页默认取最最新文章集 -->
-    
-    
-<article class="post">
-    
-    <div class="post-header">
-        <div class="post-meta">
-            <a href="" target="_blank">
-                <strong>Treebacker</strong>
+    <article class="post" itemscope="" itemtype="http://schema.org/BlogPosting">
+        <div class="post-header">
+            <div class="post-author clearfix">
+                <a class="avatar fleft" href="" target="_blank">
+                    <img width="48" src="" alt="avatar">
+                </a>
+                <p><span class="label">作者</span>
+                    <a href="" target="_blank"></a>
+                    <span title="最后编辑于2019-08-01">2019-08-01</span>
+                </p>
+                <p></p>
+            </div>
+            <h2 class="post-title"></h2>
+            <div class="post-meta">
+                本文总共407个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
+            </div>
+        </div>
+        <div class="post-content markdown-body">
+            <h3 id="arm混淆编译器"><a href="#arm混淆编译器" class="headerlink" title="arm混淆编译器"></a>arm混淆编译器</h3><h4 id="功能浏览"><a href="#功能浏览" class="headerlink" title="功能浏览"></a>功能浏览</h4><ul>
+<li>多种混淆，允许用户自定义；满足不同应用场合的需求<ul>
+<li>虚假控制流</li>
+<li>字符串加密</li>
+<li>控制流平坦化</li>
+<li>运算恒等变换</li>
+<li>分裂基本块</li>
+<li>指定函数混淆</li>
+</ul>
+</li>
+<li>部署简便</li>
+</ul>
+<h4 id="功能详情"><a href="#功能详情" class="headerlink" title="功能详情"></a>功能详情</h4><ul>
+<li><p>虚假控制流</p>
+<ul>
+<li><p>三级参数</p>
+<p><img src="F:\blog\source\secadd\arm-1i.png" alt=""></p>
+</li>
+<li><p>一种程序的同一功能，可以展示为不同的程序走向（路径）</p>
+</li>
+<li><p>未加固前</p>
+<p><img src="F:\blog\source\secadd\arm-10.png" alt=""></p>
+</li>
+<li><p>加固后</p>
+<p><img src="F:\blog\source\secadd\arm-11.png" alt=""></p>
+</li>
+</ul>
+</li>
+<li><p>字符串加密</p>
+<ul>
+<li><p>二级参数</p>
+<p><img src="F:\blog\source\secadd\arm-2i.png" alt=""></p>
+</li>
+<li><p>众多程序的突破口就在关键字符串的泄露，保护数据的机密性；</p>
+</li>
+<li><p>加固前</p>
+<p><img src="F:\blog\source\secadd\arm-20.png" alt=""></p>
+</li>
+<li><p>加固后</p>
+<p><img src="F:\blog\source\secadd\arm-21.png" alt=""></p>
+</li>
+</ul>
+</li>
+<li><p>控制流平坦化</p>
+<ul>
+<li><p>类似于实现自定义的规则，自解释命令，分发器</p>
+</li>
+<li><p>加固后</p>
+<p><img src="F:\blog\source\secadd\arm-31.png" alt=""></p>
+</li>
+</ul>
+</li>
+<li><p>运算恒等变换</p>
+<ul>
+<li><p>通过有限的指令集，理论上可以进行无限的变换；具有迷惑性</p>
+</li>
+<li><p>加固前</p>
+<p><img src="F:\blog\source\secadd\arm-40.png" alt=""></p>
+</li>
+<li><p>加固后</p>
+<p><img src="F:\blog\source\secadd\arm-41.png" alt=""></p>
+</li>
+</ul>
+</li>
+<li><p>分裂基本块</p>
+<ul>
+<li><p>基本块的布局是，对一个熟练的逆向工程师的作用是很显然的；模糊、打乱这种布局，加固的效果可观</p>
+</li>
+<li><p>加固后</p>
+</li>
+</ul>
+</li>
+<li><p>指定函数混淆</p>
+<ul>
+<li><p>对于重要的（实现高效算法、加解密，通信、、、）的函数进行指定混淆</p>
+</li>
+<li><p>使用</p>
+<p><img src="F:\blog\source\secadd\arm-6i.png" alt=""></p>
+<p><img src="C:\WINDOWS\TEMP\1564638837414.png" alt="1564638837414"></p>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+        <div class="post-tool">
+            <a class="btn-thumbs-up" href="javascript:void(0);" data-cid="52" title="95">
+                <i class="fa fa-thumbs-up" aria-hidden="true"></i> 打赏
             </a>
-            <em>·</em>2018-11-24
         </div>
-        <a class="post-title" href="../../2018/11/24/快速幂总结拓展/" target="_blank" title="快速幂总结拓展">快速幂总结拓展</a>
-        <div class="post-meta">
-            <a href="/tags" target="_blank"><i class="fa fa-tags"></i></a>
-            
-        </div>
-    </div>
-    <div class="post-desc">
-        快速幂总结拓展
-    </div>
-</article>
-
-
-
-    
-    
-<article class="post">
-    
-    <div class="post-header">
-        <div class="post-meta">
-            <a href="" target="_blank">
-                <strong>Treebacker</strong>
-            </a>
-            <em>·</em>2018-11-24
-        </div>
-        <a class="post-title" href="../../2018/11/24/看雪FPC复现/" target="_blank" title="看雪FPC复现">看雪FPC复现</a>
-        <div class="post-meta">
-            <a href="/tags" target="_blank"><i class="fa fa-tags"></i></a>
-            
-        </div>
-    </div>
-    <div class="post-desc">
-        看雪FPC复现
-    </div>
-</article>
-
-
-
-    
-    
-<article class="post">
-    
-    <div class="post-header">
-        <div class="post-meta">
-            <a href="" target="_blank">
-                <strong>Treebacker</strong>
-            </a>
-            <em>·</em>2018-11-24
-        </div>
-        <a class="post-title" href="../../2018/11/24/锋芒不漏/" target="_blank" title="锋芒不漏">锋芒不漏</a>
-        <div class="post-meta">
-            <a href="/tags" target="_blank"><i class="fa fa-tags"></i></a>
-            
-        </div>
-    </div>
-    <div class="post-desc">
-        锋芒不漏
-    </div>
-</article>
-
-
-
-    
-    
-<article class="post">
-    
-    <div class="post-header">
-        <div class="post-meta">
-            <a href="" target="_blank">
-                <strong>Treebacker</strong>
-            </a>
-            <em>·</em>2018-11-24
-        </div>
-        <a class="post-title" href="../../2018/11/24/ROP专项总结/" target="_blank" title="ROP专项总结">ROP专项总结</a>
-        <div class="post-meta">
-            <a href="/tags" target="_blank"><i class="fa fa-tags"></i></a>
-            
-        </div>
-    </div>
-    <div class="post-desc">
-        ROP专项总结
-    </div>
-</article>
-
-
-
-    
-    
-<article class="post">
-    
-    <div class="post-header">
-        <div class="post-meta">
-            <a href="" target="_blank">
-                <strong>Treebacker</strong>
-            </a>
-            <em>·</em>2018-11-24
-        </div>
-        <a class="post-title" href="../../2018/11/24/PE-导入导出表/" target="_blank" title="PE-导入导出表">PE-导入导出表</a>
-        <div class="post-meta">
-            <a href="/tags" target="_blank"><i class="fa fa-tags"></i></a>
-            
-        </div>
-    </div>
-    <div class="post-desc">
-        PE-导入导出表
-    </div>
-</article>
-
-
-
-    
-    
-<article class="post">
-    
-    <div class="post-header">
-        <div class="post-meta">
-            <a href="" target="_blank">
-                <strong>Treebacker</strong>
-            </a>
-            <em>·</em>2018-11-24
-        </div>
-        <a class="post-title" href="../../2018/11/24/M的硬盘/" target="_blank" title="M的硬盘">M的硬盘</a>
-        <div class="post-meta">
-            <a href="/tags" target="_blank"><i class="fa fa-tags"></i></a>
-            
-        </div>
-    </div>
-    <div class="post-desc">
-        M的硬盘
-    </div>
-</article>
-
-
-
-    
-    
-<article class="post">
-    
-    <div class="post-header">
-        <div class="post-meta">
-            <a href="" target="_blank">
-                <strong>Treebacker</strong>
-            </a>
-            <em>·</em>2018-11-22
-        </div>
-        <a class="post-title" href="../../2018/11/22/Reverse-a-Tree/" target="_blank" title="Reverse a Tree">Reverse a Tree</a>
-        <div class="post-meta">
-            <a href="/tags" target="_blank"><i class="fa fa-tags"></i></a>
-            
-                <em>·</em>
-                <a href="http://yoursite.com/tags/Reverse/" target="_blank">Reverse</a>
-            
-        </div>
-    </div>
-    <div class="post-desc">
-        Reverse a Tree
-    </div>
-</article>
-
-
-
-    
-    
-<article class="post">
-    
-    <div class="post-header">
-        <div class="post-meta">
-            <a href="" target="_blank">
-                <strong>Treebacker</strong>
-            </a>
-            <em>·</em>2018-11-22
-        </div>
-        <a class="post-title" href="../../2018/11/22/Mini-Horse/" target="_blank" title="Mini_Horse">Mini_Horse</a>
-        <div class="post-meta">
-            <a href="/tags" target="_blank"><i class="fa fa-tags"></i></a>
-            
-                <em>·</em>
-                <a href="http://yoursite.com/tags/Security/" target="_blank">Security</a>
-            
-        </div>
-    </div>
-    <div class="post-desc">
-        Mini_Horse
-    </div>
-</article>
-
-
-
+        
+    </article>
     
     
 </div>
-<!-- 分页开始 -->
-
-<div id="btn-pager">
-    
-    <a class="extend prev" rel="prev" href="../2/">上一页</a><a class="page-number" href="../../">1</a><a class="page-number" href="../2/">2</a><span class="page-number current">3</span>
-</div>
-
+<script src="js/busuanzi.pure.mini.js"></script>
 
         </div><!-- end #main-->
     </div><!-- end #body -->
@@ -395,8 +280,8 @@
 
     </div>
 </footer>
-<script src="../../js/InsightSearch.js"></script>
-<script src="../../js/SimpleCore.js"></script>
+<script src="js/InsightSearch.js"></script>
+<script src="js/SimpleCore.js"></script>
 
 </div>
 <div class="fixed-btn">

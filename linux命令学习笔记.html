@@ -152,13 +152,13 @@
                 </a>
                 <p><span class="label">作者</span>
                     <a href="" target="_blank"></a>
-                    <span title="最后编辑于2019-07-20">2019-07-20</span>
+                    <span title="最后编辑于2019-07-30">2019-07-30</span>
                 </p>
                 <p></p>
             </div>
             <h2 class="post-title"></h2>
             <div class="post-meta">
-                本文总共806个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
+                本文总共4306个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
             </div>
         </div>
         <div class="post-content markdown-body">
@@ -199,7 +199,8 @@
 </li>
 </ul>
 <h4 id="第二天——Find"><a href="#第二天——Find" class="headerlink" title="第二天——Find"></a>第二天——Find</h4><ul>
-<li>从指定位置找所有文件以及子目录<ul>
+<li><p>从指定位置找所有文件以及子目录</p>
+<ul>
 <li>find base_path  -print<ul>
 <li>base_path可以是任意位置，find从该位置往下查找</li>
 <li>-print   选项以\n分割输出</li>
@@ -207,7 +208,8 @@
 </li>
 </ul>
 </li>
-<li>基于文件名的通配符或正则表达式进行搜索<ul>
+<li><p>基于文件名的通配符或正则表达式进行搜索</p>
+<ul>
 <li>find base_path -name ‘*.txt’  -print<ul>
 <li>-iname   忽略大小写</li>
 <li>支持逻辑操作 -a -o（and 和or）</li>
@@ -220,8 +222,206 @@
 </li>
 </ul>
 </li>
-<li>否定参数（在匹配调价前加上”!”）<ul>
+<li><p>否定参数（在匹配调价前加上”!”）</p>
+<ul>
 <li>find base_path ! -name “*.txt” -print</li>
+</ul>
+</li>
+<li><p>基于文件时间戳进行搜索</p>
+<ul>
+<li><p>三种时间戳</p>
+<ul>
+<li>访问时间(-atime)：用户最近一次访问时间（access)</li>
+<li>修改时间(-mtime)：用户最后一次修改时间（modify）</li>
+<li>变化时间(-ctime)：文件元数据（权限、所有者）最后一次修改时间（change）</li>
+<li>以上三种参数前加修饰’-‘或’+’，分别表示小于或大于</li>
+</ul>
+</li>
+<li><p>打印最近7天内被访问的所有文件</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">find . -type f -atime -7 -print</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>打印恰好在7天前访问的文件</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">find . -type f -atime 7 -print</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>打印出访问时间超过7天的所有文件</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">find . -type f -atime +7 -print</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>时间除以“天数”论外，也可以以分钟计算同上（-amin,     -mmin,      -cmin）</p>
+</li>
+</ul>
+</li>
+<li><p>基于文件大小搜索（-size)</p>
+<ul>
+<li><p>大小大于2k的文件</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">find . -type f -size -2</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>可用的大小单位b，c， w，k，M，G</p>
+</li>
+</ul>
+</li>
+<li><p>基于文件的权限查找（-perm）</p>
+<ul>
+<li><p>打印出所有744权限的文件</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">find . -type f -perm 744 -print</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p>基于文件的所有权进行查找（-user USER)</p>
+<ul>
+<li><p>打印出所有root用户的文件</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">find . -type f -user root -print</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p>其他</p>
+<ul>
+<li><p>删除匹配文件（-delete）</p>
+<ul>
+<li><p>删除当前目录下的.py文件</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">find . -type f -name "*.py" -delete</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p>j结合其他命令执行（-exec）</p>
+<ul>
+<li><p>将匹配到的root的文件改给tree</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">find . -type f -name ".elf" -exec chown tree &#123;&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="第三天-——-xargs"><a href="#第三天-——-xargs" class="headerlink" title="第三天    ——   xargs"></a>第三天    ——   xargs</h4><pre><code>xargs命令重新格式化stdin接受到的数据，应该紧接在管道操作符之后。xargs默认执行echo命令
+</code></pre><ul>
+<li><p>一般的输出格式化</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ls *.c | xargs grep main			//在一组C源码中找main</span><br><span class="line">cat example.txt | xargs				//单行输出</span><br><span class="line">cat example.txt | xargs -n 			//每行输出n个元素</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>默认空白字符为分隔符，-d参数指定分隔符</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo "treexhuixwherextoxgo" | -d x -n 1			//x分割，每行一个单词</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h4 id="第四天-——qemu"><a href="#第四天-——qemu" class="headerlink" title="第四天    ——qemu"></a>第四天    ——qemu</h4><pre><code>qemu是一款模拟处理器自由软件；经常用来模拟arm、mips等各种架构的操作环境。
+
+记录一些经常用到的
+</code></pre><ul>
+<li><p>用户模式下执行程序</p>
+<ul>
+<li><p>qemu-arm、qemu-mips、qemu-mipsel等等    </p>
+</li>
+<li><p>在某一环境下，运行程序命令格式“qemu-arm   [options]   program   [arguments]</p>
+<ul>
+<li>options有：-E 设置环境变量；-g   设置gdb连接的端口；LD_PRELOAD=newlib   使用指定的newlib劫持系统调用</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">qemu-arm hello				//arm环境下运行hello程序</span><br><span class="line">qemu-mips hello				//在mips（大端序）下运行hello</span><br><span class="line">qemu-mipsel -g 1234 hello	//在mipsel（小端序）下运行hello，且在1234端口等待连接</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p>系统模式</p>
+<ul>
+<li><p>根据内核、磁盘重新生成一个系统</p>
+<ul>
+<li><p>命令格式        ”qemu-system- mispel [options]  disk_image”</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">-kernel	bzImage			使用"bzImage"作为内核镜像</span><br><span class="line">-hda/-hdb file			使用"file"作为磁盘0/1镜像</span><br><span class="line">-append cmdline 		使用"cmdline"作为内核命令行</span><br><span class="line">-nographic				禁止图形化输出，重定向到本机的控制台</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>网络配置</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">tunctl   tap0添加一个device</span><br><span class="line">ifconfig   tap0 up		启用该tap0</span><br><span class="line">brctl addif br0 tap0	将tap0绑定在br0桥接 </span><br><span class="line">配置qemu-ifup文件</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="第五天——chroot"><a href="#第五天——chroot" class="headerlink" title="第五天——chroot"></a>第五天——chroot</h4><ul>
+<li><p>作用</p>
+<ul>
+<li>生成一个独立的文件系统，（自定义根目录）</li>
+<li>我们需要将该系统内部对原系统的依赖copy进来</li>
+</ul>
+</li>
+<li><p>场景举例</p>
+<ul>
+<li>在研究qemu模拟系统的时候，arm架构或者mips架构的程序运行</li>
+<li>在获得固件的文件系统之后，由于原系统的内部程序对库的依赖，全是根目录下；若想正常模拟，必须将文件系统目录指定为根目录</li>
+</ul>
+</li>
+<li><p>举例</p>
+<ul>
+<li>将boot-fire作为根目录，qemu模拟运行boot-fire/bin/boa程序</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chroot boot-fire /qemu-mips /bin/boa</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h4 id="第六天——tr"><a href="#第六天——tr" class="headerlink" title="第六天——tr"></a>第六天——tr</h4><ul>
+<li><p>将一组字符转换为另一组字符（translate）</p>
+<ul>
+<li><p>只能通过stdin接受命令行参数；set1与set2字符依次对应；set2多余不计，少则最后一位补上    </p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tr    [options]   set1   set2</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>set在连续时，可简写“起始字符-终止字符”</p>
+</li>
+</ul>
+</li>
+<li><p>实战演习</p>
+<ul>
+<li><p>输入中的字符大写转为小写</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo "WELCOME TO NEW YORK" | tr 'A-Z' 'a-z'</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>数字简单加、解密</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">echo 12345 | tr '0-9' '9876543210'</span><br><span class="line">87654			#已经加密</span><br><span class="line">echo 87654 | tr '0-9' '9876543210'</span><br><span class="line">12345			#已经解密</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>一句话的ROT13加密(加解密同)</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">echo "tr came, tr saw, tr conquered." | tr "a-zA-Z" "n-za-mN-ZA-M"</span><br><span class="line">ge pnzr, ge fnj, ge pbadhrerq.		#已加密</span><br><span class="line">echo "ge pnzr, ge fnj, ge pbadhrerq." | tr "a-zA-Z" "n-za-mN-ZA-M"</span><br><span class="line">tr came, tr saw, tr conquered.		#已解密</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p>其他用法</p>
+<ul>
+<li><p>tr删除字符        tr -d [set]</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">echo "Hello 123 world 456" | tr -d '0-9'</span><br><span class="line">Hello world			#去除了自然数</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>字符组补集            tr -c  set1   set2</p>
+<ul>
+<li><p>set1必有，set2可选</p>
+</li>
+<li><p>-c时，两者都得有</p>
+</li>
+<li><p>-d时，只能由set1</p>
+</li>
+<li><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">echo hello 1 char 2 next 4 | tr -d -c "0-9\n"</span><br><span class="line">124				#删除了0-9\n之外的所有字符</span><br><span class="line">echo hello 1 char 2 next 4 | tr -c "0-9" " "</span><br><span class="line">      1      2      4 		#将除0-9的字符全用空格替代</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p>tr压缩字符（删除重复出现的字符）         tr -s [待压缩的字符集合]</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">echo "Hello   world     girl" | tr -s ' '</span><br><span class="line">Hello world girl				#多余的空格取消了</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="第七天——校验和与核实"><a href="#第七天——校验和与核实" class="headerlink" title="第七天——校验和与核实"></a>第七天——校验和与核实</h4><ul>
+<li><h5 id="MD5"><a href="#MD5" class="headerlink" title="MD5"></a>MD5</h5><ul>
+<li><p>用法       md5sum    filename …</p>
+</li>
+<li><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">md5sum snp, exe.f</span><br><span class="line">1bf18d59dcc64449ca870891f2810a98  snp</span><br><span class="line">e40c9c6bb0076a4946f52a0ec33a4ebd  exe.f</span><br></pre></td></tr></table></figure>
+<p>保存文件的md5备份；定时比较是否变化</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">md5sum snp &gt; snp.md5</span><br><span class="line">md5sum -c snp.md5</span><br><span class="line">snp: OK</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">md5sum test &gt; test.md5</span><br><span class="line">md5sum -c test.md5</span><br><span class="line">test: FAILED</span><br><span class="line">md5sum: WARNING: 1 computed checksum did NOT match</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><h5 id="SHA-1"><a href="#SHA-1" class="headerlink" title="SHA-1"></a>SHA-1</h5></li>
+</ul>
+<h4 id="第八天-————scp"><a href="#第八天-————scp" class="headerlink" title="第八天 ————scp"></a>第八天 ————scp</h4><ul>
+<li><p>基于ssh与cat命令和管道的实现</p>
+</li>
+<li><p>在主机之间传送数据</p>
+</li>
+<li><p>参数格式</p>
+<ul>
+<li><p>scp   参数     原路径       目标路径</p>
+</li>
+<li><p>常用</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">scp local_file remote_username@remote_ip:remote_file</span><br></pre></td></tr></table></figure>
+</li>
 </ul>
 </li>
 <li></li>
