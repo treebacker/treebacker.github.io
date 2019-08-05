@@ -50,9 +50,9 @@
 <link rel="shortcut icon" href="../../../../images/favicon.png">
 
 
-<title>分类 - 技术 - Watch Security</title>
+<title>路由器漏洞挖掘-dir645-1.01-栈溢出 - Watch Security</title>
 
-<meta name="keywords" content="Reverse, Security, New">
+<meta name="keywords" content="pwn, mips, firmwale">
 
 <meta name="description " content="">
 
@@ -104,25 +104,25 @@
 </div>
             <div class="page-title">
     <ul>
-        <li class="">
-            <a href="/" data-name="最近文章">最近</a>
-        </li>
+        <li><a href="/">最新</a></li>
         
-        <li class="active">
-            <a href="/categories/tech-notes" data-name="技术">技术</a>
-        </li>
-        
-        <li class="">
-            <a href="/categories/essays" data-name="随笔">随笔</a>
-        </li>
-        
-        <li class="">
-            <a href="/categories/cdcitizen-of-the-sun" data-name="海子">海子</a>
-        </li>
-        
-        <li class="">
-            <a href="/categories/others" data-name="其他">其他</a>
-        </li>
+            
+                <li class="active">
+                    <a href="/categories/tech-notes" data-name="技术">技术</a>
+                </li>
+            
+                <li class="">
+                    <a href="/categories/essays" data-name="随笔">随笔</a>
+                </li>
+            
+                <li class="">
+                    <a href="/categories/cdcitizen-of-the-sun" data-name="海子">海子</a>
+                </li>
+            
+                <li class="">
+                    <a href="/categories/others" data-name="其他">其他</a>
+                </li>
+            
         
         <li class="page-search">
     <form id="search" class="search-form">
@@ -163,94 +163,114 @@
     </ul>
 </div>
 <div class="main-inner">
-    
-    
-    
-<article class="post">
-    
-    <div class="post-header">
-        <div class="post-meta">
-            <a href="" target="_blank">
-                <strong>Treebacker</strong>
+    <article class="post" itemscope="" itemtype="http://schema.org/BlogPosting">
+        <div class="post-header">
+            <div class="post-author clearfix">
+                <a class="avatar fleft" href="" target="_blank">
+                    <img width="48" src="/images/favicon.png" alt="avatar">
+                </a>
+                <p><span class="label">作者</span>
+                    <a href="" target="_blank">Treebacker</a>
+                    <span title="最后编辑于2019-08-05">2019-08-05</span>
+                </p>
+                <p></p>
+            </div>
+            <h2 class="post-title">路由器漏洞挖掘-DIR645-1.01-栈溢出</h2>
+            <div class="post-meta">
+                本文总共888个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
+            </div>
+        </div>
+        <div class="post-content markdown-body">
+            <h4 id="入门阶段，第一次实战复现漏洞"><a href="#入门阶段，第一次实战复现漏洞" class="headerlink" title="入门阶段，第一次实战复现漏洞"></a>入门阶段，第一次实战复现漏洞</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">该漏洞存在于文件的很多处，均是sprintf函数的未检查使用，导致缓冲区溢出。主要mips的反编译工具不是很完善，个人的Mips阅读水平有限，分析起来还是挺吃力。但是也算有所收获，故此记录</span><br></pre></td></tr></table></figure>
+<h4 id="复现环境"><a href="#复现环境" class="headerlink" title="复现环境"></a>复现环境</h4><ul>
+<li>qemu-mipsel模拟执行</li>
+<li>chroot模拟根目录</li>
+<li>ida动态调试</li>
+<li>gdb查看.so文件基地址？</li>
+<li>调试过程中的其他环境依赖</li>
+</ul>
+<h4 id="难点"><a href="#难点" class="headerlink" title="难点"></a>难点</h4><ul>
+<li>定位到某一个危险函数，sprintf很多处调用，需要自己找准最关键的一次.</li>
+<li>Ropgadget构造,可以借助于Mips ROP finder插件</li>
+<li>自己写shellcode</li>
+</ul>
+<h4 id="实践过程"><a href="#实践过程" class="headerlink" title="实践过程"></a>实践过程</h4><ul>
+<li><p>搜索漏洞相关信息,重点分析</p>
+<p><img src="F:\blog\source\_posts\路由器漏洞挖掘-DIR645-1-01-栈溢出\i1.png" alt=""></p>
+</li>
+<li><p>分析栈溢出(第二条);通过关键词定位到关键函数</p>
+<p><img src="F:\blog\source\_posts\路由器漏洞挖掘-DIR645-1-01-栈溢出\s1.png" alt=""></p>
+</li>
+<li><p>在这里发现了sprintf函数的调用,并经过实践,发现确实可以覆盖,控制程序执行走向;但是程序最终会Failed</p>
+</li>
+<li><p>后面发现,程序会打开一个tmp文件</p>
+<p><img src="F:\blog\source\_posts\路由器漏洞挖掘-DIR645-1-01-栈溢出\s2.png" alt=""></p>
+</li>
+<li><p>这里同样存在sprintf,正常情况下,是存在该文件的.我们也可以选择自建一个(我这上面失败了,815可以成功)</p>
+</li>
+<li></li>
+<li><p>所以就以第一个sprintf函数溢出为例.</p>
+</li>
+<li><p>确定偏移</p>
+<ul>
+<li>使用patternLocOffset脚本很快确定偏移</li>
+</ul>
+</li>
+<li><p>构造ROPgadget;==&gt;system(“/bin/sh”)</p>
+<ul>
+<li><p>使用插件</p>
+</li>
+<li><p>首先需要有$a0 ==&gt;  “/bin/sh”</p>
+<ul>
+<li><p>通过stackfinders()可以找到,(在.so文件中)</p>
+<p><img src="F:\blog\source\_posts\路由器漏洞挖掘-DIR645-1-01-栈溢出\g1.png" alt=""></p>
+<p><img src="F:\blog\source\_posts\路由器漏洞挖掘-DIR645-1-01-栈溢出\g2.png" alt=""></p>
+</li>
+<li><p>上面一段rop借助$r5为中介,完成使得$a0指向栈地址的功能;同时$s0指向call_system</p>
+</li>
+</ul>
+</li>
+<li><p>其次需要call_system地址</p>
+<ul>
+<li><p>在.so文件中寻找.system函数的偏移</p>
+</li>
+<li><p>如果地址存在坏字节,想办法用等效计算替代</p>
+</li>
+<li><p>最终,通过$s0 = $s0 + 1构造地址</p>
+<p><img src="F:\blog\source\_posts\路由器漏洞挖掘-DIR645-1-01-栈溢出\g3.png" alt=""></p>
+</li>
+</ul>
+</li>
+<li><p>但是.so文件加载基地址的确定,在64位下有些不同(补坑)</p>
+<ul>
+<li>看到有的博客gdb附加调试,vmmap就可以;额我的还是不对.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>参考链接
+
+[1](&lt;https://www.jianshu.com/p/b974fe79a6e8&gt;)
+</code></pre>
+        </div>
+        <div class="post-tool">
+            <a class="btn-thumbs-up" href="javascript:void(0);" data-cid="52" title="95">
+                <i class="fa fa-thumbs-up" aria-hidden="true"></i> 打赏
             </a>
-            <em>·</em>2018-11-24
         </div>
-        <a class="post-title" href="../../../../2018/11/24/M的硬盘/" target="_blank" title="M的硬盘">M的硬盘</a>
-        <div class="post-meta">
-            <a href="/tags" target="_blank"><i class="fa fa-tags"></i></a>
+        
+        <div class="post-tags">标签：
             
         </div>
-    </div>
-    <div class="post-desc">
-        M的硬盘
-    </div>
-</article>
-
-
-
+        
+    </article>
     
+    <p>本文代表个人观点，内容仅供参考。若有不恰当之处，望不吝赐教！</p>
     
-<article class="post">
-    
-    <div class="post-header">
-        <div class="post-meta">
-            <a href="" target="_blank">
-                <strong>Treebacker</strong>
-            </a>
-            <em>·</em>2018-11-22
-        </div>
-        <a class="post-title" href="../../../../2018/11/22/Reverse-a-Tree/" target="_blank" title="Reverse a Tree">Reverse a Tree</a>
-        <div class="post-meta">
-            <a href="/tags" target="_blank"><i class="fa fa-tags"></i></a>
-            
-                <em>·</em>
-                <a href="http://yoursite.com/tags/Reverse/" target="_blank">Reverse</a>
-            
-        </div>
-    </div>
-    <div class="post-desc">
-        Reverse a Tree
-    </div>
-</article>
-
-
-
-    
-    
-<article class="post">
-    
-    <div class="post-header">
-        <div class="post-meta">
-            <a href="" target="_blank">
-                <strong>Treebacker</strong>
-            </a>
-            <em>·</em>2018-11-22
-        </div>
-        <a class="post-title" href="../../../../2018/11/22/Mini-Horse/" target="_blank" title="Mini_Horse">Mini_Horse</a>
-        <div class="post-meta">
-            <a href="/tags" target="_blank"><i class="fa fa-tags"></i></a>
-            
-                <em>·</em>
-                <a href="http://yoursite.com/tags/Security/" target="_blank">Security</a>
-            
-        </div>
-    </div>
-    <div class="post-desc">
-        Mini_Horse
-    </div>
-</article>
-
-
-
     
 </div>
-<!-- 分页开始 -->
-
-<div id="btn-pager">
-    
-    <a class="extend prev" rel="prev" href="../2/">上一页</a><a class="page-number" href="../../">1</a><a class="page-number" href="../2/">2</a><span class="page-number current">3</span>
-</div>
-
+<script src="../../../../js/busuanzi.pure.mini.js"></script>
 
         </div><!-- end #main-->
     </div><!-- end #body -->

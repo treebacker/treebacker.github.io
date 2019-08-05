@@ -152,13 +152,13 @@
                 </a>
                 <p><span class="label">作者</span>
                     <a href="" target="_blank"></a>
-                    <span title="最后编辑于2019-07-30">2019-07-30</span>
+                    <span title="最后编辑于2019-08-05">2019-08-05</span>
                 </p>
                 <p></p>
             </div>
             <h2 class="post-title"></h2>
             <div class="post-meta">
-                本文总共4306个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
+                本文总共5073个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
             </div>
         </div>
         <div class="post-content markdown-body">
@@ -408,7 +408,10 @@
 </li>
 </ul>
 </li>
-<li><h5 id="SHA-1"><a href="#SHA-1" class="headerlink" title="SHA-1"></a>SHA-1</h5></li>
+<li><h5 id="SHA-1"><a href="#SHA-1" class="headerlink" title="SHA-1"></a>SHA-1</h5><ul>
+<li>用法同md5sum，这是sha1sum</li>
+</ul>
+</li>
 </ul>
 <h4 id="第八天-————scp"><a href="#第八天-————scp" class="headerlink" title="第八天 ————scp"></a>第八天 ————scp</h4><ul>
 <li><p>基于ssh与cat命令和管道的实现</p>
@@ -424,7 +427,36 @@
 </li>
 </ul>
 </li>
-<li></li>
+</ul>
+<h4 id="第九天——sort"><a href="#第九天——sort" class="headerlink" title="第九天——sort"></a>第九天——sort</h4><ul>
+<li><p>sort命令可以对文本文件和stdin进行排序；uniq通常配合使用，提取不重复的行。</p>
+<ul>
+<li><p>排序一组文件</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span>	cat &gt; file1.txt</span><br><span class="line">abc2</span><br><span class="line"><span class="meta">$</span>	cat &gt; file2.txt</span><br><span class="line">bcd</span><br><span class="line"><span class="meta">$</span>	sort file1.txt file2.txt</span><br><span class="line">abc</span><br><span class="line">bcd</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>按照数字排序</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span>	cat &gt; file3.txt</span><br><span class="line">12</span><br><span class="line">323</span><br><span class="line">4324</span><br><span class="line">3</span><br><span class="line">43</span><br><span class="line">1</span><br><span class="line"><span class="meta">$</span>	sort -n file3.txt </span><br><span class="line">1</span><br><span class="line">3</span><br><span class="line">12</span><br><span class="line">43</span><br><span class="line">323</span><br><span class="line">4324</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>按照逆序排序</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">tree@treepn:~$ sort -r file3.txt </span><br><span class="line">4324</span><br><span class="line">43</span><br><span class="line">323</span><br><span class="line">3</span><br><span class="line">12</span><br><span class="line">1</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>按照日期排序（小在前）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">tree@treepn:~/cmd$ sort -M months.txt </span><br><span class="line">2018.12.01</span><br><span class="line">2019.3.01</span><br><span class="line">2019.3.03</span><br><span class="line">2019.4.01</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>合并两个已经排序的问价</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sort -m sorted1 sorted2</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>找出已经排序的文件中不重复的行</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">tree@treepn:~/cmd$ cat &gt; file</span><br><span class="line">21</span><br><span class="line">23</span><br><span class="line">1</span><br><span class="line">3</span><br><span class="line">1</span><br><span class="line">21</span><br><span class="line">tree@treepn:~/cmd$ sort file | uniq</span><br><span class="line">1</span><br><span class="line">21</span><br><span class="line">23</span><br><span class="line">3</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>检查文件是否已经排序过</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span>!/bin/sh</span><br><span class="line"><span class="meta">#</span>功能		检查是否已经排序</span><br><span class="line">sort -C filename;</span><br><span class="line">if [ $? -eq 0 ]; then</span><br><span class="line">	echo Sorted</span><br><span class="line">else </span><br><span class="line">	echo Unsorted</span><br><span class="line">fi</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>指定列</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sort -nrk 1 data.txt			#依据第一列、数字、逆序排列</span><br><span class="line">sort -k 2 data.txt				#第二列进行排序</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
 </ul>
 
         </div>
