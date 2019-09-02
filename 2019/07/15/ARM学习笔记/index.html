@@ -222,7 +222,7 @@
 <li>在某些指令下，source2的立即数取值只能在8bit内（例如mov指令）</li>
 </ul>
 </li>
-<li><h5 id="Registers-and-ALU"><a href="#Registers-and-ALU" class="headerlink" title="Registers and ALU"></a>Registers and ALU</h5><p><img src="F:\blog\source\_posts\ARM学习笔记\registers_alu.png" alt=""></p>
+<li><h5 id="Registers-and-ALU"><a href="#Registers-and-ALU" class="headerlink" title="Registers and ALU"></a>Registers and ALU</h5><img src="/2019/07/15/ARM学习笔记/registers_alu.png" title="[]">
 </li>
 <li><h5 id="常见指令规则"><a href="#常见指令规则" class="headerlink" title="常见指令规则"></a>常见指令规则</h5><ul>
 <li><p>特别的，mutiple</p>
@@ -254,7 +254,7 @@
 </ul>
 </li>
 </ul>
-<p><img src="F:\blog\source\_posts\ARM学习笔记\instrc1.png" alt=""></p>
+<img src="/2019/07/15/ARM学习笔记/instrc1.png" title="[]">
 <ul>
 <li><h5 id="指令长度"><a href="#指令长度" class="headerlink" title="指令长度"></a>指令长度</h5><ul>
 <li>在ARM模式下，都是4byte长度</li>
@@ -276,7 +276,7 @@
 </ul>
 </li>
 </ul>
-<p><img src="F:\blog\source\_posts\ARM学习笔记\pseudoinstructions.png" alt=""></p>
+<img src="/2019/07/15/ARM学习笔记/pseudoinstructions.png" class="[]">
 </li>
 <li><h5 id="END"><a href="#END" class="headerlink" title="END"></a>END</h5><ul>
 <li>标记文件的结束</li>
@@ -296,7 +296,7 @@
 </li>
 <li><h5 id="LDR-R7-0xFFFFFFFF-用于赋值大于0xff的情况"><a href="#LDR-R7-0xFFFFFFFF-用于赋值大于0xff的情况" class="headerlink" title="LDR R7, =#0xFFFFFFFF     (用于赋值大于0xff的情况)"></a>LDR R7, =#0xFFFFFFFF     (用于赋值大于0xff的情况)</h5></li>
 <li><p>实例</p>
-<p><img src="F:\blog\source\_posts\ARM学习笔记\example.png" alt=""></p>
+<img src="/2019/07/15/ARM学习笔记/example.png" title="[]">
 </li>
 </ul>
 </li>
@@ -317,7 +317,7 @@
 <li><p>DRAM；        实际是RAM的扩展，被设计为既可以存放data, 也可以存放code（同x86)</p>
 <ul>
 <li><p>样例</p>
-<p><img src="F:\blog\source\_posts\ARM学习笔记\alloc.png" alt=""></p>
+<img src="/2019/07/15/ARM学习笔记/alloc.png" title="[]">
 </li>
 </ul>
 </li>
@@ -334,17 +334,17 @@
 <li><p>除了与x86类似的N\C\Z\V等外</p>
 </li>
 <li><p>有T标志Thumb模式</p>
-<p><img src="F:\blog\source\_posts\ARM学习笔记\cprs.png" alt=""></p>
+<img src="/2019/07/15/ARM学习笔记/cprs.png" title="[]">
 </li>
 <li><p>在指令的后面加S（如ADDS、SUBS）即可将指令执行的影响在CPSR上有所反应。（改变CPSR）</p>
 </li>
 <li><p>注意与X86的不同，并不是所有的执行都影响CPSR，且可由我们选择。</p>
 </li>
 <li><p>常见的指令对CPSR的影响</p>
-<p><img src="F:\blog\source\_posts\ARM学习笔记\flagbit.png" alt=""></p>
+<img src="/2019/07/15/ARM学习笔记/flagbit.png" title="[]">
 </li>
 <li><p>CPSR的标志位用于条件跳转</p>
-<p><img src="F:\blog\source\_posts\ARM学习笔记\jmp_flag.png" alt=""></p>
+<img src="/2019/07/15/ARM学习笔记/jmp_flag.png" title="[]">
 </li>
 <li><p>一般的条件跳转</p>
 </li>
@@ -354,7 +354,7 @@
 <li>if-then-else模式</li>
 <li>then下相同数量的条件指令的逻辑与then的条件一致；相同数量的条件指令的逻辑与其相反</li>
 </ul>
-<p><img src="F:\blog\source\_posts\ARM学习笔记\jmp.png" alt=""></p>
+<img src="/2019/07/15/ARM学习笔记/jmp.png" title="[]">
 </li>
 <li><p>直接跳转branch</p>
 <ul>
@@ -368,10 +368,10 @@
 </ul>
 <h4 id="函数与栈"><a href="#函数与栈" class="headerlink" title="函数与栈"></a>函数与栈</h4><ul>
 <li><p>栈的四种状态</p>
-<p><img src="F:\blog\source\_posts\ARM学习笔记\stack_state.png" alt=""></p>
+<img src="/2019/07/15/ARM学习笔记/stack_state.png" title="[]">
 </li>
 <li><p>对应的不同的mutl指令</p>
-<p><img src="F:\blog\source\_posts\ARM学习笔记\stack_ldm.png" alt=""></p>
+<img src="/2019/07/15/ARM学习笔记/stack_ldm.png" title="[]">
 </li>
 <li><p>参数传递规则</p>
 <ul>
