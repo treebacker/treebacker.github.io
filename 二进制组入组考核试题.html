@@ -152,106 +152,38 @@
                 </a>
                 <p><span class="label">作者</span>
                     <a href="" target="_blank"></a>
-                    <span title="最后编辑于2019-08-06">2019-08-06</span>
+                    <span title="最后编辑于2019-08-30">2019-08-30</span>
                 </p>
                 <p></p>
             </div>
             <h2 class="post-title"></h2>
             <div class="post-meta">
-                本文总共555个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
+                本文总共1283个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
             </div>
         </div>
         <div class="post-content markdown-body">
-            <h3 id="arm混淆编译器"><a href="#arm混淆编译器" class="headerlink" title="arm混淆编译器"></a>arm混淆编译器</h3><h4 id="功能浏览"><a href="#功能浏览" class="headerlink" title="功能浏览"></a>功能浏览</h4><ul>
-<li>多种混淆，允许用户自定义；满足不同应用场合的需求<ul>
-<li>虚假控制流</li>
-<li>字符串加密</li>
-<li>控制流平坦化</li>
-<li>运算恒等变换</li>
-<li>分裂基本块</li>
-<li>指定函数混淆</li>
-</ul>
+            <h3 id="二进制入组考核试题"><a href="#二进制入组考核试题" class="headerlink" title="二进制入组考核试题"></a>二进制入组考核试题</h3><h4 id="一、汇编代码阅读"><a href="#一、汇编代码阅读" class="headerlink" title="一、汇编代码阅读"></a>一、汇编代码阅读</h4><p>写出下述代码的运算式（已知A、B、C分别表示常量a, b，c；D是一有效地址）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">mov ax, A</span><br><span class="line">mov bx, B</span><br><span class="line">imul bx			</span><br><span class="line">mov cx, ax		</span><br><span class="line">mov bx, dx</span><br><span class="line">mov ax, C</span><br><span class="line">cwd				</span><br><span class="line"></span><br><span class="line">add ax, cx		</span><br><span class="line">adc dx, bx		</span><br><span class="line">sub ax, 70		</span><br><span class="line">sbb dx, 0		</span><br><span class="line">idiv A			</span><br><span class="line">mov D, ax</span><br><span class="line">mov D+2, dx</span><br></pre></td></tr></table></figure>
+<p>上述代码的运算式是：</p>
+<h4 id="二、函数调用约定及栈帧"><a href="#二、函数调用约定及栈帧" class="headerlink" title="二、函数调用约定及栈帧"></a>二、函数调用约定及栈帧</h4><ul>
+<li><p>（1）add esp, 16作用是___</p>
+<p>（2）该代码段遵循的函数调用约定是<strong>___</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">push 4                ;push parameter z</span><br><span class="line">push 3                ;push parameter y</span><br><span class="line">push 2                ;push parameter x</span><br><span class="line">push 1                ;push parameter w</span><br><span class="line">call demo_1       ;call the function</span><br><span class="line">add  esp, 16          ;</span><br></pre></td></tr></table></figure>
 </li>
-<li>部署简便</li>
-</ul>
-<h4 id="功能详情"><a href="#功能详情" class="headerlink" title="功能详情"></a>功能详情</h4><ul>
-<li><p>虚假控制流（直达路线经过变换后成为多个分流路线）</p>
-<ul>
-<li><p>三级参数</p>
-<p><img src="F:\blog\source\secadd\arm-1i.png" alt=""></p>
-</li>
-<li><p>一种程序的同一功能，可以展示为不同的程序走向（路径）</p>
-</li>
-<li><p>未加固前</p>
-<p><img src="F:\blog\source\secadd\arm-10.png" alt=""></p>
-</li>
-<li><p>加固后</p>
-<p><img src="F:\blog\source\secadd\arm-11.png" alt=""></p>
+<li><p>（3）1、2、3处的语句作用？</p>
+<p>（4）4处的 what数值应该是？</p>
+<p>（5）该代码段的函数调用约定是？</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">demo_2:</span><br><span class="line">	push ebp			#1</span><br><span class="line">	mov ebp, esp		#2</span><br><span class="line">	sub esp, 0x20		#3</span><br><span class="line"></span><br><span class="line">	......</span><br><span class="line">	......</span><br><span class="line">	......</span><br><span class="line">	ret what				#4</span><br><span class="line">	</span><br><span class="line">push  4                ; move parameter z to second position on stack</span><br><span class="line">push  3                ; move parameter y to tio position on stack</span><br><span class="line">mov   edx, 2           ; move parameter x to edx</span><br><span class="line">mov   ecx, 1           ; move parameter w to ecx</span><br><span class="line">call  demo_2    ; call the function</span><br></pre></td></tr></table></figure>
 </li>
 </ul>
-</li>
-<li><p>字符串加密</p>
-<ul>
-<li><p>将有意义的字符串参数加密，很难根据字符串定位到程序的功能位置</p>
-<ul>
-<li>（Login Successfully ==&gt; “*#. =+#23d”）</li>
-</ul>
-</li>
-<li><p>二级参数</p>
-<p><img src="F:\blog\source\secadd\arm-2i.png" alt=""></p>
-</li>
-<li><p>众多程序的突破口就在关键字符串的泄露，保护数据的机密性；</p>
-</li>
-<li><p>加固前</p>
-<p><img src="F:\blog\source\secadd\arm-20.png" alt=""></p>
-</li>
-<li><p>加固后</p>
-<p><img src="F:\blog\source\secadd\arm-21.png" alt=""></p>
-</li>
-</ul>
-</li>
-<li><p>控制流平坦化</p>
-<ul>
-<li><p>类似于实现自定义的规则，自解释命令，分发器</p>
-</li>
-<li><p>加固后</p>
-<p><img src="F:\blog\source\secadd\arm-31.png" alt=""></p>
-</li>
-</ul>
-</li>
-<li><p>运算恒等变换</p>
-<ul>
-<li><p>m = 1 + 2   &lt;==&gt;   m = 99999 + 99998 - 2*99997</p>
-</li>
-<li><p>通过有限的指令集，理论上可以进行无限的变换；具有迷惑性</p>
-</li>
-<li><p>加固前</p>
-<p><img src="F:\blog\source\secadd\arm-40.png" alt=""></p>
-</li>
-<li><p>加固后</p>
-<p><img src="F:\blog\source\secadd\arm-41.png" alt=""></p>
-</li>
-</ul>
-</li>
-<li><p>分裂基本块</p>
-<ul>
-<li><p>基本块的布局是，对一个熟练的逆向工程师的作用是很显然的；模糊、打乱这种布局，加固的效果可观</p>
-</li>
-<li><p>加固后</p>
-</li>
-</ul>
-</li>
-<li><p>指定函数混淆</p>
-<ul>
-<li><p>对于重要的（实现高效算法、加解密，通信、、、）的函数进行指定混淆</p>
-</li>
-<li><p>使用</p>
-<p><img src="F:\blog\source\secadd\arm-6i.png" alt=""></p>
-<p><img src="C:\WINDOWS\TEMP\1564638837414.png" alt="1564638837414"></p>
-</li>
-</ul>
-</li>
-</ul>
+<h4 id="三、PE文件结构"><a href="#三、PE文件结构" class="headerlink" title="三、PE文件结构"></a>三、PE文件结构</h4><p>下述PE文件结构</p>
+<p><img src="F:\kaliwork\CTF\战队训练\18级二进制暑期任务\考核\1.png" alt=""></p>
+<pre><code>1、文件共有几个section？
+
+2、文件的EntryPoint是？
+</code></pre><h4 id="四、栈溢出初探"><a href="#四、栈溢出初探" class="headerlink" title="四、栈溢出初探"></a>四、栈溢出初探</h4><p>​    阅读以下C语言程序，请问如何布置输入可以使得程序执行system(“/bin/sh”)这个语句？其中输入变<br>量s地址位于 ebp - 0x30，变量a的地址为 ebp - 0x8，system函数地址为 0xFFF530A0<br>处，”/bin/sh”字符串的地址为0xFFF5603D处。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line"><span class="keyword">char</span> s[<span class="number">0x28</span>]; <span class="comment">//ebp-0x30</span></span><br><span class="line"><span class="keyword">int</span> a = <span class="number">0xdeadbeef</span>; <span class="comment">//ebp-0x8</span></span><br><span class="line">gets(s);</span><br><span class="line"><span class="keyword">if</span>(a != <span class="number">0xdeadbeef</span>)</span><br><span class="line"><span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line"><span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
 
         </div>
         <div class="post-tool">

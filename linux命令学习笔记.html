@@ -158,7 +158,7 @@
             </div>
             <h2 class="post-title"></h2>
             <div class="post-meta">
-                本文总共5073个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
+                本文总共6323个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
             </div>
         </div>
         <div class="post-content markdown-body">
@@ -454,6 +454,43 @@
 </li>
 <li><p>指定列</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sort -nrk 1 data.txt			#依据第一列、数字、逆序排列</span><br><span class="line">sort -k 2 data.txt				#第二列进行排序</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="第十天———–split"><a href="#第十天———–split" class="headerlink" title="第十天———–split"></a>第十天———–split</h4><ul>
+<li><p>split可以将文件进行切割,按照一定的规则将文件切割为更小的多个文件</p>
+<ul>
+<li>split [option1] filename [options]</li>
+</ul>
+</li>
+<li><p>实战</p>
+<ul>
+<li>按10byte一个文件,默认字母排序(3长度)</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">tree@treepn:~/cmd$	split -b 10 file.txt</span><br><span class="line">tree@treepn:~/cmd$ ls</span><br><span class="line">file.txt  months.txt  xaa  xab  xac  xad  xae  xaf  xag  xah  xai  xaj</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>数字文件\长度自定义</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">tree@treepn:~/cmd$ split -b 10 file.txt -d -a 4</span><br><span class="line">tree@treepn:~/cmd$ ls</span><br><span class="line">file.txt    x0000  x0002  x0004  x0006  x0008  xaa  xac  xae  xag  xai</span><br><span class="line">months.txt  x0001  x0003  x0005  x0007  x0009  xab  xad  xaf  xah  xaj</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>为分割后的文件指定文件前缀;默认以’x’前缀</p>
+<ul>
+<li><p>以split_file为前缀</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">tree@treepn:~/cmd$ split -b 10 file.txt -d -a 4 split_file</span><br><span class="line">tree@treepn:~/cmd$ ls</span><br><span class="line">file.txt    split_file0000  split_file0002  split_file0004  split_file0006  split_file0008</span><br><span class="line">months.txt  split_file0001  split_file0003  split_file0005  split_file0007  split_file0009</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>以行数分割文件(默认块大小)</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">tree@treepn:~/cmd$ split -l 3 file.txt </span><br><span class="line">tree@treepn:~/cmd$ ls</span><br><span class="line">file.txt  months.txt  xaa  xab  xac  xad</span><br><span class="line">tree@treepn:~/cmd$ cat xa</span><br><span class="line">cat: xa: No such file or directory</span><br><span class="line">tree@treepn:~/cmd$ cat xaa</span><br><span class="line">aa</span><br><span class="line">bb</span><br><span class="line">cc</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p>基于上下文分割文件———csplit</p>
+<ul>
+<li><p>依据行计数或者正则表达式</p>
+</li>
+<li><p>命令规则</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">/SERVER/	用来匹配特定行,分割过程从此开始</span><br><span class="line">/[REGEX]/	用于描述文本模式,它从当前行一直复制到(但不包括)SERVER的匹配行</span><br><span class="line">&#123;*&#125;		表示根据匹配重复执行操作,直到文件末尾.&#123;整数&#125;指定重复分割次数</span><br><span class="line">-s		命令进入静默模式,不打印信息</span><br><span class="line">-n		指定文件后缀名的数字个数</span><br><span class="line">-f		指定文件名的前缀</span><br><span class="line">-b		制定后缀格式,类似于printf的参数格式</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
 </li>
 </ul>
 </li>

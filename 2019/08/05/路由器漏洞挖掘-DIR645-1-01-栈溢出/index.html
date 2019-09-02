@@ -177,7 +177,7 @@
             </div>
             <h2 class="post-title">路由器漏洞挖掘-DIR645-1.01-栈溢出</h2>
             <div class="post-meta">
-                本文总共888个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
+                本文总共919个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
             </div>
         </div>
         <div class="post-content markdown-body">
@@ -244,15 +244,15 @@
 <li><p>但是.so文件加载基地址的确定,在64位下有些不同(补坑)</p>
 <ul>
 <li>看到有的博客gdb附加调试,vmmap就可以;额我的还是不对.</li>
+<li>现在比较有效的方式就是在和gadget同一个.so文件下找到一个函数，程序已经加载。动态调试时就可以在got表中找到实际地址，计算加载基地址。（很有效）</li>
 </ul>
 </li>
 </ul>
 </li>
 </ul>
-<pre><code>参考链接
+<p>[参考链接][1]</p>
+<p><a href="https://www.jianshu.com/p/b974fe79a6e8" target="_blank" rel="noopener">1</a></p>
 
-[1](&lt;https://www.jianshu.com/p/b974fe79a6e8&gt;)
-</code></pre>
         </div>
         <div class="post-tool">
             <a class="btn-thumbs-up" href="javascript:void(0);" data-cid="52" title="95">

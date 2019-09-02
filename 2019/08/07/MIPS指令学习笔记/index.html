@@ -1,0 +1,353 @@
+<!DOCTYPE HTML>
+<html class="no-js" lang="zh-CN">
+<!--
+//                            _ooOoo_
+//                           o8888888o
+//                           88" . "88
+//                           (| -_- |)
+//                            O\ = /O
+//                        ____/`---'\____
+//                      .   ' \\| |// `.
+//                       / \\||| : |||// \
+//                     / _||||| -:- |||||- \
+//                       | | \\\ - /// | |
+//                     | \_| ''\---/'' | |
+//                      \ .-\__ `-` ___/-. /
+//                   ___`. .' /--.--\ `. . __
+//                ."" '< `.___\_<|>_/___.' >'"".
+//               | | : `- \`.;`\ _ /`;.`/ - ` : | |
+//                 \ \ `-. \_ __\ /__ _/ .-` / /
+//         ======`-.____`-.___\_____/___.-`____.-'======
+//                            `=---='
+//                 拦截插件累计拦截逗比攻击"1381438"次！
+//         .............................................
+//                  佛祖保佑             永无BUG
+//          佛曰:
+//                  写字楼里写字间，写字间里程序员；
+//                  程序人员写程序，又拿程序换酒钱。
+//                  酒醒只在网上坐，酒醉还来网下眠；
+//                  酒醉酒醒日复日，网上网下年复年。
+//                  但愿老死电脑间，不愿鞠躬老板前；
+//                  奔驰宝马贵者趣，公交自行程序员。
+//                  别人笑我忒疯癫，我笑自己命太贱；
+//                  不见满街漂亮妹，哪个归得程序员？
+-->
+<head><meta name="generator" content="Hexo 3.8.0">
+    <!--[if lte IE 9]>
+<meta http-equiv="refresh" content="0;url=http://yoursite.com/warn.html">
+<![endif]-->
+<meta charset="utf-8">
+
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+
+<meta http-equiv="X-UA-Compatible" content="IE=Edge">
+<meta name="renderer" content="webkit">
+<meta name="viewport" content="width=device-width, initial-scale=1.0,user-scalable=no">
+<meta http-equiv="mobile-agent" content="format=html5; url=http://yoursite.com">
+<meta name="author" content="treebacker">
+<link rel="stylesheet" href="../../../../css/SimpleStyle.min.css">
+
+<link rel="shortcut icon" href="../../../../images/favicon.png">
+
+
+<title>mips指令学习笔记 - Watch Security</title>
+
+<meta name="keywords" content="mips">
+
+<meta name="description " content="">
+
+</head>
+<body>
+<div id="nav">
+    <nav class="nav-menu">
+        <a class="site-name current" href="/" title="Tree">Tree</a>
+        <a class="site-index current" href="/"><i class="fa fa-home"></i><span>首页</span></a>
+        <a href="/archives" title="归档"><i class="fa fa-archives"></i><span>归档</span></a>
+        <a href="/tags" title="标签"><i class="fa fa-tags"></i><span>标签</span></a>
+        <!-- custom single page of menus -->
+        
+        
+        <a href="/help" title="帮助">
+            <i class="fa fa-question-circle"></i>
+            <span>帮助</span>
+        </a>
+        
+    </nav>
+</div>
+
+<div class="nav-user">
+    <a class="btn-search" href="#"><i class="fa fa-search"></i></a>
+    <a class="btn-read-mode" href="#"><i class="fa fa-sun-o"></i></a>
+    <a class="btn-sns-qr" href="javascript:"><i class="fa fa-telegram"></i></a>
+</div>
+
+<div id="wrapper" class="clearfix">
+    <div id="body">
+        <div class="main" id="main">
+            <div id="cover">
+    <div class="cover-img"></div>
+    <div class="cover-info">
+        
+        <h1 class="cover-siteName">Treebacker</h1>
+        <h3 class="cover-siteTitle">愿麦子和麦子长在一起，愿河流与河流流归一处。</h3>
+        <p class="cover-siteDesc">Tech and Eesay</p>
+        <div class="cover-sns">
+            
+            <div class="btn btn-github">
+                <a href="https://github.com/treebacker" target="_blank" title="github" ref="friend">
+                    <i class="fa fa-github"></i>
+                </a>
+            </div>
+            
+        </div>
+    </div>
+</div>
+            <div class="page-title">
+    <ul>
+        <li><a href="/">最新</a></li>
+        
+            
+                <li class="active">
+                    <a href="/categories/tech-notes" data-name="技术">技术</a>
+                </li>
+            
+                <li class="">
+                    <a href="/categories/essays" data-name="随笔">随笔</a>
+                </li>
+            
+                <li class="">
+                    <a href="/categories/cdcitizen-of-the-sun" data-name="海子">海子</a>
+                </li>
+            
+                <li class="">
+                    <a href="/categories/others" data-name="其他">其他</a>
+                </li>
+            
+        
+        <li class="page-search">
+    <form id="search" class="search-form">
+        <label for="s" class="sr-only">请输入关键字</label>
+        <input class="search-field" type="text" name="s" placeholder="请输入关键字">
+        <button type="submit" class="search-form-submit" title="搜索"><i class="fa fa-search"></i></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="请输入关键词...">
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(无标题)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '../../../../content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+</li>
+
+    </ul>
+</div>
+<div class="main-inner">
+    <article class="post" itemscope="" itemtype="http://schema.org/BlogPosting">
+        <div class="post-header">
+            <div class="post-author clearfix">
+                <a class="avatar fleft" href="" target="_blank">
+                    <img width="48" src="/images/favicon.png" alt="avatar">
+                </a>
+                <p><span class="label">作者</span>
+                    <a href="" target="_blank">Treebacker</a>
+                    <span title="最后编辑于2019-08-07">2019-08-07</span>
+                </p>
+                <p></p>
+            </div>
+            <h2 class="post-title">MIPS指令学习笔记</h2>
+            <div class="post-meta">
+                本文总共2991个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
+            </div>
+        </div>
+        <div class="post-content markdown-body">
+            <h3 id="MIPS学习笔记"><a href="#MIPS学习笔记" class="headerlink" title="MIPS学习笔记"></a>MIPS学习笔记</h3><h4 id="寄存器"><a href="#寄存器" class="headerlink" title="寄存器"></a>寄存器</h4><ul>
+<li><p>有32个通用寄存器，三个特殊寄存器。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">编号					名称						描述</span><br><span class="line">0					zero					0号寄存器，始终是0；（为0提供简洁的形式）</span><br><span class="line">1					$at						保留寄存器</span><br><span class="line">2~3					$v0~$v1					values，保存表达式或函数的返回结果</span><br><span class="line">4~7					$a0~a3					arguments，函数的前4个参数</span><br><span class="line">8~15				$t0~t7					temporaries，汇编程序的临时寄存器</span><br><span class="line">16~23				$s0~s7					saved values，子函数使用时需要提前保存的值</span><br><span class="line">24~25				$t8~$t9					temporaries	临时，补充t0~t7</span><br><span class="line">26~27				$k0~$k7					保留，中断处理函数使用</span><br><span class="line">28					$gp						global pointer，全局指针</span><br><span class="line">29					$sp						stack pointer，堆栈指针，指向栈顶</span><br><span class="line">30					$fp						frame poniter，保存栈帧指针</span><br><span class="line">31					$ra						return address，函数返回地址</span><br><span class="line">pc											程序计数器</span><br><span class="line">HI											高位、余数</span><br><span class="line">LO											低位，商</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>字节序</p>
+<ul>
+<li>大端序、小端序；file指令查看(MSB   或者      LSB)</li>
+</ul>
+</li>
+<li><p>寻址方式</p>
+<ul>
+<li>寄存器寻址            多用于load/store两种</li>
+<li>PC寻址                            多用于转移指令</li>
+<li>立即数寻址                      多用于寻找变量</li>
+</ul>
+</li>
+<li><p>MIPS指令</p>
+<ul>
+<li><p>固定4字节长度</p>
+</li>
+<li><p>内存中的数据访问必须严格对齐（4byte）</p>
+</li>
+<li><p>流水线效应</p>
+<ul>
+<li>下指令的，strchr函数的参数来自$s0而不是$s2</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">mov $a0, $s2</span><br><span class="line">jalr strchr</span><br><span class="line">move $a0, $s0</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>指令格式</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">R型指令	Opcode(6)	Rs(5)	Rt(5)	Rd(5)	Shamt(5)	Funct(6)</span><br><span class="line">I型指令	Opcode(6)	Rs(5)	Rt(5)	Immediate(16)</span><br><span class="line">J型指令	Opcode(6)	Address(26)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>汇编常用指令</p>
+<ul>
+<li><p>load/store指令</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">la指令，用于将地址或者标签存入一个寄存器</span><br><span class="line">la $t0, val_1				复制val_l的地址到$t0中，val_1是一个Label</span><br><span class="line"></span><br><span class="line">li指令，用于将立即数存入通用寄存器</span><br><span class="line">li $t1, 40					$t1 = 40</span><br><span class="line"></span><br><span class="line">lw用于从指定的地址加载一个word类型的值到一个寄存器</span><br><span class="line">lw $s0, 0($sp)			$s0=MEM[$sp+0]</span><br><span class="line"></span><br><span class="line">sw将寄存器的值，存于指定的地址word类型</span><br><span class="line">sw $a0, 0($sp)			MEM[$sp+0] = $a0</span><br><span class="line"></span><br><span class="line">move指令用于寄存器之间值得传递，简化了add</span><br><span class="line">move $t5, $t2				$t5 = $t2</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>算术指令</p>
+<ul>
+<li><p>算术指控得所有操作都是寄存器，不能是RAM地址或间接寻址</p>
+</li>
+<li><p>操作数大小都是word（4byte）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">add $t0, $t1, $t2			$t0=$t1+$t2；	带符号数相加</span><br><span class="line">sub $t0, $t1, $t2			$t0=$t1-$t2；	带符号数相减</span><br><span class="line">addi $t0, $t1, 5			$t0=$t1+5；		有立即数的加法</span><br><span class="line">addu $t0, $t1, $t2			$t0=$t1+$t2		无符号数的加法</span><br><span class="line">subu $t0, $t1, $t2			$t0=$t1-$t2；	带符号数相减</span><br><span class="line">mult $t3, $t3				(HI, LO) = $t3 * $t4</span><br><span class="line">div $t5, $t6				$Hi=$t5 mod $t6</span><br><span class="line">mfhi $t0					$t0 = $Hi</span><br><span class="line">mflo $t1  					$t1 = $Lo</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>类比较指令</p>
+<ul>
+<li><p>虽然MIPS没有标志寄存器，但有SLT系列指令，通过比较设置某个寄存器后，与分支跳指令联合使用。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">slt $v0, $a0, $a1 如果a0小于a1，则v0=1；否则v0=0</span><br><span class="line">slti $v0, $a0, 255	如果a0小于立即数255则v0=1</span><br><span class="line">sltu		等，无符号比较</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>实例</p>
+<ul>
+<li>以下代码相当于“if($s2 &lt; 2) then $v0 == $v1 == 1 then goto loc_41A394</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">li $v1, 1</span><br><span class="line">beq $v0, $v1, loc_41A394</span><br><span class="line">slti $v0, $s2, 2</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p>SYSCALL</p>
+<ul>
+<li><p>产生一个软化中断，实现系统调用；系统调用号存放在$v0中，参数在$a0~$a3中；</p>
+<p>返回值在$v0中，如果出错，在$a3中返回错误号；在编写shellcode时，用到该指令机制</p>
+</li>
+<li><p>Write(1, “ABC\n”, 5)实现如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">addiu $sp, $sp, -32</span><br><span class="line">li $a0, 1</span><br><span class="line">lui $t6, 0x4142</span><br><span class="line">ori $t6, $t6, 0x430a</span><br><span class="line">sw  $t6, $0($sp)</span><br><span class="line">addiu $a1, $sp, 0</span><br><span class="line">li $a2, 5</span><br><span class="line">li $v0, 4004</span><br><span class="line">syscall</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p>分支跳转指令</p>
+<ul>
+<li><p>分支跳转指令本身可以通过比较两个寄存器决定如何跳转；如果想要实现与立即数的比较跳转，需要结合类跳转指令实现</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">b target					无条件跳转到target处</span><br><span class="line">beq	$t0, $t1, target		如果&quot;$t0 == $t1”，跳转到target</span><br><span class="line">blt $t0, $t1, target		如果“$t0 &lt; $t1”，跳转到target</span><br><span class="line">ble $t0, $t1, target		如果“$t0 &lt;= $t1” 跳转到target</span><br><span class="line">bgt</span><br><span class="line">blt</span><br><span class="line">bne							类比上</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p>跳转指令</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">j target				无条件跳转target</span><br><span class="line">jr $t3					跳转到$t3指向的地址处(Jump	Register)</span><br><span class="line">jal target				跳转到target，并保存返回地址到$ra中</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>子函数的调用</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">jal	sub_routine_label</span><br><span class="line">	复制当前PC的值到$ra中，（当前PC值就是返回地址）</span><br><span class="line">	程序跳转到sub_routine_label</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>子函数的返回</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">jr	$ra</span><br><span class="line">如果子函数重复嵌套，则将$ra的值保存在堆栈中，因为$ra总是保存当前执行的子函数的返回地址</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="MIPS程序经IDA和QEMU远程调试"><a href="#MIPS程序经IDA和QEMU远程调试" class="headerlink" title="MIPS程序经IDA和QEMU远程调试"></a>MIPS程序经IDA和QEMU远程调试</h4><ul>
+<li>本质上，qemu内置gdbserver，开放端口，在端口监听，可以使用gdb，ida等连接调试</li>
+<li>运行时调试<ul>
+<li>类似于在windows主机调试ELF文件，这样会有程序的符号表信息</li>
+<li>便于下断点，跟踪错误</li>
+</ul>
+</li>
+<li>附加调试，类似与gdb的进程附加调试，没有符号信息</li>
+</ul>
+<h4 id="MIPS——shellcode开发"><a href="#MIPS——shellcode开发" class="headerlink" title="MIPS——shellcode开发"></a>MIPS——shellcode开发</h4><ul>
+<li>shellcode开发一般步骤<ul>
+<li>用C语言开发shellcode</li>
+<li>strace跟踪程序运行，得到所有调用的系统调用号</li>
+<li>用汇编语言模拟实现</li>
+<li>在gdb中调试，提取shellcode</li>
+<li>精简、去坏</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+        <div class="post-tool">
+            <a class="btn-thumbs-up" href="javascript:void(0);" data-cid="52" title="95">
+                <i class="fa fa-thumbs-up" aria-hidden="true"></i> 打赏
+            </a>
+        </div>
+        
+        <div class="post-tags">标签：
+            
+        </div>
+        
+    </article>
+    
+    <p>本文代表个人观点，内容仅供参考。若有不恰当之处，望不吝赐教！</p>
+    
+    
+</div>
+<script src="../../../../js/busuanzi.pure.mini.js"></script>
+
+        </div><!-- end #main-->
+    </div><!-- end #body -->
+    <footer class="footer">
+    <div class="footer-inner">
+        <p>
+            <a href="/about" title="关于本站">关于本站</a>&nbsp;&nbsp<em>·</em>&nbsp;&nbsp
+            <!-- 自定义链接 -->
+            <a href="/help" title="help">急救中心</a>&nbsp;&nbsp<em>·</em>&nbsp;&nbsp
+            <a href="/app" title="App下载">App下载</a>
+        </p>
+        <p>
+            本站点采用<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享署名-非商业性使用-相同方式共享 4.0 国际许可协议</a>，已建立<a href="/timeline" id="siteBuildingTime"></a>天<br>
+            ©2017 基于<a href="http://hexo.io" target="_blank">Hexo</a>搭建
+            ，主题&nbsp<a href="https://github.com/tangkunyin/hexo-theme-jsimple" target="_blank">JSimple</a>
+            ，作者<a href="https://www.tangkunyin.com" target="_blank">唐先森</a>
+            ，Hosted by <a href="https://pages.coding.me" style="font-weight: bold">Coding Pages</a>
+        </p>
+        
+
+    </div>
+</footer>
+<script src="../../../../js/InsightSearch.js"></script>
+<script src="../../../../js/SimpleCore.js"></script>
+
+</div>
+<div class="fixed-btn">
+    <a class="btn-gotop" href="javascript:"> <i class="fa fa-angle-up"></i></a>
+</div>
+<script>
+    $(function () {
+        SimpleCore.init({
+            buildingTime: '11/22/2018',
+            current: $('.post-tags').length > 0 ? 'post' : 'archive',
+            snsQRCode: '/images/sns-qrcode.png',
+            donateImg: '/images/donate-qr.png',
+        });
+    });
+</script>
+</body>
+</html>
