@@ -50,11 +50,11 @@
 <link rel="shortcut icon" href="../../../../images/favicon.png">
 
 
-<title>Watch Security</title>
+<title>arm学习笔记 - Watch Security</title>
 
-<meta name="keywords" content="Reverse, Security, New">
+<meta name="keywords" content="arm">
 
-<meta name="description " content="">
+<meta name="description " content="arm">
 
 </head>
 <body>
@@ -106,7 +106,23 @@
     <ul>
         <li><a href="/">最新</a></li>
         
-        
+            
+                <li class="active">
+                    <a href="/categories/tech-notes" data-name="技术">技术</a>
+                </li>
+            
+                <li class="">
+                    <a href="/categories/essays" data-name="随笔">随笔</a>
+                </li>
+            
+                <li class="">
+                    <a href="/categories/cdcitizen-of-the-sun" data-name="海子">海子</a>
+                </li>
+            
+                <li class="">
+                    <a href="/categories/others" data-name="其他">其他</a>
+                </li>
+            
         
         <li class="page-search">
     <form id="search" class="search-form">
@@ -151,22 +167,21 @@
         <div class="post-header">
             <div class="post-author clearfix">
                 <a class="avatar fleft" href="" target="_blank">
-                    <img width="48" src="" alt="avatar">
+                    <img width="48" src="/images/favicon.png" alt="avatar">
                 </a>
                 <p><span class="label">作者</span>
-                    <a href="" target="_blank"></a>
-                    <span title="最后编辑于2019-07-11">2019-07-11</span>
+                    <a href="" target="_blank">Treebacker</a>
+                    <span title="最后编辑于2019-07-15">2019-07-15</span>
                 </p>
                 <p></p>
             </div>
-            <h2 class="post-title"></h2>
+            <h2 class="post-title">ARM学习笔记</h2>
             <div class="post-meta">
-                本文总共3341个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
+                本文总共3098个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
             </div>
         </div>
         <div class="post-content markdown-body">
-            <p>title: ARM学习笔记<br>entitle: ‘’<br>author: Treebacker<br>avatar: /images/favicon.png<br>autherDesc: Tree下的Backer<br>categories: 技术<br>date: 2019-09-02 12:18:48<br>authorLink:<br>authorAbout:<br>tags:<br>keywords: arm<br>description: arm</p>
-<h3 id="ARM学习笔记"><a href="#ARM学习笔记" class="headerlink" title="ARM学习笔记"></a>ARM学习笔记</h3><h4 id="环境搭建"><a href="#环境搭建" class="headerlink" title="环境搭建"></a>环境搭建</h4><ul>
+            <h3 id="ARM学习笔记"><a href="#ARM学习笔记" class="headerlink" title="ARM学习笔记"></a>ARM学习笔记</h3><h4 id="环境搭建"><a href="#环境搭建" class="headerlink" title="环境搭建"></a>环境搭建</h4><ul>
 <li><h5 id="主机ubuntu-16-0-4-TLS"><a href="#主机ubuntu-16-0-4-TLS" class="headerlink" title="主机ubuntu 16.0.4 TLS."></a>主机ubuntu 16.0.4 TLS.</h5><ul>
 <li>配置交叉编译环境arm-linux-gcc4.4.3</li>
 <li>安装qemu虚拟机，raspberry内核</li>
@@ -207,11 +222,11 @@
 <li>在某些指令下，source2的立即数取值只能在8bit内（例如mov指令）</li>
 </ul>
 </li>
-<li><h5 id="Registers-and-ALU"><a href="#Registers-and-ALU" class="headerlink" title="Registers and ALU"></a>Registers and ALU</h5><p> <img src="F:\blog\source\_posts\ARM学习笔记\registers_alu.png" alt=""></p>
+<li><h5 id="Registers-and-ALU"><a href="#Registers-and-ALU" class="headerlink" title="Registers and ALU"></a>Registers and ALU</h5><p><img src="F:\blog\source\_posts\ARM学习笔记\registers_alu.png" alt=""></p>
 </li>
 <li><h5 id="常见指令规则"><a href="#常见指令规则" class="headerlink" title="常见指令规则"></a>常见指令规则</h5><ul>
 <li><p>特别的，mutiple</p>
-<p> ldm、stm</p>
+<p>ldm、stm</p>
 <ul>
 <li>格式一般如下</li>
 <li>ldm    register_source,   {var1, var2, ……}</li>
@@ -281,8 +296,8 @@
 </li>
 <li><h5 id="LDR-R7-0xFFFFFFFF-用于赋值大于0xff的情况"><a href="#LDR-R7-0xFFFFFFFF-用于赋值大于0xff的情况" class="headerlink" title="LDR R7, =#0xFFFFFFFF     (用于赋值大于0xff的情况)"></a>LDR R7, =#0xFFFFFFFF     (用于赋值大于0xff的情况)</h5></li>
 <li><p>实例</p>
-<pre><code>![](F:\blog\source\_posts\ARM学习笔记\example.png)
-</code></pre></li>
+<p><img src="F:\blog\source\_posts\ARM学习笔记\example.png" alt=""></p>
+</li>
 </ul>
 </li>
 </ul>
@@ -326,10 +341,10 @@
 <li><p>注意与X86的不同，并不是所有的执行都影响CPSR，且可由我们选择。</p>
 </li>
 <li><p>常见的指令对CPSR的影响</p>
-<p> <img src="F:\blog\source\_posts\ARM学习笔记\flagbit.png" alt=""></p>
+<p><img src="F:\blog\source\_posts\ARM学习笔记\flagbit.png" alt=""></p>
 </li>
 <li><p>CPSR的标志位用于条件跳转</p>
-<p> <img src="F:\blog\source\_posts\ARM学习笔记\jmp_flag.png" alt=""></p>
+<p><img src="F:\blog\source\_posts\ARM学习笔记\jmp_flag.png" alt=""></p>
 </li>
 <li><p>一般的条件跳转</p>
 </li>
@@ -337,10 +352,9 @@
 <ul>
 <li>最多支持4层</li>
 <li>if-then-else模式</li>
-<li><p>then下相同数量的条件指令的逻辑与then的条件一致；相同数量的条件指令的逻辑与其相反</p>
-<p><img src="F:\blog\source\_posts\ARM学习笔记\jmp.png" alt=""></p>
-</li>
+<li>then下相同数量的条件指令的逻辑与then的条件一致；相同数量的条件指令的逻辑与其相反</li>
 </ul>
+<p><img src="F:\blog\source\_posts\ARM学习笔记\jmp.png" alt=""></p>
 </li>
 <li><p>直接跳转branch</p>
 <ul>
@@ -357,7 +371,7 @@
 <p><img src="F:\blog\source\_posts\ARM学习笔记\stack_state.png" alt=""></p>
 </li>
 <li><p>对应的不同的mutl指令</p>
-<p> <img src="F:\blog\source\_posts\ARM学习笔记\stack_ldm.png" alt=""></p>
+<p><img src="F:\blog\source\_posts\ARM学习笔记\stack_ldm.png" alt=""></p>
 </li>
 <li><p>参数传递规则</p>
 <ul>
