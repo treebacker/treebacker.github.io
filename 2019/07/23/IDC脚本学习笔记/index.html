@@ -50,9 +50,9 @@
 <link rel="shortcut icon" href="../../../../images/favicon.png">
 
 
-<title>Watch Security</title>
+<title>idc脚本学习笔记 - Watch Security</title>
 
-<meta name="keywords" content="Reverse, Security, New">
+<meta name="keywords" content="ida、idc">
 
 <meta name="description " content="">
 
@@ -106,7 +106,23 @@
     <ul>
         <li><a href="/">最新</a></li>
         
-        
+            
+                <li class="active">
+                    <a href="/categories/tech-notes" data-name="技术">技术</a>
+                </li>
+            
+                <li class="">
+                    <a href="/categories/essays" data-name="随笔">随笔</a>
+                </li>
+            
+                <li class="">
+                    <a href="/categories/cdcitizen-of-the-sun" data-name="海子">海子</a>
+                </li>
+            
+                <li class="">
+                    <a href="/categories/others" data-name="其他">其他</a>
+                </li>
+            
         
         <li class="page-search">
     <form id="search" class="search-form">
@@ -151,22 +167,21 @@
         <div class="post-header">
             <div class="post-author clearfix">
                 <a class="avatar fleft" href="" target="_blank">
-                    <img width="48" src="" alt="avatar">
+                    <img width="48" src="/images/favicon.png" alt="avatar">
                 </a>
                 <p><span class="label">作者</span>
-                    <a href="" target="_blank"></a>
+                    <a href="" target="_blank">Treebacker</a>
                     <span title="最后编辑于2019-07-23">2019-07-23</span>
                 </p>
                 <p></p>
             </div>
-            <h2 class="post-title"></h2>
+            <h2 class="post-title">IDC脚本学习笔记</h2>
             <div class="post-meta">
-                本文总共8516个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
+                本文总共8321个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
             </div>
         </div>
         <div class="post-content markdown-body">
-            <p>title: MIPS指令学习笔记<br>entitle: ‘’<br>author: Treebacker<br>avatar: /images/favicon.png<br>autherDesc: Tree下的Backer<br>categories: 技术<br>date: 2019-07-23 11:27:18<br>authorLink:<br>authorAbout:<br>tags:<br>keywords: ida\idc<br>description:</p>
-<h3 id="IDC脚本学习"><a href="#IDC脚本学习" class="headerlink" title="IDC脚本学习"></a>IDC脚本学习</h3><h4 id="基础"><a href="#基础" class="headerlink" title="基础"></a>基础</h4><ul>
+            <h3 id="IDC脚本学习"><a href="#IDC脚本学习" class="headerlink" title="IDC脚本学习"></a>IDC脚本学习</h3><h4 id="基础"><a href="#基础" class="headerlink" title="基础"></a>基础</h4><ul>
 <li><h5 id="IDC变量"><a href="#IDC变量" class="headerlink" title="IDC变量"></a>IDC变量</h5><ul>
 <li>支持整数、字符串、浮点型</li>
 <li>字符串是IDC的本地类型</li>
@@ -300,7 +315,6 @@
 <li><p>模拟汇编语言行为（常用于模拟自修改程序的运行）</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> addr, var_4;</span><br><span class="line"><span class="keyword">for</span> (var_4=<span class="number">0</span>; var_4 &lt;= <span class="number">0x3c1</span>; var_4 ++)</span><br><span class="line">&#123;</span><br><span class="line">    addr = <span class="number">0x804b880</span> + var_4;</span><br><span class="line">    PatchByte(addr, Byte(addr) ^ <span class="number">0x4b</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 </li>
-<li></li>
 </ul>
 
         </div>

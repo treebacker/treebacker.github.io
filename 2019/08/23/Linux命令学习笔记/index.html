@@ -50,7 +50,7 @@
 <link rel="shortcut icon" href="../../../../images/favicon.png">
 
 
-<title>Watch Security</title>
+<title>linux命令学习笔记 - Watch Security</title>
 
 <meta name="keywords" content="Reverse, Security, New">
 
@@ -106,7 +106,23 @@
     <ul>
         <li><a href="/">最新</a></li>
         
-        
+            
+                <li class="active">
+                    <a href="/categories/tech-notes" data-name="技术">技术</a>
+                </li>
+            
+                <li class="">
+                    <a href="/categories/essays" data-name="随笔">随笔</a>
+                </li>
+            
+                <li class="">
+                    <a href="/categories/cdcitizen-of-the-sun" data-name="海子">海子</a>
+                </li>
+            
+                <li class="">
+                    <a href="/categories/others" data-name="其他">其他</a>
+                </li>
+            
         
         <li class="page-search">
     <form id="search" class="search-form">
@@ -151,22 +167,21 @@
         <div class="post-header">
             <div class="post-author clearfix">
                 <a class="avatar fleft" href="" target="_blank">
-                    <img width="48" src="" alt="avatar">
+                    <img width="48" src="/images/favicon.png" alt="avatar">
                 </a>
                 <p><span class="label">作者</span>
-                    <a href="" target="_blank"></a>
-                    <span title="最后编辑于2019-07-20">2019-07-20</span>
+                    <a href="" target="_blank">Treebacker</a>
+                    <span title="最后编辑于2019-08-23">2019-08-23</span>
                 </p>
                 <p></p>
             </div>
-            <h2 class="post-title"></h2>
+            <h2 class="post-title">Linux命令学习笔记</h2>
             <div class="post-meta">
-                本文总共6521个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
+                本文总共6324个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
             </div>
         </div>
         <div class="post-content markdown-body">
-            <p>title: MIPS指令学习笔记<br>entitle: ‘’<br>author: Treebacker<br>avatar: /images/favicon.png<br>autherDesc: Tree下的Backer<br>categories: 技术<br>date: 2019-08-26 10:33:10<br>authorLink:<br>authorAbout:<br>tags:<br>keywords: linux shell<br>description:</p>
-<h3 id="Linux命令学习笔记"><a href="#Linux命令学习笔记" class="headerlink" title="Linux命令学习笔记"></a>Linux命令学习笔记</h3><h4 id="第一天——Cat"><a href="#第一天——Cat" class="headerlink" title="第一天——Cat"></a>第一天——Cat</h4><ul>
+            <h3 id="Linux命令学习笔记"><a href="#Linux命令学习笔记" class="headerlink" title="Linux命令学习笔记"></a>Linux命令学习笔记</h3><h4 id="第一天——Cat"><a href="#第一天——Cat" class="headerlink" title="第一天——Cat"></a>第一天——Cat</h4><ul>
 <li>cat读取文件（一个或者多个），将文件内容拼接在一起并将结果发送到stdout<ul>
 <li>cat file1   file2   file3……</li>
 </ul>
@@ -296,8 +311,8 @@
 </ul>
 </li>
 </ul>
-<h4 id="第三天-——-xargs"><a href="#第三天-——-xargs" class="headerlink" title="第三天    ——   xargs"></a>第三天    ——   xargs</h4><pre><code>xargs命令重新格式化stdin接受到的数据，应该紧接在管道操作符之后。xargs默认执行echo命令
-</code></pre><ul>
+<h4 id="第三天-——-xargs"><a href="#第三天-——-xargs" class="headerlink" title="第三天    ——   xargs"></a>第三天    ——   xargs</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">xargs命令重新格式化stdin接受到的数据，应该紧接在管道操作符之后。xargs默认执行echo命令</span><br></pre></td></tr></table></figure>
+<ul>
 <li><p>一般的输出格式化</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ls *.c | xargs grep main			//在一组C源码中找main</span><br><span class="line">cat example.txt | xargs				//单行输出</span><br><span class="line">cat example.txt | xargs -n 			//每行输出n个元素</span><br></pre></td></tr></table></figure>
 </li>
@@ -305,10 +320,8 @@
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo "treexhuixwherextoxgo" | -d x -n 1			//x分割，每行一个单词</span><br></pre></td></tr></table></figure>
 </li>
 </ul>
-<h4 id="第四天-——qemu"><a href="#第四天-——qemu" class="headerlink" title="第四天    ——qemu"></a>第四天    ——qemu</h4><pre><code>qemu是一款模拟处理器自由软件；经常用来模拟arm、mips等各种架构的操作环境。
-
-记录一些经常用到的
-</code></pre><ul>
+<h4 id="第四天-——qemu"><a href="#第四天-——qemu" class="headerlink" title="第四天    ——qemu"></a>第四天    ——qemu</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">qemu是一款模拟处理器自由软件；经常用来模拟arm、mips等各种架构的操作环境。</span><br><span class="line"></span><br><span class="line">记录一些经常用到的</span><br></pre></td></tr></table></figure>
+<ul>
 <li><p>用户模式下执行程序</p>
 <ul>
 <li><p>qemu-arm、qemu-mips、qemu-mipsel等等    </p>
@@ -492,8 +505,7 @@
 <li><p>依据行计数或者正则表达式</p>
 </li>
 <li><p>命令规则</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">/SERVER/	用来匹配特定行,分割过程从此开始</span><br><span class="line">/[REGEX]/	用于描述文本模式,它从当前行一直复制到(但不包括)SERVER的匹配行</span><br><span class="line">&#123;*&#125;		表示根据匹配重复执行操作,直到文件末尾.&#123;整数&#125;指定重复分割次数</span><br><span class="line">-s		命令进入静默模式,不打印信息</span><br><span class="line">-n		指定文件后缀名的数字个数</span><br><span class="line">-f		指定文件名的前缀</span><br><span class="line">-b		制定后缀格式,类似于printf的参数格式</span><br></pre></td></tr></table></figure>
-</li>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">/SERVER/	用来匹配特定行,分割过程从此开始</span><br><span class="line">/[REGEX]/	用于描述文本模式,它从当前行一直复制到(但不包括)SERVER的匹配行</span><br><span class="line">&#123;*&#125;		表示根据匹配重复执行操作,直到文件末尾.&#123;整数&#125;指定重复分割次数</span><br><span class="line">-s		命令进入静默模式,不打印信息</span><br><span class="line">-n		指定文件后缀名的数字个数</span><br><span class="line">-f		指定文件名的前缀</span><br><span class="line">-b		制定后缀格式,类似于printf的参数格式</span><br></pre></td></tr></table></figure></li>
 </ul>
 </li>
 </ul>
