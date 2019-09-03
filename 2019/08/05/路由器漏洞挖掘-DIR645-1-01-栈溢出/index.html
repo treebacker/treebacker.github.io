@@ -196,15 +196,15 @@
 </ul>
 <h4 id="实践过程"><a href="#实践过程" class="headerlink" title="实践过程"></a>实践过程</h4><ul>
 <li><p>搜索漏洞相关信息,重点分析</p>
-<p><img src="F:\blog\source\_posts\路由器漏洞挖掘-DIR645-1-01-栈溢出\i1.png" alt=""></p>
+<img src="/2019/08/05/路由器漏洞挖掘-DIR645-1-01-栈溢出/i1.png" title="[]">
 </li>
 <li><p>分析栈溢出(第二条);通过关键词定位到关键函数</p>
-<p><img src="F:\blog\source\_posts\路由器漏洞挖掘-DIR645-1-01-栈溢出\s1.png" alt=""></p>
+<img src="/2019/08/05/路由器漏洞挖掘-DIR645-1-01-栈溢出/s1.png" title="[]">
 </li>
 <li><p>在这里发现了sprintf函数的调用,并经过实践,发现确实可以覆盖,控制程序执行走向;但是程序最终会Failed</p>
 </li>
 <li><p>后面发现,程序会打开一个tmp文件</p>
-<p><img src="F:\blog\source\_posts\路由器漏洞挖掘-DIR645-1-01-栈溢出\s2.png" alt=""></p>
+<img src="/2019/08/05/路由器漏洞挖掘-DIR645-1-01-栈溢出/s2.png" title="[]">
 </li>
 <li><p>这里同样存在sprintf,正常情况下,是存在该文件的.我们也可以选择自建一个(我这上面失败了,815可以成功)</p>
 </li>
@@ -223,8 +223,8 @@
 <li><p>首先需要有$a0 ==&gt;  “/bin/sh”</p>
 <ul>
 <li><p>通过stackfinders()可以找到,(在.so文件中)</p>
-<p><img src="F:\blog\source\_posts\路由器漏洞挖掘-DIR645-1-01-栈溢出\g1.png" alt=""></p>
-<p><img src="F:\blog\source\_posts\路由器漏洞挖掘-DIR645-1-01-栈溢出\g2.png" alt=""></p>
+<img src="/2019/08/05/路由器漏洞挖掘-DIR645-1-01-栈溢出/g1.png" title="[]">
+<img src="/2019/08/05/路由器漏洞挖掘-DIR645-1-01-栈溢出/g2.png" title="[]">
 </li>
 <li><p>上面一段rop借助$r5为中介,完成使得$a0指向栈地址的功能;同时$s0指向call_system</p>
 </li>
@@ -237,7 +237,7 @@
 <li><p>如果地址存在坏字节,想办法用等效计算替代</p>
 </li>
 <li><p>最终,通过$s0 = $s0 + 1构造地址</p>
-<p><img src="F:\blog\source\_posts\路由器漏洞挖掘-DIR645-1-01-栈溢出\g3.png" alt=""></p>
+<img src="/2019/08/05/路由器漏洞挖掘-DIR645-1-01-栈溢出/g3.png" title="[]">
 </li>
 </ul>
 </li>
