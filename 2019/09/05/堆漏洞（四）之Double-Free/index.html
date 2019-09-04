@@ -177,7 +177,7 @@
             </div>
             <h2 class="post-title">堆漏洞（四）之Double-Free</h2>
             <div class="post-meta">
-                本文总共3713个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
+                本文总共3708个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
             </div>
         </div>
         <div class="post-content markdown-body">
@@ -203,9 +203,9 @@
 <img src="/2019/09/05/堆漏洞（四）之Double-Free/2.png" title="[]">
 </li>
 <li><p>分析程序知道，分配的chunk大小是0x80的整数倍，可以放在small bin中；可以利用small bins的双向环形链表结构。例如下面的代码产生的small bins的部分结构如图</p>
+<img src="/2019/09/05/堆漏洞（四）之Double-Free/2.png" title="[]">
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">s1 = <span class="built_in">malloc</span>(<span class="number">0x80</span>);</span><br><span class="line">s2 = <span class="built_in">malloc</span>(<span class="number">0x80</span>);</span><br><span class="line"></span><br><span class="line"><span class="built_in">free</span>(s1);</span><br><span class="line"><span class="built_in">free</span>(<span class="number">2</span>);</span><br></pre></td></tr></table></figure>
-<img src="/2019/09/05/堆漏洞（四）之Double-Free/3.png" title="[]">
-<p>​    显然，双向链表使得fd和bk指针可能在某时刻指向chunk地址。而当我们malloc(8)时，仅仅会覆盖fd，bk仍保留一个chunk的地址，输出content时，就会泄露chunk地址。</p>
+<p>显然，双向链表使得fd和bk指针可能在某时刻指向chunk地址。而当我们malloc(8)时，仅仅会覆盖fd，bk仍保留一个chunk的地址，输出content时，就会泄露chunk地址。</p>
 </li>
 <li><p>chunk地址和main_arena之间存在着数值上的差值关系，具体的libc可能不一致，建议动手调试计算为准。main_arena的偏移可以在libc文件的main_trim函数中找到。如下展示</p>
 <img src="/2019/09/05/堆漏洞（四）之Double-Free/4.png" title="[]">
