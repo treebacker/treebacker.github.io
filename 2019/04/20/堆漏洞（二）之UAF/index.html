@@ -177,48 +177,48 @@
             </div>
             <h2 class="post-title">堆漏洞（二）之UAF</h2>
             <div class="post-meta">
-                本文总共1633个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
+                本文总共1708个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
             </div>
         </div>
         <div class="post-content markdown-body">
             <h4 id="写在前面"><a href="#写在前面" class="headerlink" title="写在前面"></a>写在前面</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*堆分配因为其灵活性、不固定性、受用户输入的影响更大（包括何时请求分配、堆的大小，何时释放），尽管内存分配系统(例如ptmalloc)已经对很多操作进行了安全监测，但仍然有很多可利用的漏洞。*/</span></span><br></pre></td></tr></table></figure>
 <h4 id="Use-After-Free的真面目"><a href="#Use-After-Free的真面目" class="headerlink" title="Use After Free的真面目"></a>Use After Free的真面目</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">尽管英文水平有限，但也能从字面看出来其实就是在程序中使用了一个已经<span class="built_in">free</span>的堆块。一般来说<span class="built_in">free</span>之后会有三种情况（ 以<span class="built_in">free</span>(ptr)为例 ）：</span><br><span class="line">a. 将指针置空即 ptr = null。这时ptr指针是不可用的</span><br><span class="line">b. 不会对prt置空，也不会对ptr指向的内存区域做更改，那么很可能可以重新使用ptr进行相同的操作。</span><br><span class="line">c. 不会对ptr置空，但是会对ptr指向的内存区域进行重写等更改操作，使得ptr可以做一些有意思的事情。</span><br></pre></td></tr></table></figure>
-<p>​    显然，我们能够利用的就是b、c这两种情况。</p>
-<h4 id="UAF利用自己的一点思考："><a href="#UAF利用自己的一点思考：" class="headerlink" title="UAF利用自己的一点思考："></a>UAF利用自己的一点思考：</h4><ul>
+<pre><code>显然，我们能够利用的就是b、c这两种情况。
+</code></pre><h4 id="UAF利用自己的一点思考："><a href="#UAF利用自己的一点思考：" class="headerlink" title="UAF利用自己的一点思考："></a>UAF利用自己的一点思考：</h4><ul>
 <li>利用的基础是malloc分配得到的缓冲区的数据结构的特殊性，比如存在一个函数指针，</li>
 <li>利用的漏洞是由于free操作并不会完全改变缓冲区的内容，所以一个未被置null的结构体指针，仍然可以用来进行操作</li>
 <li>基本的思路是构造chunk，它们的大小要自己控制，使得我们能知道下一次的malloc操作的内存位置。</li>
 <li>通常对函数指针进行覆写，指向我们需要的函数</li>
 </ul>
-<h4 id="案例"><a href="#案例" class="headerlink" title="案例"></a>案例</h4><p>​     HITCON-training 中的 <a href="https://github.com/ctf-wiki/ctf-challenges/tree/master/pwn/heap/use_after_free/hitcon-training-hacknote" target="_blank" rel="noopener">lab 10 hacknote</a> 。</p>
-<h4 id="扩展"><a href="#扩展" class="headerlink" title="扩展"></a>扩展</h4><ul>
+<h4 id="案例"><a href="#案例" class="headerlink" title="案例"></a>案例</h4><pre><code>HITCON-training 中的 [lab 10 hacknote](https://github.com/ctf-wiki/ctf-challenges/tree/master/pwn/heap/use_after_free/hitcon-training-hacknote) 。
+</code></pre><h4 id="扩展"><a href="#扩展" class="headerlink" title="扩展"></a>扩展</h4><ul>
 <li><p>通常该漏洞常伴随着别的利用漏洞，例如Double free。可以达到任意代码执行的效果。</p>
 <p>以校赛的一道题目为例。</p>
 <h5 id="程序功能剖析"><a href="#程序功能剖析" class="headerlink" title="程序功能剖析"></a>程序功能剖析</h5><p>Add：使用了全局数来存储分配的地址。主要问题在于read后并没有截断（后面再提）</p>
-<p><img src="file:///C:/WINDOWS/TEMP/msohtmlclip1/01/clip_image002.png" alt="img"></p>
+<img src="/2019/04/20/堆漏洞（二）之UAF/1.png" title="[]">
 <p> Delete：问题在于Free前并没有检查是否已经free，并且没有置NuLL, 存在double free利用。</p>
-<p><img src="file:///C:/WINDOWS/TEMP/msohtmlclip1/01/clip_image004.png" alt="img"></p>
+<img src="/2019/04/20/堆漏洞（二）之UAF/3.png" title="[]">
 </li>
 </ul>
 <p>  Display: 输出信息</p>
-<p>  <img src="file:///C:/WINDOWS/TEMP/msohtmlclip1/01/clip_image006.png" alt="img"></p>
+  <img src="/2019/04/20/堆漏洞（二）之UAF/3.png" title="[]">
 <p>   这里，其实存在泄露，因为read后并没有截断（当然因为这里并没有用一个随机分配的来存储chunk地址，所以并不需要泄露）</p>
 <h5 id="利用要点"><a href="#利用要点" class="headerlink" title="利用要点"></a>利用要点</h5><p>  a.    虽然不存在堆溢出，但是由于变相的UAF和Double free，我们仍然可以伪造chunk，达到目的。下图很好的展示了如何伪造</p>
-<p>  <img src="file:///C:/WINDOWS/TEMP/msohtmlclip1/01/clip_image008.png" alt="img"></p>
-<p>  ​    通过fake_size和chunk1的fake_presize使得程序相信fakechunk0是一个(0x80+0x90)大小的chunk，且作为chunk2的前一个堆块，通过设置chunk2的size使得fake chunk0看起来是空闲的。</p>
-<p>  chunk3和chunk4的作用是防止free（chunk2）时发生向前合并。</p>
-<p>  ​    这样free（chunk2）时发生向后合并，执行unlink（fake chunk0），向chunk_addr的位置写入chunk_addr - 0x18接着调用edit(0)将可控chunk_addr位置的8字节</p>
-<p>  b.   这里比较好的就是chunk_addr我们是知道的（全局数组），所以直接构造payload；</p>
-<p>  <img src="file:///C:/WINDOWS/TEMP/msohtmlclip1/01/clip_image010.png" alt="img"></p>
+  <img src="/2019/04/20/堆漏洞（二）之UAF/2.webp" title="[]">
+<pre><code>通过fake_size和chunk1的fake_presize使得程序相信fakechunk0是一个(0x80+0x90)大小的chunk，且作为chunk2的前一个堆块，通过设置chunk2的size使得fake chunk0看起来是空闲的。
+</code></pre><p>  chunk3和chunk4的作用是防止free（chunk2）时发生向前合并。</p>
+<pre><code>这样free（chunk2）时发生向后合并，执行unlink（fake chunk0），向chunk_addr的位置写入chunk_addr - 0x18接着调用edit(0)将可控chunk_addr位置的8字节
+</code></pre><p>  b.   这里比较好的就是chunk_addr我们是知道的（全局数组），所以直接构造payload；</p>
+  <img src="/2019/04/20/堆漏洞（二）之UAF/4.png" title="[]">
 <p>  通过这一步，我们可以使得原本存储note6的content的指针指向低0x18的位置，下次edit note6时，我们就完全可以控制指向note6的content的指针，达到任意写目的。</p>
 <p>  c.    如， 泄露地址</p>
-<p>  <img src="file:///C:/WINDOWS/TEMP/msohtmlclip1/01/clip_image012.png" alt="img"></p>
+  <img src="/2019/04/20/堆漏洞（二）之UAF/5.png" title="[]">
 <p>  d.   之后的利用，需要仔细检查一下程序的安全措施（因为一会发现got表无法复写）</p>
-<p>  <img src="file:///C:/WINDOWS/TEMP/msohtmlclip1/01/clip_image013.png" alt="img"></p>
-<p>  ​    呃呃呃， 因为是Full RELRO. 在程序开始进入main函数之前就会解析用到的所有的函数在libc中的地址，而非延迟绑定。</p>
-<p>  a.    换一个思路，GOT表无法复写，一般来说可以考虑ret_2_dllreslove,，但是这个太麻烦。我选择了后者复写free函数的hook函数（该函数在libc文件中实在.bss段的）</p>
+  <img src="/2019/04/20/堆漏洞（二）之UAF/6.png" title="[]">
+<pre><code>呃呃呃， 因为是Full RELRO. 在程序开始进入main函数之前就会解析用到的所有的函数在libc中的地址，而非延迟绑定。
+</code></pre><p>  a.    换一个思路，GOT表无法复写，一般来说可以考虑ret_2_dllreslove,，但是这个太麻烦。我选择了后者复写free函数的hook函数（该函数在libc文件中实在.bss段的）</p>
 <p>  b.   如下</p>
-<p>  <img src="file:///C:/WINDOWS/TEMP/msohtmlclip1/01/clip_image015.png" alt="img"></p>
+  <img src="/2019/04/20/堆漏洞（二）之UAF/7.png" title="[]">
 <p>参考链接<a href="https://www.cnblogs.com/0xJDchen/p/6195919.html" target="_blank" rel="noopener">JDchen</a></p>
 
         </div>
