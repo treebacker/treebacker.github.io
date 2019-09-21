@@ -177,7 +177,7 @@
             </div>
             <h2 class="post-title">ByteCtf-pwn复现</h2>
             <div class="post-meta">
-                本文总共2490个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
+                本文总共2716个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
             </div>
         </div>
         <div class="post-content markdown-body">
@@ -238,6 +238,15 @@
 </li>
 </ul>
 <p><a href="[https://veritas501.space/2018/05/05/seccomp%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/](https://veritas501.space/2018/05/05/seccomp学习笔记/">seccomp学习</a>)</p>
+<h4 id="notefive"><a href="#notefive" class="headerlink" title="notefive"></a>notefive</h4><ul>
+<li><p>这个题目只允许管理5个note，且note的大小不在fastbin范围内。且不提供show功能，所以如果要泄露地址，一定会IO重定向。</p>
+</li>
+<li><p>漏洞只有一个off by one溢出</p>
+<img src="/2019/09/11/ByteCtf-pwn复现/6.png" title="[]">
+</li>
+<li><p>由于无法fastbin attack，所以只好先利用off by one 进行chunk extend，这里由于两个size超出1byte，所以伪造prev_size。之后改写global_max_fast。然后可以正常fastbin attack</p>
+</li>
+</ul>
 
         </div>
         <div class="post-tool">
