@@ -177,7 +177,7 @@
             </div>
             <h2 class="post-title">堆漏洞（二）之UAF</h2>
             <div class="post-meta">
-                本文总共1708个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
+                本文总共2497个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
             </div>
         </div>
         <div class="post-content markdown-body">
@@ -188,10 +188,11 @@
 <li>利用的基础是malloc分配得到的缓冲区的数据结构的特殊性，比如存在一个函数指针，</li>
 <li>利用的漏洞是由于free操作并不会完全改变缓冲区的内容，所以一个未被置null的结构体指针，仍然可以用来进行操作</li>
 <li>基本的思路是构造chunk，它们的大小要自己控制，使得我们能知道下一次的malloc操作的内存位置。</li>
-<li>通常对函数指针进行覆写，指向我们需要的函数</li>
+<li>通常对函数指针进行覆写，指向我们需要的函数。</li>
+<li>UAF最常用于信息泄露，配合unsorted bin通常能可以泄露main_arena地址，即可得到libc地址。</li>
 </ul>
-<h4 id="案例"><a href="#案例" class="headerlink" title="案例"></a>案例</h4><pre><code>HITCON-training 中的 [lab 10 hacknote](https://github.com/ctf-wiki/ctf-challenges/tree/master/pwn/heap/use_after_free/hitcon-training-hacknote) 。
-</code></pre><h4 id="扩展"><a href="#扩展" class="headerlink" title="扩展"></a>扩展</h4><ul>
+<h4 id="案例"><a href="#案例" class="headerlink" title="案例"></a>案例</h4><p> HITCON-training 中的 <a href="https://github.com/ctf-wiki/ctf-challenges/tree/mastker/pwn/heap/use_after_free/hitcon-training-hacknote" target="_blank" rel="noopener">lab 10 hacknote</a> 。</p>
+<h4 id="扩展1"><a href="#扩展1" class="headerlink" title="扩展1"></a>扩展1</h4><ul>
 <li><p>通常该漏洞常伴随着别的利用漏洞，例如Double free。可以达到任意代码执行的效果。</p>
 <p>以校赛的一道题目为例。</p>
 <h5 id="程序功能剖析"><a href="#程序功能剖析" class="headerlink" title="程序功能剖析"></a>程序功能剖析</h5><p>Add：使用了全局数来存储分配的地址。主要问题在于read后并没有截断（后面再提）</p>
@@ -208,17 +209,53 @@
 <pre><code>通过fake_size和chunk1的fake_presize使得程序相信fakechunk0是一个(0x80+0x90)大小的chunk，且作为chunk2的前一个堆块，通过设置chunk2的size使得fake chunk0看起来是空闲的。
 </code></pre><p>  chunk3和chunk4的作用是防止free（chunk2）时发生向前合并。</p>
 <pre><code>这样free（chunk2）时发生向后合并，执行unlink（fake chunk0），向chunk_addr的位置写入chunk_addr - 0x18接着调用edit(0)将可控chunk_addr位置的8字节
-</code></pre><p>  b.   这里比较好的就是chunk_addr我们是知道的（全局数组），所以直接构造payload；</p>
-  <img src="/2019/04/20/堆漏洞（二）之UAF/4.png" title="[]">
-<p>  通过这一步，我们可以使得原本存储note6的content的指针指向低0x18的位置，下次edit note6时，我们就完全可以控制指向note6的content的指针，达到任意写目的。</p>
-<p>  c.    如， 泄露地址</p>
-  <img src="/2019/04/20/堆漏洞（二）之UAF/5.png" title="[]">
-<p>  d.   之后的利用，需要仔细检查一下程序的安全措施（因为一会发现got表无法复写）</p>
-  <img src="/2019/04/20/堆漏洞（二）之UAF/6.png" title="[]">
+</code></pre><p>b.   这里比较好的就是chunk_addr我们是知道的（全局数组），所以直接构造payload；</p>
+<img src="/2019/04/20/堆漏洞（二）之UAF/4.png" title="[]">
+<p>通过这一步，我们可以使得原本存储note6的content的指针指向低0x18的位置，下次edit note6时，我们就完全可以控制指向note6的content的指针，达到任意写目的。</p>
+<p>c.    如， 泄露地址</p>
+<img src="/2019/04/20/堆漏洞（二）之UAF/5.png" title="[]">
+<p>d.   之后的利用，需要仔细检查一下程序的安全措施（因为一会发现got表无法复写）</p>
+<img src="/2019/04/20/堆漏洞（二）之UAF/6.png" title="[]">
 <pre><code>呃呃呃， 因为是Full RELRO. 在程序开始进入main函数之前就会解析用到的所有的函数在libc中的地址，而非延迟绑定。
-</code></pre><p>  a.    换一个思路，GOT表无法复写，一般来说可以考虑ret_2_dllreslove,，但是这个太麻烦。我选择了后者复写free函数的hook函数（该函数在libc文件中实在.bss段的）</p>
-<p>  b.   如下</p>
-  <img src="/2019/04/20/堆漏洞（二）之UAF/7.png" title="[]">
+</code></pre><p>a.    换一个思路，GOT表无法复写，一般来说可以考虑ret_2_dllreslove,，但是这个太麻烦。我选择了后者复写free函数的hook函数（该函数在libc文件中实在.bss段的）</p>
+<p>b.   如下</p>
+<img src="/2019/04/20/堆漏洞（二）之UAF/7.png" title="[]">
+<h4 id="扩展2"><a href="#扩展2" class="headerlink" title="扩展2"></a>扩展2</h4><ul>
+<li><p>BUUCTF的cisin_2019_n_3</p>
+</li>
+<li><p>漏洞分析</p>
+<ul>
+<li><p>UAF漏洞</p>
+<img src="/2019/04/20/堆漏洞（二）之UAF/8.png" title="[]">
+</li>
+<li><p>note结构保存有函数指针</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">struct note_str</span><br><span class="line">&#123;</span><br><span class="line">  void *print;</span><br><span class="line">  void *free;</span><br><span class="line">  void *value;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p>利用思路</p>
+<ul>
+<li>可以利用UAF覆盖函数指针，泄露地址。</li>
+<li>再利用UAF，覆盖函数指针，执行system</li>
+</ul>
+</li>
+<li><p>难点</p>
+<ul>
+<li>note的大小始终0xc，且输入content的方式是fgets。我们无法覆盖content指针。</li>
+</ul>
+</li>
+<li><p>另一种思路</p>
+<ul>
+<li><p>利用unsortbin 来泄露地址，即分配不在fastbin的content，再释放，再查看信息即可泄露地址。这里记录下main_arena的偏移获得。在malloc.c源码下有</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span></span><br><span class="line">__malloc_trim (<span class="keyword">size_t</span> s)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">int</span> result = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (__malloc_initialized &lt; <span class="number">0</span>)</span><br><span class="line">    ptmalloc_init ();</span><br><span class="line"></span><br><span class="line">  mstate ar_ptr = &amp;main_arena;</span><br><span class="line">  <span class="keyword">do</span></span><br><span class="line">    &#123;</span><br><span class="line">      __libc_lock_lock (ar_ptr-&gt;mutex);</span><br><span class="line">      result |= mtrim (ar_ptr, s);</span><br><span class="line">      __libc_lock_unlock (ar_ptr-&gt;mutex);</span><br><span class="line"></span><br><span class="line">      ar_ptr = ar_ptr-&gt;next;</span><br><span class="line">    &#125;</span><br><span class="line">  <span class="keyword">while</span> (ar_ptr != &amp;main_arena);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>因此可以在IDA查看malloc_trim函数，得到main_arena的偏移。</p>
+</li>
+<li><p>泄露地址后，再用system覆盖free指针，”sh”覆盖print指针，即可在free(note)操作时get shell。</p>
+</li>
+</ul>
+</li>
+</ul>
 <p>参考链接<a href="https://www.cnblogs.com/0xJDchen/p/6195919.html" target="_blank" rel="noopener">JDchen</a></p>
 
         </div>
