@@ -177,11 +177,11 @@
             </div>
             <h2 class="post-title">off_by_one利用</h2>
             <div class="post-meta">
-                本文总共9843个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
+                本文总共9935个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
             </div>
         </div>
         <div class="post-content markdown-body">
-            <h2 id="什么是大小差一漏洞（off-by-one"><a href="#什么是大小差一漏洞（off-by-one" class="headerlink" title="什么是大小差一漏洞（off_by_one)"></a>什么是大小差一漏洞（off_by_one)</h2><pre><code>就是我们输入的字符串长度等于缓冲区的长度。
+            <h4 id="什么是大小差一漏洞（off-by-one"><a href="#什么是大小差一漏洞（off-by-one" class="headerlink" title="什么是大小差一漏洞（off_by_one)"></a>什么是大小差一漏洞（off_by_one)</h4><pre><code>就是我们输入的字符串长度等于缓冲区的长度。
 
 这种情况下，我们只能够溢出一个字节（就是字符串结束标志\x00），根据栈的布置，这个溢出的一字节会覆盖ebp的最低位为\x00，仅仅这一个字节就可能为我们利用来执行任意代码。
 </code></pre><h4 id="基于栈的漏洞利用"><a href="#基于栈的漏洞利用" class="headerlink" title="基于栈的漏洞利用"></a>基于栈的漏洞利用</h4><pre><code>我们构造一个实际的漏洞环境。代码如下：
@@ -217,7 +217,12 @@
 </ul>
 </li>
 <li><h5 id="另外，当可以覆盖两个size-t字段的时候，覆盖rbp为-bss-8通常可以将栈迁移至-bss。通过多次构造，可使-bss的数据被当作代码执行。"><a href="#另外，当可以覆盖两个size-t字段的时候，覆盖rbp为-bss-8通常可以将栈迁移至-bss。通过多次构造，可使-bss的数据被当作代码执行。" class="headerlink" title="另外，当可以覆盖两个size_t字段的时候，覆盖rbp为.bss-8通常可以将栈迁移至.bss。通过多次构造，可使.bss的数据被当作代码执行。"></a>另外，当可以覆盖两个size_t字段的时候，覆盖rbp为.bss-8通常可以将栈迁移至.bss。通过多次构造，可使.bss的数据被当作代码执行。</h5><ul>
-<li>例题，安恒杯7月月赛unexploit。</li>
+<li><h5 id="例题，安恒杯7月月赛unexploit。"><a href="#例题，安恒杯7月月赛unexploit。" class="headerlink" title="例题，安恒杯7月月赛unexploit。"></a>例题，安恒杯7月月赛unexploit。</h5><ul>
+<li>栈迁移有一个技巧，尽量用相同的偏移，可以便于理解。</li>
+<li>即用.bb代替原来的rbp而不是有偏移。</li>
+<li>同样的原来栈上rbp-offset处的变量，也放在.bss - offset的位置。</li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

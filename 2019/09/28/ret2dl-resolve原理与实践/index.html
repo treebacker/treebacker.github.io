@@ -1,0 +1,335 @@
+<!DOCTYPE HTML>
+<html class="no-js" lang="zh-CN">
+<!--
+//                            _ooOoo_
+//                           o8888888o
+//                           88" . "88
+//                           (| -_- |)
+//                            O\ = /O
+//                        ____/`---'\____
+//                      .   ' \\| |// `.
+//                       / \\||| : |||// \
+//                     / _||||| -:- |||||- \
+//                       | | \\\ - /// | |
+//                     | \_| ''\---/'' | |
+//                      \ .-\__ `-` ___/-. /
+//                   ___`. .' /--.--\ `. . __
+//                ."" '< `.___\_<|>_/___.' >'"".
+//               | | : `- \`.;`\ _ /`;.`/ - ` : | |
+//                 \ \ `-. \_ __\ /__ _/ .-` / /
+//         ======`-.____`-.___\_____/___.-`____.-'======
+//                            `=---='
+//                 拦截插件累计拦截逗比攻击"1381438"次！
+//         .............................................
+//                  佛祖保佑             永无BUG
+//          佛曰:
+//                  写字楼里写字间，写字间里程序员；
+//                  程序人员写程序，又拿程序换酒钱。
+//                  酒醒只在网上坐，酒醉还来网下眠；
+//                  酒醉酒醒日复日，网上网下年复年。
+//                  但愿老死电脑间，不愿鞠躬老板前；
+//                  奔驰宝马贵者趣，公交自行程序员。
+//                  别人笑我忒疯癫，我笑自己命太贱；
+//                  不见满街漂亮妹，哪个归得程序员？
+-->
+<head><meta name="generator" content="Hexo 3.8.0">
+    <!--[if lte IE 9]>
+<meta http-equiv="refresh" content="0;url=http://yoursite.com/warn.html">
+<![endif]-->
+<meta charset="utf-8">
+
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+
+<meta http-equiv="X-UA-Compatible" content="IE=Edge">
+<meta name="renderer" content="webkit">
+<meta name="viewport" content="width=device-width, initial-scale=1.0,user-scalable=no">
+<meta http-equiv="mobile-agent" content="format=html5; url=http://yoursite.com">
+<meta name="author" content="treebacker">
+<link rel="stylesheet" href="../../../../css/SimpleStyle.min.css">
+
+<link rel="shortcut icon" href="../../../../images/favicon.png">
+
+
+<title>ret2dl_resolve原理与实践 - Watch Security</title>
+
+<meta name="keywords" content="ret2dl_resolve">
+
+<meta name="description " content="ret2dl_resolve攻击">
+
+</head>
+<body>
+<div id="nav">
+    <nav class="nav-menu">
+        <a class="site-name current" href="/" title="Tree">Tree</a>
+        <a class="site-index current" href="/"><i class="fa fa-home"></i><span>首页</span></a>
+        <a href="/archives" title="归档"><i class="fa fa-archives"></i><span>归档</span></a>
+        <a href="/tags" title="标签"><i class="fa fa-tags"></i><span>标签</span></a>
+        <!-- custom single page of menus -->
+        
+        
+        <a href="/help" title="帮助">
+            <i class="fa fa-question-circle"></i>
+            <span>帮助</span>
+        </a>
+        
+    </nav>
+</div>
+
+<div class="nav-user">
+    <a class="btn-search" href="#"><i class="fa fa-search"></i></a>
+    <a class="btn-read-mode" href="#"><i class="fa fa-sun-o"></i></a>
+    <a class="btn-sns-qr" href="javascript:"><i class="fa fa-telegram"></i></a>
+</div>
+
+<div id="wrapper" class="clearfix">
+    <div id="body">
+        <div class="main" id="main">
+            <div id="cover">
+    <div class="cover-img"></div>
+    <div class="cover-info">
+        
+        <h1 class="cover-siteName">Treebacker</h1>
+        <h3 class="cover-siteTitle">愿麦子和麦子长在一起，愿河流与河流流归一处。</h3>
+        <p class="cover-siteDesc">Tech and Eesay</p>
+        <div class="cover-sns">
+            
+            <div class="btn btn-github">
+                <a href="https://github.com/treebacker" target="_blank" title="github" ref="friend">
+                    <i class="fa fa-github"></i>
+                </a>
+            </div>
+            
+        </div>
+    </div>
+</div>
+            <div class="page-title">
+    <ul>
+        <li><a href="/">最新</a></li>
+        
+            
+                <li class="active">
+                    <a href="/categories/tech-notes" data-name="技术">技术</a>
+                </li>
+            
+                <li class="">
+                    <a href="/categories/essays" data-name="随笔">随笔</a>
+                </li>
+            
+                <li class="">
+                    <a href="/categories/cdcitizen-of-the-sun" data-name="海子">海子</a>
+                </li>
+            
+                <li class="">
+                    <a href="/categories/others" data-name="其他">其他</a>
+                </li>
+            
+        
+        <li class="page-search">
+    <form id="search" class="search-form">
+        <label for="s" class="sr-only">请输入关键字</label>
+        <input class="search-field" type="text" name="s" placeholder="请输入关键字">
+        <button type="submit" class="search-form-submit" title="搜索"><i class="fa fa-search"></i></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="请输入关键词...">
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(无标题)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '../../../../content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+</li>
+
+    </ul>
+</div>
+<div class="main-inner">
+    <article class="post" itemscope="" itemtype="http://schema.org/BlogPosting">
+        <div class="post-header">
+            <div class="post-author clearfix">
+                <a class="avatar fleft" href="" target="_blank">
+                    <img width="48" src="/images/favicon.png" alt="avatar">
+                </a>
+                <p><span class="label">作者</span>
+                    <a href="" target="_blank">Treebacker</a>
+                    <span title="最后编辑于2019-09-28">2019-09-28</span>
+                </p>
+                <p></p>
+            </div>
+            <h2 class="post-title">ret2dl_resolve原理与实践</h2>
+            <div class="post-meta">
+                本文总共2561个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
+            </div>
+        </div>
+        <div class="post-content markdown-body">
+            <h3 id="ret2dl-resolve原理与实践"><a href="#ret2dl-resolve原理与实践" class="headerlink" title="ret2dl_resolve原理与实践"></a>ret2dl_resolve原理与实践</h3><h4 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h4><ul>
+<li><h5 id="ELF对象"><a href="#ELF对象" class="headerlink" title="ELF对象"></a>ELF对象</h5><ul>
+<li>ELF文件是很多类unix系统（Lniux、FreeBSD）的可执行文件格式。</li>
+<li>一个应用程序主要由ELF和动态链接库.so组成。在ELF文件中有多个segment，每个segment包括多个sections。</li>
+<li>后面主要涉及.dynsym，.rela.plt和.dynstr，rel.plt。</li>
+</ul>
+</li>
+<li><h5 id="ELF动态装载器"><a href="#ELF动态装载器" class="headerlink" title="ELF动态装载器"></a>ELF动态装载器</h5><ul>
+<li><p>由于静态链接的文件比较大，且多是重复使用的代码。且一次装载耗时较多；所以才有了惰性加载（运行时加载）。</p>
+</li>
+<li><p>ELF文件执行时根据section里的信息，动态地链接.so文件中的资源（函数、变量）。这一过程（符号解析）由动态装载器实现。</p>
+</li>
+<li><p>解析主要依赖于_dl_runtime_resolve函数。解析规则如图。</p>
+<p><img src="ret2dl-resolve原理与实践\1.png" alt=""></p>
+</li>
+<li><p>相关的数据结构</p>
+<ul>
+<li><p>每个符号都是ELF_sym结构体。存在于.dynsym段。</p>
+<ul>
+<li>st_name字段保存着该符号在,synstr段的偏移（那里保存着符号的字符串形式）</li>
+<li>st_value字段，如果该符号已经被解析过，则保存着它的虚拟地址；否则NULL。</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">  Elf32_Word        st_name;                <span class="comment">/* Symbol name (string tbl index) */</span></span><br><span class="line">  Elf32_Addr        st_value;                <span class="comment">/* Symbol value */</span></span><br><span class="line">  Elf32_Word        st_size;                <span class="comment">/* Symbol size */</span></span><br><span class="line">  <span class="keyword">unsigned</span> <span class="keyword">char</span>        st_info;                <span class="comment">/* Symbol type and binding */</span></span><br><span class="line">  <span class="keyword">unsigned</span> <span class="keyword">char</span>        st_other;                <span class="comment">/* Symbol visibility */</span></span><br><span class="line">  Elf32_Section        st_shndx;                <span class="comment">/* Section index */</span></span><br><span class="line">&#125; Elf32_Sym;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>导入符号需要重定位支持，重定位项以ELF_Rel结构描述，存在于rel.plt段中</p>
+<ul>
+<li>r_offset字段：该函数在got.plt中的偏移</li>
+<li>r_info字段：该函数在dynsym中的类型和索引。</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">  Elf32_Addr        r_offset;                <span class="comment">/* Address */</span></span><br><span class="line">  Elf32_Word        r_info;                  <span class="comment">/* Relocation type and symbol index */</span></span><br><span class="line">&#125; Elf32_Rel;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>解析结束后，重定位的目标（Elf_Rel的r_offset）将会是got表的一个条目，got在got.plt中，将有能够解析rel.plt重定位项的动态链接器写入。</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><h5 id="对解析read函数（第一次调用）的一次跟踪过程"><a href="#对解析read函数（第一次调用）的一次跟踪过程" class="headerlink" title="对解析read函数（第一次调用）的一次跟踪过程"></a>对解析read函数（第一次调用）的一次跟踪过程</h5><ul>
+<li><p>gdb跟踪解析<strong>PLT</strong></p>
+<p><img src="ret2dl-resolve原理与实践/2.png" alt=""></p>
+<p><img src="ret2dl-resolve原理与实践\3.png" alt=""></p>
+</li>
+<li><p>read函数未被解析时，got[‘read’]中存的是plt[‘read’]的第二条指令地址，所以会继续执行解析工作。</p>
+<p><img src="ret2dl-resolve原理与实践/4.png" alt=""></p>
+</li>
+<li><p>push 1操作实际是read函数符号在rel_plt的索引<strong>reloc_index</strong>；而<strong>0x4004d0</strong>地址是特殊字段<strong>PLT[0]</strong></p>
+<p><img src="ret2dl-resolve原理与实践/6.png" alt=""></p>
+<p><img src="ret2dl-resolve原理与实践/5.png" alt=""></p>
+</li>
+<li><p>PLT[0]的代码会将<strong>GOT[1]</strong>入栈，并跳转至<strong>GTO[2]</strong>。</p>
+<p><img src="ret2dl-resolve原理与实践/7.png" alt=""></p>
+<p>GOT[1]和GOT[2]是两个特殊字段。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">GOT[1]是内部数据结构的指针，类型是link_map，在动态装载器内部使用，包含了进行符号解析需要的当前ELF对象的信息。</span><br><span class="line">GOT[2]是一个指向动态装载器中_dl_runtime_resolve函数的指针。</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>从上面的跟踪可以看出，PLT代码执行了<strong>_dl_runtime_resolve(link_map_obj, reloc_index)</strong>的调用。</p>
+</li>
+<li><p>图示该函数的实现作用</p>
+<p><img src="ret2dl-resolve原理与实践\11.png" alt=""></p>
+</li>
+</ul>
+</li>
+<li><p><strong>.dynamic段和RELRO</strong></p>
+<ul>
+<li>动态装载器从.dynamic段收集所有它需要的关于ELF对象的信息。.dynamic段由Elf_Dyn结构组成，一个Elf_Dyn是一个键值对，其中存储了不同类型的信息。相关的条目已经在表1中展示，它们保存着特定段的绝对地址。有一个例外是DT_DEBUG条目，它保存的动态装载器内部数据结构的指针。这个条目是为了调试的需要由动态装载器初始化的。</li>
+</ul>
+<p><img src="ret2dl-resolve原理与实践/8.png" alt=""></p>
+<ul>
+<li>部分RELRO：一些段(包括.dynamic)在初始化后将会被标识为只读。</li>
+<li>全部RELRO：所有的导入符号将在开始时被解析，.got.plt段会被完全初始化为目标函数的最终地址，并被标记为只读。此外，既然惰性解析被禁用，GOT[0]与GOT[1]条目将不会被初始化为之前中提到的值。</li>
+</ul>
+</li>
+<li><h5 id="攻击"><a href="#攻击" class="headerlink" title="攻击"></a>攻击</h5><ul>
+<li><p>通过伪造整个解析过程所依赖的符号信息（相关的数据结构），就可以将我们需要的函数动态加载进某一地址。攻击示意图</p>
+<p><img src="ret2dl-resolve原理与实践/10.png" alt=""></p>
+<p>这里，通过改写got[1]，即link_map指向一个我们伪造得ELF_Dyn结构。在这个结构中破坏保存DT_STRTAB指针的l_info域。它的值被设成一个伪造的动态条目的地址，那里指向了一个位于.bss段中的假的动态字符串表。</p>
+<p><img src="ret2dl-resolve原理与实践/9.png" alt=""></p>
+<ul>
+<li>a攻击实例中，改写DT_STRTAB条目，欺骗解析器认为.dynstr在.bss上，且在.bss伪造的dynsyn中写入我们的函数字符串，这里调用printf会劫持到execve。</li>
+<li>b宏基实例中，通过传递给_dl_runtime_resolve函数的索引reloc_index超出范围，落在了.bss，并在那里伪造Elf_Rle结构；这个重定位项指向一个就位于其后的Elf_Sym结构，而Elf_Sym结构中的index同样超出了.dynsym段。这样这个符号就会包含一个相对.dynstr地址足够大的偏移使其能够达到这个符号之后的一段内存，那里保存着这个将要调用的函数的名称。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="实践"><a href="#实践" class="headerlink" title="实践"></a>实践</h4><ul>
+<li><h5 id="0Ctf-2017-babystack"><a href="#0Ctf-2017-babystack" class="headerlink" title="0Ctf 2017 babystack"></a>0Ctf 2017 babystack</h5><ul>
+<li></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+        <div class="post-tool">
+            <a class="btn-thumbs-up" href="javascript:void(0);" data-cid="52" title="95">
+                <i class="fa fa-thumbs-up" aria-hidden="true"></i> 打赏
+            </a>
+        </div>
+        
+        <div class="post-tags">标签：
+            
+            <a href="../../../../tags/pwn/">pwn</a>
+            
+        </div>
+        
+    </article>
+    
+    <p>本文代表个人观点，内容仅供参考。若有不恰当之处，望不吝赐教！</p>
+    
+    
+</div>
+<script src="../../../../js/busuanzi.pure.mini.js"></script>
+
+        </div><!-- end #main-->
+    </div><!-- end #body -->
+    <footer class="footer">
+    <div class="footer-inner">
+        <p>
+            <a href="/about" title="关于本站">关于本站</a>&nbsp;&nbsp<em>·</em>&nbsp;&nbsp
+            <!-- 自定义链接 -->
+            <a href="/help" title="help">急救中心</a>&nbsp;&nbsp<em>·</em>&nbsp;&nbsp
+            <a href="/app" title="App下载">App下载</a>
+        </p>
+        <p>
+            本站点采用<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享署名-非商业性使用-相同方式共享 4.0 国际许可协议</a>，已建立<a href="/timeline" id="siteBuildingTime"></a>天<br>
+            ©2017 基于<a href="http://hexo.io" target="_blank">Hexo</a>搭建
+            ，主题&nbsp<a href="https://github.com/tangkunyin/hexo-theme-jsimple" target="_blank">JSimple</a>
+            ，作者<a href="https://www.tangkunyin.com" target="_blank">唐先森</a>
+            ，Hosted by <a href="https://pages.coding.me" style="font-weight: bold">Coding Pages</a>
+        </p>
+        
+
+    </div>
+</footer>
+<script src="../../../../js/InsightSearch.js"></script>
+<script src="../../../../js/SimpleCore.js"></script>
+
+</div>
+<div class="fixed-btn">
+    <a class="btn-gotop" href="javascript:"> <i class="fa fa-angle-up"></i></a>
+</div>
+<script>
+    $(function () {
+        SimpleCore.init({
+            buildingTime: '11/22/2018',
+            current: $('.post-tags').length > 0 ? 'post' : 'archive',
+            snsQRCode: '/images/sns-qrcode.png',
+            donateImg: '/images/donate-qr.png',
+        });
+    });
+</script>
+</body>
+</html>
