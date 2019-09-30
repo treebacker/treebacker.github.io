@@ -194,7 +194,7 @@
 <li><p>ELF文件执行时根据section里的信息，动态地链接.so文件中的资源（函数、变量）。这一过程（符号解析）由动态装载器实现。</p>
 </li>
 <li><p>解析主要依赖于_dl_runtime_resolve函数。解析规则如图。</p>
-<p><img src="ret2dl-resolve原理与实践\1.png" alt=""></p>
+<img src="/2019/09/28/ret2dl-resolve原理与实践/1.png" title="[]">
 </li>
 <li><p>相关的数据结构</p>
 <ul>
@@ -220,25 +220,25 @@
 </li>
 <li><h5 id="对解析read函数（第一次调用）的一次跟踪过程"><a href="#对解析read函数（第一次调用）的一次跟踪过程" class="headerlink" title="对解析read函数（第一次调用）的一次跟踪过程"></a>对解析read函数（第一次调用）的一次跟踪过程</h5><ul>
 <li><p>gdb跟踪解析<strong>PLT</strong></p>
-<p><img src="ret2dl-resolve原理与实践/2.png" alt=""></p>
-<p><img src="ret2dl-resolve原理与实践\3.png" alt=""></p>
+<img src="/2019/09/28/ret2dl-resolve原理与实践/2.png" title="[]">
+<img src="/2019/09/28/ret2dl-resolve原理与实践/3.png" title="[]">
 </li>
 <li><p>read函数未被解析时，got[‘read’]中存的是plt[‘read’]的第二条指令地址，所以会继续执行解析工作。</p>
-<p><img src="ret2dl-resolve原理与实践/4.png" alt=""></p>
+<img src="/2019/09/28/ret2dl-resolve原理与实践/4.png" title="[]">
 </li>
 <li><p>push 1操作实际是read函数符号在rel_plt的索引<strong>reloc_index</strong>；而<strong>0x4004d0</strong>地址是特殊字段<strong>PLT[0]</strong></p>
-<p><img src="ret2dl-resolve原理与实践/6.png" alt=""></p>
-<p><img src="ret2dl-resolve原理与实践/5.png" alt=""></p>
+<img src="/2019/09/28/ret2dl-resolve原理与实践/6.png" title="[]">
+<img src="/2019/09/28/ret2dl-resolve原理与实践/5.png" title="[]">
 </li>
 <li><p>PLT[0]的代码会将<strong>GOT[1]</strong>入栈，并跳转至<strong>GTO[2]</strong>。</p>
-<p><img src="ret2dl-resolve原理与实践/7.png" alt=""></p>
+<img src="/2019/09/28/ret2dl-resolve原理与实践/7.png" title="[]">
 <p>GOT[1]和GOT[2]是两个特殊字段。</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">GOT[1]是内部数据结构的指针，类型是link_map，在动态装载器内部使用，包含了进行符号解析需要的当前ELF对象的信息。</span><br><span class="line">GOT[2]是一个指向动态装载器中_dl_runtime_resolve函数的指针。</span><br></pre></td></tr></table></figure>
 </li>
 <li><p>从上面的跟踪可以看出，PLT代码执行了<strong>_dl_runtime_resolve(link_map_obj, reloc_index)</strong>的调用。</p>
 </li>
 <li><p>图示该函数的实现作用</p>
-<p><img src="ret2dl-resolve原理与实践\11.png" alt=""></p>
+<img src="/2019/09/28/ret2dl-resolve原理与实践/11.png" title="[]">
 </li>
 </ul>
 </li>
@@ -246,7 +246,7 @@
 <ul>
 <li>动态装载器从.dynamic段收集所有它需要的关于ELF对象的信息。.dynamic段由Elf_Dyn结构组成，一个Elf_Dyn是一个键值对，其中存储了不同类型的信息。相关的条目已经在表1中展示，它们保存着特定段的绝对地址。有一个例外是DT_DEBUG条目，它保存的动态装载器内部数据结构的指针。这个条目是为了调试的需要由动态装载器初始化的。</li>
 </ul>
-<p><img src="ret2dl-resolve原理与实践/8.png" alt=""></p>
+<img src="/2019/09/28/ret2dl-resolve原理与实践/8.png" title="[]">
 <ul>
 <li>部分RELRO：一些段(包括.dynamic)在初始化后将会被标识为只读。</li>
 <li>全部RELRO：所有的导入符号将在开始时被解析，.got.plt段会被完全初始化为目标函数的最终地址，并被标记为只读。此外，既然惰性解析被禁用，GOT[0]与GOT[1]条目将不会被初始化为之前中提到的值。</li>
@@ -254,9 +254,9 @@
 </li>
 <li><h5 id="攻击"><a href="#攻击" class="headerlink" title="攻击"></a>攻击</h5><ul>
 <li><p>通过伪造整个解析过程所依赖的符号信息（相关的数据结构），就可以将我们需要的函数动态加载进某一地址。攻击示意图</p>
-<p><img src="ret2dl-resolve原理与实践/10.png" alt=""></p>
+<img src="/2019/09/28/ret2dl-resolve原理与实践/10.png" title="[]">
 <p>这里，通过改写got[1]，即link_map指向一个我们伪造得ELF_Dyn结构。在这个结构中破坏保存DT_STRTAB指针的l_info域。它的值被设成一个伪造的动态条目的地址，那里指向了一个位于.bss段中的假的动态字符串表。</p>
-<p><img src="ret2dl-resolve原理与实践/9.png" alt=""></p>
+<img src="/2019/09/28/ret2dl-resolve原理与实践/12.png" title="[]">
 <ul>
 <li>a攻击实例中，改写DT_STRTAB条目，欺骗解析器认为.dynstr在.bss上，且在.bss伪造的dynsyn中写入我们的函数字符串，这里调用printf会劫持到execve。</li>
 <li>b宏基实例中，通过传递给_dl_runtime_resolve函数的索引reloc_index超出范围，落在了.bss，并在那里伪造Elf_Rle结构；这个重定位项指向一个就位于其后的Elf_Sym结构，而Elf_Sym结构中的index同样超出了.dynsym段。这样这个符号就会包含一个相对.dynstr地址足够大的偏移使其能够达到这个符号之后的一段内存，那里保存着这个将要调用的函数的名称。</li>
@@ -272,7 +272,7 @@
 <li><p>ret2dl_resolve方法解决</p>
 </li>
 <li><p>首先根据上图的流程手动模拟，找到”read”函数。</p>
-<p><img src="ret2dl-resolve原理与实践/12.png" alt=""></p>
+<img src="/2019/09/28/ret2dl-resolve原理与实践/12.png" title="[]">
 </li>
 <li><p>代码模拟——借助于栈迁移，将stack迁移到.bss。</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#rop information</span></span><br><span class="line">read_plt = <span class="number">0x08048300</span> </span><br><span class="line">bss_buf = <span class="number">0x0804A020</span></span><br><span class="line">leave_ret = <span class="number">0x08048455</span></span><br><span class="line"></span><br><span class="line">pop_3_ret = <span class="number">0x080484e9</span> 		<span class="comment"># pop esi ; pop edi ; pop ebp ; ret</span></span><br><span class="line">pop_ebp_ret = <span class="number">0x080484eb</span> 	<span class="comment"># pop ebp ; ret</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#stack poivt and read(0, bss, 0x1000)</span></span><br><span class="line">payload = <span class="string">'a'</span>*<span class="number">0x28</span></span><br><span class="line">payload += p32(bss_buf)		<span class="comment">#ebp ==&gt; bss_buf</span></span><br><span class="line">payload += p32(read_plt) + p32(leave_ret) + p32(<span class="number">0</span>) + p32(bss_buf) + p32(<span class="number">0x36</span>)</span><br><span class="line">p.send(payload)</span><br><span class="line"></span><br><span class="line">dbg()</span><br><span class="line"></span><br><span class="line">stack_size = <span class="number">0x800</span></span><br><span class="line">control_base = bss_buf + stack_size</span><br><span class="line">payload = <span class="string">'a'</span>*<span class="number">0x4</span> 							<span class="comment">#read(0, bss_buf = ebp, 0x1000), 		while ebp+4 is ret_addr</span></span><br><span class="line">payload += p32(read_plt) + p32(pop_3_ret) + p32(<span class="number">0</span>) + p32(control_base) + p32(<span class="number">0x1000</span>)</span><br><span class="line">payload += p32(pop_ebp_ret) + p32(control_base)		<span class="comment">#ebp = control_base, so ret_addr is at control_base+4 which is plt_0</span></span><br><span class="line">payload += p32(leave_ret)</span><br><span class="line"></span><br><span class="line">p.send(payload)</span><br></pre></td></tr></table></figure>
@@ -283,7 +283,7 @@
 <li><p>栈布置</p>
 <ul>
 <li><p>其中通过导向执行PLT0，这里的参数很好理解。但是被解析函数的参数的位置怎么确定呢？在执行PLT0代码是，栈上的参数分布如下</p>
-<p><img src="ret2dl-resolve原理与实践/13.png" alt=""></p>
+<img src="/2019/09/28/ret2dl-resolve原理与实践/13.png" title="[]">
 </li>
 <li><p>其他的结构都是伪造的布置在栈上，只要前后一致就没有问题。</p>
 </li>
