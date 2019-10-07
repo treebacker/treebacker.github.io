@@ -177,7 +177,7 @@
             </div>
             <h2 class="post-title">Windows下栈溢出利用总结</h2>
             <div class="post-meta">
-                本文总共8372个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
+                本文总共8354个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
             </div>
         </div>
         <div class="post-content markdown-body">
@@ -218,7 +218,8 @@
 </ul>
 <h4 id="SEH-HANDLER覆盖"><a href="#SEH-HANDLER覆盖" class="headerlink" title="SEH  HANDLER覆盖"></a>SEH  HANDLER覆盖</h4><ul>
 <li><p>栈溢出经常会导致内存的非法访问（读、写、执行），触发异常。而鉴于<a href="">Windows的SEH机制</a>，且SEH结构存在栈上。</p>
-<p>​    {! asset_img 1.png [] %}</p>
+<p>​    <img src="/2019/10/04/Windows下栈溢出利用总结/1.png" title="[]"></p>
+<p>​    <img src="/2019/10/04/Windows下栈溢出利用总结/2.png" title="[]"></p>
 </li>
 <li><p>溢出利用。我们可以覆盖SEH链，每个SEH结构有两个指针，第一个指向下一个SEH结构，第二个指向当前SEH的处理函数。组合利用如下</p>
 <ul>
