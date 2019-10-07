@@ -256,14 +256,13 @@
 <li><p>通过伪造整个解析过程所依赖的符号信息（相关的数据结构），就可以将我们需要的函数动态加载进某一地址。攻击示意图</p>
 <img src="/2019/09/28/ret2dl-resolve原理与实践/10.png" title="[]">
 <p>这里，通过改写got[1]，即link_map指向一个我们伪造得ELF_Dyn结构。在这个结构中破坏保存DT_STRTAB指针的l_info域。它的值被设成一个伪造的动态条目的地址，那里指向了一个位于.bss段中的假的动态字符串表。</p>
-<img src="/2019/09/28/ret2dl-resolve原理与实践/12.png" title="[]">
 <ul>
 <li>a攻击实例中，改写DT_STRTAB条目，欺骗解析器认为.dynstr在.bss上，且在.bss伪造的dynsyn中写入我们的函数字符串，这里调用printf会劫持到execve。</li>
+</ul>
+</li>
+</ul>
+</li>
 <li>b宏基实例中，通过传递给_dl_runtime_resolve函数的索引reloc_index超出范围，落在了.bss，并在那里伪造Elf_Rle结构；这个重定位项指向一个就位于其后的Elf_Sym结构，而Elf_Sym结构中的index同样超出了.dynsym段。这样这个符号就会包含一个相对.dynstr地址足够大的偏移使其能够达到这个符号之后的一段内存，那里保存着这个将要调用的函数的名称。</li>
-</ul>
-</li>
-</ul>
-</li>
 </ul>
 <h4 id="实践"><a href="#实践" class="headerlink" title="实践"></a>实践</h4><ul>
 <li><h5 id="x86-0Ctf-2017-babystack"><a href="#x86-0Ctf-2017-babystack" class="headerlink" title="x86    0Ctf 2017 babystack"></a>x86    0Ctf 2017 babystack</h5><ul>
@@ -300,7 +299,7 @@
 </ul>
 <ul>
 <li><h5 id="x64"><a href="#x64" class="headerlink" title="x64"></a>x64</h5><ul>
-<li><p>多了两个结构体。rela.plt和Sym</p>
+<li><p>多了两个结构体。rela.plt和Sym，</p>
 </li>
 <li><p>同时r_offset不在直接寻址，而是作为rel.plt的索引。</p>
 </li>
