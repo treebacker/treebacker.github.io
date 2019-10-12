@@ -42,7 +42,7 @@ var SimpleCore = {
         $(document).on('click', '.btn-thumbs-up', function (e) {
             e.preventDefault();
             if (SimpleCore.donateImg != '') {
-                SimpleCore.alert('点个赞，你高兴就好','<img style="width:180px;background:#fff;" src="' + SimpleCore.donateImg + '">');
+                SimpleCore.alert('谢谢小主打赏！！！','<img style="width:180px;background:#fff;" src="' + SimpleCore.donateImg + '">');
             } else {
                 SimpleCore.alert('未开通自定义功能','<h4 style="text-align: center;margin: 0">联系博主试试看 ：）</h4>');
             }

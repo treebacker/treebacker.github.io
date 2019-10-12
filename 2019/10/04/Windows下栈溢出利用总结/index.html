@@ -90,7 +90,7 @@
         
         <h1 class="cover-siteName">Treebacker</h1>
         <h3 class="cover-siteTitle">愿麦子和麦子长在一起，愿河流与河流流归一处。</h3>
-        <p class="cover-siteDesc">Tech and Eesay</p>
+        <p class="cover-siteDesc">岁月易逝，痕影难觅</p>
         <div class="cover-sns">
             
             <div class="btn btn-github">
@@ -177,7 +177,7 @@
             </div>
             <h2 class="post-title">Windows下栈溢出利用总结</h2>
             <div class="post-meta">
-                本文总共9383个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
+                本文总共9454个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
             </div>
         </div>
         <div class="post-content markdown-body">
@@ -253,17 +253,7 @@
 <li><h5 id="SEHOP"><a href="#SEHOP" class="headerlink" title="SEHOP"></a>SEHOP</h5><ul>
 <li><p>系统级别地验证SEH链表的完整性（不需要应用程序开启什么）。</p>
 </li>
-<li><p>SEH结构都必须在栈上；</p>
-</li>
-<li><p>最后一个SEH结构也必须在栈上；</p>
-</li>
-<li><p>所有的SEH结构都必须是4字节对齐的；</p>
-</li>
-<li><p>SEH结构中的handle（处理函数地址）必须不在栈上；</p>
-</li>
-<li><p>最后一个SEH结构的handle必须是ntdll!FinalExceptionHandler函数；</p>
-</li>
-<li><p>最后一个SEH结构的next seh指针必须为特定值0xFFFFFFFF；</p>
+<li><p>SEHOP的全称是Structured Exception Handler Overwrite Protection（结构化<br>异常处理覆盖保护）,SEHOP的核心是检测程序栈中的所有SEH结构链表，特<br>别是最后一个SEH结构，它拥有一个特殊的异常处理函数指针，指向的是一<br>个位于NTDLL中的函数。异常处理时，由系统接管分发异常处理，因此上面<br>描述的检测方案完全可以由系统独立来完成，正因为SEH的这种与应用程序<br>的无关性，因此应用程序不用做任何改变，你只需要确认你的系统开启了<br>SEHOP即可。</p>
 <img src="/2019/10/04/Windows下栈溢出利用总结/17.png" title="[]">
 </li>
 </ul>
