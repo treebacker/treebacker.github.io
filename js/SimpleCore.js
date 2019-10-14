@@ -18,7 +18,7 @@ var SimpleCore = {
     init: function (params) {
         SimpleCore.initParams(params);
         $(window).resize(function () {
-            SimpleCore.syncSize();
+            SimpleCore.syncSize();          //同步窗口大小
         });
         $(window).scroll(function (e) {
             SimpleCore.scrollCallback();

