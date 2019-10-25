@@ -50,7 +50,7 @@
 <link rel="shortcut icon" href="../../../../images/favicon.png">
 
 
-<title>分类 - 技术 - Watch Security</title>
+<title>漫游windows下的heap - Watch Security</title>
 
 <meta name="keywords" content="Reverse, Security, New">
 
@@ -104,25 +104,25 @@
 </div>
             <div class="page-title">
     <ul>
-        <li class="">
-            <a href="/" data-name="最近文章">最近</a>
-        </li>
+        <li><a href="/">最新</a></li>
         
-        <li class="active">
-            <a href="/categories/tech-notes" data-name="技术">技术</a>
-        </li>
-        
-        <li class="">
-            <a href="/categories/essays" data-name="随笔">随笔</a>
-        </li>
-        
-        <li class="">
-            <a href="/categories/cdcitizen-of-the-sun" data-name="海子">海子</a>
-        </li>
-        
-        <li class="">
-            <a href="/categories/others" data-name="其他">其他</a>
-        </li>
+            
+                <li class="active">
+                    <a href="/categories/tech-notes" data-name="技术">技术</a>
+                </li>
+            
+                <li class="">
+                    <a href="/categories/essays" data-name="随笔">随笔</a>
+                </li>
+            
+                <li class="">
+                    <a href="/categories/cdcitizen-of-the-sun" data-name="海子">海子</a>
+                </li>
+            
+                <li class="">
+                    <a href="/categories/others" data-name="其他">其他</a>
+                </li>
+            
         
         <li class="page-search">
     <form id="search" class="search-form">
@@ -163,142 +163,81 @@
     </ul>
 </div>
 <div class="main-inner">
-    
-    
-    
-<article class="post">
-    
-    <div class="post-header">
-        <div class="post-meta">
-            <a href="" target="_blank">
-                <strong>Treebacker</strong>
+    <article class="post" itemscope="" itemtype="http://schema.org/BlogPosting">
+        <div class="post-header">
+            <div class="post-author clearfix">
+                <a class="avatar fleft" href="" target="_blank">
+                    <img width="48" src="/images/favicon.png" alt="avatar">
+                </a>
+                <p><span class="label">作者</span>
+                    <a href="" target="_blank">Treebacker</a>
+                    <span title="最后编辑于2019-10-18">2019-10-18</span>
+                </p>
+                <p></p>
+            </div>
+            <h2 class="post-title">漫游windows下的heap</h2>
+            <div class="post-meta">
+                本文总共683个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
+            </div>
+        </div>
+        <div class="post-content markdown-body">
+            <h3 id="漫游Windows下的heap"><a href="#漫游Windows下的heap" class="headerlink" title="漫游Windows下的heap"></a>漫游Windows下的heap</h3><h4 id="0x01-前言"><a href="#0x01-前言" class="headerlink" title="0x01 前言"></a>0x01 前言</h4><ul>
+<li><p>在Linux下搞昏了头，看看Windows换换脑子。</p>
+</li>
+<li><p>Windows下heap机制的实现在不同的版本上有较大的差别，甚至同一个人版本有不同的实现；这里会逐步的完善，从最基础的Win 2k和XP 谈起，之后Win7 和Win10。</p>
+</li>
+</ul>
+<h4 id="0x02-概览"><a href="#0x02-概览" class="headerlink" title="0x02 概览"></a>0x02 概览</h4><ul>
+<li><p>可以预料的，Windows下同样利用链表这种数据结构实现heap块的管理。</p>
+<ul>
+<li>Freelist（空表）和Lookaside（快表）两种链表。</li>
+<li>Freelist从1到127，分别表示大小index * 8的空闲块的位置，free[0]则是所有大于等于1024bytes的块升序链接的。</li>
+<li>Lookaside类似于glibc下的fastbin，但是有节点限制，每个链最多4个节点。用于精准匹配。</li>
+<li>FreeList是双向链表，Lookaside是单向链表。</li>
+</ul>
+</li>
+<li><p>空闲链表的链入与取出规则。</p>
+<ul>
+<li>Free表<ul>
+<li>插入取出都在链表尾</li>
+</ul>
+</li>
+<li>Lookaside表<ul>
+<li>插入取出都在链表头</li>
+</ul>
+</li>
+</ul>
+<p><img src="漫游windows下的heap\1.png" alt=""></p>
+<p>​    </p>
+</li>
+</ul>
+<h4 id="0x03-安全攻防"><a href="#0x03-安全攻防" class="headerlink" title="0x03  安全攻防"></a>0x03  安全攻防</h4><ul>
+<li><p>最著名的攻击方式莫过于”Dword shoot”，类似于unix下的”Unlink”攻击，都是利用空闲表再分配时的对flink和blink的写入操作。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">p-&gt;blink-&gt;flink = p-&gt;flink</span><br><span class="line">p-&gt;flink-&gt;blink = p-&gt;blink</span><br></pre></td></tr></table></figure>
+<p>当blink写入目标地址addr，flink写入值 shoot；（目标，子弹）,结果</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">addr = shoot</span><br><span class="line">shoot + <span class="number">4</span> = addr（反射）</span><br></pre></td></tr></table></figure>
+</li>
+<li></li>
+</ul>
+
+        </div>
+        <div class="post-tool">
+            <a class="btn-thumbs-up" href="javascript:void(0);" data-cid="52" title="95">
+                <i class="fa fa-thumbs-up" aria-hidden="true"></i> 打赏
             </a>
-            <em>·</em>2018-11-24
         </div>
-        <a class="post-title" href="../../../../2018/11/24/ROP专项总结/" target="_blank" title="ROP专项总结">ROP专项总结</a>
-        <div class="post-meta">
-            <a href="/tags" target="_blank"><i class="fa fa-tags"></i></a>
+        
+        <div class="post-tags">标签：
             
         </div>
-    </div>
-    <div class="post-desc">
-        ROP专项总结
-    </div>
-</article>
-
-
-
+        
+    </article>
     
+    <p>本文代表个人观点，内容仅供参考。若有不恰当之处，望不吝赐教！</p>
     
-<article class="post">
-    
-    <div class="post-header">
-        <div class="post-meta">
-            <a href="" target="_blank">
-                <strong>Treebacker</strong>
-            </a>
-            <em>·</em>2018-11-24
-        </div>
-        <a class="post-title" href="../../../../2018/11/24/PE-导入导出表/" target="_blank" title="PE-导入导出表">PE-导入导出表</a>
-        <div class="post-meta">
-            <a href="/tags" target="_blank"><i class="fa fa-tags"></i></a>
-            
-        </div>
-    </div>
-    <div class="post-desc">
-        PE-导入导出表
-    </div>
-</article>
-
-
-
-    
-    
-<article class="post">
-    
-    <div class="post-header">
-        <div class="post-meta">
-            <a href="" target="_blank">
-                <strong>Treebacker</strong>
-            </a>
-            <em>·</em>2018-11-24
-        </div>
-        <a class="post-title" href="../../../../2018/11/24/M的硬盘/" target="_blank" title="M的硬盘">M的硬盘</a>
-        <div class="post-meta">
-            <a href="/tags" target="_blank"><i class="fa fa-tags"></i></a>
-            
-        </div>
-    </div>
-    <div class="post-desc">
-        M的硬盘
-    </div>
-</article>
-
-
-
-    
-    
-<article class="post">
-    
-    <div class="post-header">
-        <div class="post-meta">
-            <a href="" target="_blank">
-                <strong>Treebacker</strong>
-            </a>
-            <em>·</em>2018-11-22
-        </div>
-        <a class="post-title" href="../../../../2018/11/22/Reverse-a-Tree/" target="_blank" title="Reverse a Tree">Reverse a Tree</a>
-        <div class="post-meta">
-            <a href="/tags" target="_blank"><i class="fa fa-tags"></i></a>
-            
-                <em>·</em>
-                <a href="http://yoursite.com/tags/Reverse/" target="_blank">Reverse</a>
-            
-        </div>
-    </div>
-    <div class="post-desc">
-        Reverse a Tree
-    </div>
-</article>
-
-
-
-    
-    
-<article class="post">
-    
-    <div class="post-header">
-        <div class="post-meta">
-            <a href="" target="_blank">
-                <strong>Treebacker</strong>
-            </a>
-            <em>·</em>2018-11-22
-        </div>
-        <a class="post-title" href="../../../../2018/11/22/Mini-Horse/" target="_blank" title="Mini_Horse">Mini_Horse</a>
-        <div class="post-meta">
-            <a href="/tags" target="_blank"><i class="fa fa-tags"></i></a>
-            
-                <em>·</em>
-                <a href="http://yoursite.com/tags/Security/" target="_blank">Security</a>
-            
-        </div>
-    </div>
-    <div class="post-desc">
-        Mini_Horse
-    </div>
-</article>
-
-
-
     
 </div>
-<!-- 分页开始 -->
-
-<div id="btn-pager">
-    
-    <a class="extend prev" rel="prev" href="../4/">上一页</a><a class="page-number" href="../../">1</a><span class="space">&hellip;</span><a class="page-number" href="../3/">3</a><a class="page-number" href="../4/">4</a><span class="page-number current">5</span>
-</div>
-
+<script src="../../../../js/busuanzi.pure.mini.js"></script>
 
         </div><!-- end #main-->
     </div><!-- end #body -->

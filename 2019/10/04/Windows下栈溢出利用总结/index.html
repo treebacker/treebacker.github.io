@@ -177,7 +177,7 @@
             </div>
             <h2 class="post-title">Windows下栈溢出利用总结</h2>
             <div class="post-meta">
-                本文总共9454个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
+                本文总共10157个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
             </div>
         </div>
         <div class="post-content markdown-body">
@@ -424,6 +424,29 @@
 <ul>
 <li>注意，如果不可以传’\x00’这样的字节，可以通过指令运算来完成。</li>
 <li>这里有个有趣的，调试过程中发现如果在0x7c801d5d下了断点，shellcode就会异常中断。猜测是由于断点的地方改变了一个字节。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>vtable覆盖绕过GS</p>
+<ul>
+<li><p>主要特点是利用虚表和字符串在同一函数栈帧下，溢出覆盖vtable指针的低位，使其指向字符串。（虚函数指针被控制）。</p>
+</li>
+<li><p>样例。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"stdafx.h"</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"windows.h"</span></span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Foo</span> &#123;</span></span><br><span class="line">  <span class="keyword">public</span>:</span><br><span class="line">  <span class="keyword">void</span> __declspec(noinline) gs3(<span class="keyword">char</span>* src)</span><br><span class="line">  &#123;</span><br><span class="line">   <span class="keyword">char</span> buf[<span class="number">8</span>];</span><br><span class="line">   <span class="built_in">strcpy</span>(buf, src);</span><br><span class="line">   bar(); <span class="comment">// virtual function call</span></span><br><span class="line">  &#125;</span><br><span class="line">   <span class="keyword">virtual</span> <span class="keyword">void</span> __declspec(noinline) bar()</span><br><span class="line">   &#123;</span><br><span class="line">   &#125;</span><br><span class="line"> &#125;;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  Foo foo;</span><br><span class="line">  foo.gs3(</span><br><span class="line">  <span class="string">"AAAA"</span></span><br><span class="line">  <span class="string">"BBBB"</span></span><br><span class="line">  <span class="string">"CCCC"</span></span><br><span class="line">  <span class="string">"DDDD"</span></span><br><span class="line">  <span class="string">"EEEE"</span></span><br><span class="line">  <span class="string">"FFFF"</span></span><br><span class="line">	  );</span><br><span class="line"> <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>上面的样例，foo实例是在main函数栈帧下，gs3参数字符串也是main下（编译器决定）。覆盖情况如下。</p>
+</li>
+<li><p>在溢出前。</p>
+<p><img src="Windows下栈溢出利用总结\20.png" alt=""></p>
+<p>栈帧依次保存ebp，返回地址，参数，虚表。值得注意的是，这里的参数地址0x4020fc和虚表指针0x40211c同在main下，当虚表指针低位被覆盖为’\x00’时，即0x402100，实际指向‘BBBBCCCC’。</p>
+</li>
+<li><p>溢出后</p>
+<p><img src="Windows下栈溢出利用总结\21.png" alt=""></p>
+</li>
+<li><p>此时虚表指针已经指向了字符串空间，虚函数指针当然就被控制了。</p>
+<p><img src="Windows下栈溢出利用总结\22.png" alt=""></p>
+</li>
 </ul>
 </li>
 </ul>
