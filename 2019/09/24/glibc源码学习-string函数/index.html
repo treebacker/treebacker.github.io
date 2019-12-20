@@ -177,26 +177,43 @@
             </div>
             <h2 class="post-title">glibc源码学习-string函数</h2>
             <div class="post-meta">
-                本文总共4075个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
+                本文总共5964个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
             </div>
         </div>
         <div class="post-content markdown-body">
-            <h3 id="glibc源码学习-string操作函数分析"><a href="#glibc源码学习-string操作函数分析" class="headerlink" title="glibc源码学习-string操作函数分析"></a>glibc源码学习-string操作函数分析</h3><h4 id="strlen函数"><a href="#strlen函数" class="headerlink" title="strlen函数"></a>strlen函数</h4><ul>
-<li><p>返回null结束的字符串的长度。</p>
-</li>
-<li><p>但是有着非常有意思的实现方式，不同于我们的逐个字节的比较寻找null字节。该实现可以每次比较一个4bytes（32bits），8bytes（64bits）。</p>
-</li>
-<li><p>主要是依赖于两个魔数.(64bits时需左移扩展)</p>
+            <h3 id="glibc源码学习-string操作函数分析"><a href="#glibc源码学习-string操作函数分析" class="headerlink" title="glibc源码学习-string操作函数分析"></a>glibc源码学习-string操作函数分析</h3><ul>
+<li><p><strong>strlen函数</strong></p>
+<ul>
+<li>返回null结束的字符串的长度。</li>
+<li>但是有着非常有意思的实现方式，不同于我们的逐个字节的比较寻找null字节。该实现可以每次比较一个4bytes（32bits），8bytes（64bits）。</li>
+<li>主要是依赖于两个魔数.(64bits时需左移扩展)</li>
+</ul>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">himagic = <span class="number">0x80808080</span></span><br><span class="line">lomagic = <span class="number">0x01010101</span></span><br></pre></td></tr></table></figure>
-</li>
-<li><p>这两个模数与任意一个4bytes数子tmp运算有如下规律</p>
+<ul>
+<li>这两个模数与任意一个4bytes数子tmp运算有如下规律</li>
+</ul>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> ((tmp - lomagic) &amp; ~tmp &amp; himagic) != <span class="number">0</span>,那就表明这<span class="number">4b</span>ytes里存在null,且结果会显示nul的位置,<span class="number">0x80000000</span>(第四个),<span class="number">0x800000</span>(第三位),<span class="number">0x8000</span>(第二位),<span class="number">0x80</span>(第一位)</span><br></pre></td></tr></table></figure>
+<ul>
+<li>其原理是借助于借位和符号位.    0可以保留进位的空间,1可以传递进位的效果。</li>
+</ul>
 </li>
-<li><p>其原理是借助于借位和符号位.    0可以保留进位的空间,1可以传递进位的效果.</p>
+<li><p><strong>strnlen (const char *str, size_t maxlen)</strong></p>
+<ul>
+<li><p>类似于strlen的实现，通过下面的代码保证结果不超过maxlen</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="keyword">char</span> *char_ptr, *end_ptr = str + maxlen;</span><br><span class="line">.............</span><br><span class="line">.............</span><br><span class="line">  <span class="keyword">if</span> (char_ptr &gt; end_ptr)</span><br><span class="line">   char_ptr = end_ptr;</span><br><span class="line"> <span class="keyword">return</span> char_ptr - str;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
 </li>
 <li><h4 id="strcpy函数"><a href="#strcpy函数" class="headerlink" title="strcpy函数"></a>strcpy函数</h4><ul>
 <li><p>内部通过memcpy实现的，可以看到nbytes是src得长度+1，实际存在一个null字节的覆写。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">return</span> <span class="built_in">memcpy</span> (dest, src, <span class="built_in">strlen</span> (src) + <span class="number">1</span>);</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p><strong>strncpy (char <em>s1, const char </em>s2, size_t n)</strong></p>
+<ul>
+<li><p>通过strnlen保证不会溢出，memset会清除多余的，防止内存泄露。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">char</span> *</span><br><span class="line">STRNCPY (<span class="keyword">char</span> *s1, <span class="keyword">const</span> <span class="keyword">char</span> *s2, <span class="keyword">size_t</span> n)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">size_t</span> size = __strnlen (s2, n);</span><br><span class="line">  <span class="keyword">if</span> (size != n)</span><br><span class="line">    <span class="built_in">memset</span> (s1 + size, <span class="string">'\0'</span>, n - size);             <span class="comment">/*s2 不够的用'\x00'填充*/</span></span><br><span class="line">  <span class="keyword">return</span> <span class="built_in">memcpy</span> (s1, s2, size);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 </li>
 </ul>
 </li>
@@ -227,7 +244,30 @@
 </li>
 </ul>
 <ul>
-<li>strcat函数覆盖原dst的null字节，同时也会把src的null字节复制过去。</li>
+<li>strcat函数覆盖原dst的null字节，同时strcpy会在新的dest后加null</li>
+</ul>
+<ul>
+<li><p><strong>strncat函数</strong></p>
+<ul>
+<li><p>通过strnlen和memcpy实现。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">STRNCAT (<span class="keyword">char</span> *s1, <span class="keyword">const</span> <span class="keyword">char</span> *s2, <span class="keyword">size_t</span> n)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">char</span> *s = s1;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* Find the end of S1.  */</span></span><br><span class="line">  s1 += <span class="built_in">strlen</span> (s1);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">size_t</span> ss = __strnlen (s2, n);</span><br><span class="line"></span><br><span class="line">  s1[ss] = <span class="string">'\0'</span>;</span><br><span class="line">  <span class="built_in">memcpy</span> (s1, s2, ss);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> s;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p><strong>小结</strong></p>
+<ul>
+<li>上述内存复制、连接函数多数都是默认操作指针null结束，如果这个前提不能保证，就可以导致memory漏洞。</li>
+</ul>
+</li>
+<li><p><strong>strcspn函数</strong></p>
+<ul>
+<li><p>返回src不包含特定字符的最大长度。</p>
+</li>
+<li><p>使用0x100大的map映射，0|1存在与否，每轮4byte快速计算。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">s = (<span class="keyword">unsigned</span> <span class="keyword">char</span>*) str;</span><br><span class="line"> <span class="keyword">if</span> (p[s[<span class="number">0</span>]]) <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line"> <span class="keyword">if</span> (p[s[<span class="number">1</span>]]) <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line"> <span class="keyword">if</span> (p[s[<span class="number">2</span>]]) <span class="keyword">return</span> <span class="number">2</span>;</span><br><span class="line"> <span class="keyword">if</span> (p[s[<span class="number">3</span>]]) <span class="keyword">return</span> <span class="number">3</span>;</span><br><span class="line">    </span><br><span class="line"> s = (<span class="keyword">unsigned</span> <span class="keyword">char</span> *) PTR_ALIGN_DOWN (s, <span class="number">4</span>);</span><br><span class="line">    </span><br><span class="line"> <span class="keyword">unsigned</span> <span class="keyword">int</span> c0, c1, c2, c3;</span><br><span class="line"> <span class="keyword">do</span></span><br><span class="line">   &#123;</span><br><span class="line">     s += <span class="number">4</span>;</span><br><span class="line">     c0 = p[s[<span class="number">0</span>]];</span><br><span class="line">     c1 = p[s[<span class="number">1</span>]];</span><br><span class="line">     c2 = p[s[<span class="number">2</span>]];</span><br><span class="line">     c3 = p[s[<span class="number">3</span>]];</span><br><span class="line">   &#125;</span><br><span class="line"> <span class="keyword">while</span> ((c0 | c1 | c2 | c3) == <span class="number">0</span>);</span><br><span class="line">    </span><br><span class="line"> <span class="keyword">size_t</span> count = s - (<span class="keyword">unsigned</span> <span class="keyword">char</span> *) str;</span><br><span class="line"> <span class="keyword">return</span> (c0 | c1) != <span class="number">0</span> ? count - c0 + <span class="number">1</span> : count - c2 + <span class="number">3</span>;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
 </ul>
 <ul>
 <li><h4 id="strcmp函数"><a href="#strcmp函数" class="headerlink" title="strcmp函数"></a>strcmp函数</h4><ul>
@@ -237,9 +277,31 @@
 </ul>
 </li>
 <li><h4 id="strncmp函数"><a href="#strncmp函数" class="headerlink" title="strncmp函数"></a>strncmp函数</h4><ul>
-<li><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span></span><br><span class="line">STRNCMP (<span class="keyword">const</span> <span class="keyword">char</span> *s1, <span class="keyword">const</span> <span class="keyword">char</span> *s2, <span class="keyword">size_t</span> n)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">unsigned</span> <span class="keyword">char</span> c1 = <span class="string">'\0'</span>;</span><br><span class="line">  <span class="keyword">unsigned</span> <span class="keyword">char</span> c2 = <span class="string">'\0'</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (n &gt;= <span class="number">4</span>)</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="keyword">size_t</span> n4 = n &gt;&gt; <span class="number">2</span>;</span><br><span class="line">      <span class="keyword">do</span></span><br><span class="line">	&#123;</span><br><span class="line">	  c1 = (<span class="keyword">unsigned</span> <span class="keyword">char</span>) *s1++;</span><br><span class="line">	  c2 = (<span class="keyword">unsigned</span> <span class="keyword">char</span>) *s2++;</span><br><span class="line">	  <span class="keyword">if</span> (c1 == <span class="string">'\0'</span> || c1 != c2)</span><br><span class="line">	    <span class="keyword">return</span> c1 - c2;</span><br><span class="line">	  c1 = (<span class="keyword">unsigned</span> <span class="keyword">char</span>) *s1++;</span><br><span class="line">	  c2 = (<span class="keyword">unsigned</span> <span class="keyword">char</span>) *s2++;</span><br><span class="line">	  <span class="keyword">if</span> (c1 == <span class="string">'\0'</span> || c1 != c2)</span><br><span class="line">	    <span class="keyword">return</span> c1 - c2;</span><br><span class="line">	  c1 = (<span class="keyword">unsigned</span> <span class="keyword">char</span>) *s1++;</span><br><span class="line">	  c2 = (<span class="keyword">unsigned</span> <span class="keyword">char</span>) *s2++;</span><br><span class="line">	  <span class="keyword">if</span> (c1 == <span class="string">'\0'</span> || c1 != c2)</span><br><span class="line">	    <span class="keyword">return</span> c1 - c2;</span><br><span class="line">	  c1 = (<span class="keyword">unsigned</span> <span class="keyword">char</span>) *s1++;</span><br><span class="line">	  c2 = (<span class="keyword">unsigned</span> <span class="keyword">char</span>) *s2++;</span><br><span class="line">	  <span class="keyword">if</span> (c1 == <span class="string">'\0'</span> || c1 != c2)</span><br><span class="line">	    <span class="keyword">return</span> c1 - c2;</span><br><span class="line">	&#125; <span class="keyword">while</span> (--n4 &gt; <span class="number">0</span>);              </span><br><span class="line">      n &amp;= <span class="number">3</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">while</span> (n &gt; <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">      c1 = (<span class="keyword">unsigned</span> <span class="keyword">char</span>) *s1++;</span><br><span class="line">      c2 = (<span class="keyword">unsigned</span> <span class="keyword">char</span>) *s2++;</span><br><span class="line">      <span class="keyword">if</span> (c1 == <span class="string">'\0'</span> || c1 != c2)</span><br><span class="line">	<span class="keyword">return</span> c1 - c2;</span><br><span class="line">      n--;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> c1 - c2;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<li>实现源码</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span></span><br><span class="line">STRNCMP (<span class="keyword">const</span> <span class="keyword">char</span> *s1, <span class="keyword">const</span> <span class="keyword">char</span> *s2, <span class="keyword">size_t</span> n)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">unsigned</span> <span class="keyword">char</span> c1 = <span class="string">'\0'</span>;</span><br><span class="line">  <span class="keyword">unsigned</span> <span class="keyword">char</span> c2 = <span class="string">'\0'</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (n &gt;= <span class="number">4</span>)</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="keyword">size_t</span> n4 = n &gt;&gt; <span class="number">2</span>;</span><br><span class="line">      <span class="keyword">do</span></span><br><span class="line">	&#123;</span><br><span class="line">	  c1 = (<span class="keyword">unsigned</span> <span class="keyword">char</span>) *s1++;</span><br><span class="line">	  c2 = (<span class="keyword">unsigned</span> <span class="keyword">char</span>) *s2++;</span><br><span class="line">	  <span class="keyword">if</span> (c1 == <span class="string">'\0'</span> || c1 != c2)</span><br><span class="line">	    <span class="keyword">return</span> c1 - c2;</span><br><span class="line">	  c1 = (<span class="keyword">unsigned</span> <span class="keyword">char</span>) *s1++;</span><br><span class="line">	  c2 = (<span class="keyword">unsigned</span> <span class="keyword">char</span>) *s2++;</span><br><span class="line">	  <span class="keyword">if</span> (c1 == <span class="string">'\0'</span> || c1 != c2)</span><br><span class="line">	    <span class="keyword">return</span> c1 - c2;</span><br><span class="line">	  c1 = (<span class="keyword">unsigned</span> <span class="keyword">char</span>) *s1++;</span><br><span class="line">	  c2 = (<span class="keyword">unsigned</span> <span class="keyword">char</span>) *s2++;</span><br><span class="line">	  <span class="keyword">if</span> (c1 == <span class="string">'\0'</span> || c1 != c2)</span><br><span class="line">	    <span class="keyword">return</span> c1 - c2;</span><br><span class="line">	  c1 = (<span class="keyword">unsigned</span> <span class="keyword">char</span>) *s1++;</span><br><span class="line">	  c2 = (<span class="keyword">unsigned</span> <span class="keyword">char</span>) *s2++;</span><br><span class="line">	  <span class="keyword">if</span> (c1 == <span class="string">'\0'</span> || c1 != c2)</span><br><span class="line">	    <span class="keyword">return</span> c1 - c2;</span><br><span class="line">	&#125; <span class="keyword">while</span> (--n4 &gt; <span class="number">0</span>);              </span><br><span class="line">      n &amp;= <span class="number">3</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">while</span> (n &gt; <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">      c1 = (<span class="keyword">unsigned</span> <span class="keyword">char</span>) *s1++;</span><br><span class="line">      c2 = (<span class="keyword">unsigned</span> <span class="keyword">char</span>) *s2++;</span><br><span class="line">      <span class="keyword">if</span> (c1 == <span class="string">'\0'</span> || c1 != c2)</span><br><span class="line">	<span class="keyword">return</span> c1 - c2;</span><br><span class="line">      n--;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> c1 - c2;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>该函数只检查n个长度，当这个n是根据strlen计算的，如果是strlen我们的输入，在很多比较场合可以用来绕过检查。</li>
+</ul>
 </li>
-<li><p>该函数只检查n个长度，当这个n是根据strlen计算的，由于后者’\x00’截断，在很多比较场合可以用来绕过检查。</p>
+<li><p><strong>strdup</strong>函数</p>
+<ul>
+<li><p>使用malloc分配空间，在memcpy过去，得到一个和参数字符串内容一样的字符串。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* Duplicate S, returning an identical malloc'd string.  */</span></span><br><span class="line"><span class="keyword">char</span> *</span><br><span class="line">__strdup (<span class="keyword">const</span> <span class="keyword">char</span> *s)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">size_t</span> len = <span class="built_in">strlen</span> (s) + <span class="number">1</span>;</span><br><span class="line">  <span class="keyword">void</span> *<span class="keyword">new</span> = <span class="built_in">malloc</span> (len);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">new</span> == <span class="literal">NULL</span>)</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> (<span class="keyword">char</span> *) <span class="built_in">memcpy</span> (<span class="keyword">new</span>, s, len);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>对于返回的指针，可以使用free释放。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>小结</p>
+<ul>
+<li><p>上述的关于string的操作，单个来看似乎是没有问题的，但是在特定的组合下是会有问题的。</p>
+<ul>
+<li><p>例如，malloc和strcpy和strlen的组合。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ptr = <span class="built_in">malloc</span>(<span class="built_in">strlen</span>(src));</span><br><span class="line"><span class="comment">/*trigger null-by-one*/</span></span><br><span class="line"><span class="built_in">strcpy</span>(ptr, src);</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
 </li>
 </ul>
 </li>
