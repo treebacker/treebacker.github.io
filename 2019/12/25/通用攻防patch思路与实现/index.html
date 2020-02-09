@@ -1,0 +1,411 @@
+<!DOCTYPE HTML>
+<html class="no-js" lang="zh-CN">
+<!--
+//                            _ooOoo_
+//                           o8888888o
+//                           88" . "88
+//                           (| -_- |)
+//                            O\ = /O
+//                        ____/`---'\____
+//                      .   ' \\| |// `.
+//                       / \\||| : |||// \
+//                     / _||||| -:- |||||- \
+//                       | | \\\ - /// | |
+//                     | \_| ''\---/'' | |
+//                      \ .-\__ `-` ___/-. /
+//                   ___`. .' /--.--\ `. . __
+//                ."" '< `.___\_<|>_/___.' >'"".
+//               | | : `- \`.;`\ _ /`;.`/ - ` : | |
+//                 \ \ `-. \_ __\ /__ _/ .-` / /
+//         ======`-.____`-.___\_____/___.-`____.-'======
+//                            `=---='
+//                 拦截插件累计拦截逗比攻击"1381438"次！
+//         .............................................
+//                  佛祖保佑             永无BUG
+//          佛曰:
+//                  写字楼里写字间，写字间里程序员；
+//                  程序人员写程序，又拿程序换酒钱。
+//                  酒醒只在网上坐，酒醉还来网下眠；
+//                  酒醉酒醒日复日，网上网下年复年。
+//                  但愿老死电脑间，不愿鞠躬老板前；
+//                  奔驰宝马贵者趣，公交自行程序员。
+//                  别人笑我忒疯癫，我笑自己命太贱；
+//                  不见满街漂亮妹，哪个归得程序员？
+-->
+<head><meta name="generator" content="Hexo 3.8.0">
+    <!--[if lte IE 9]>
+<meta http-equiv="refresh" content="0;url=http://yoursite.com/warn.html">
+<![endif]-->
+<meta charset="utf-8">
+
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+
+<meta http-equiv="X-UA-Compatible" content="IE=Edge">
+<meta name="renderer" content="webkit">
+<meta name="viewport" content="width=device-width, initial-scale=1.0,user-scalable=no">
+<meta http-equiv="mobile-agent" content="format=html5; url=http://yoursite.com">
+<meta name="author" content="treebacker">
+<link rel="stylesheet" href="../../../../css/SimpleStyle.min.css">
+
+<link rel="shortcut icon" href="../../../../images/favicon.png">
+
+
+<title>通用攻防patch思路与实现 - Watch Security</title>
+
+<meta name="keywords" content="Patch">
+
+<meta name="description " content="some ways to patch binary">
+
+</head>
+<body>
+<div id="nav">
+    <nav class="nav-menu">
+        <a class="site-name current" href="/" title="Tree">Tree</a>
+        <a class="site-index current" href="/"><i class="fa fa-home"></i><span>首页</span></a>
+        <a href="/archives" title="归档"><i class="fa fa-archives"></i><span>归档</span></a>
+        <a href="/tags" title="标签"><i class="fa fa-tags"></i><span>标签</span></a>
+        <!-- custom single page of menus -->
+        
+        
+        <a href="/help" title="帮助">
+            <i class="fa fa-question-circle"></i>
+            <span>帮助</span>
+        </a>
+        
+    </nav>
+</div>
+
+<div class="nav-user">
+    <a class="btn-search" href="#"><i class="fa fa-search"></i></a>
+    <a class="btn-read-mode" href="#"><i class="fa fa-sun-o"></i></a>
+    <a class="btn-sns-qr" href="javascript:"><i class="fa fa-telegram"></i></a>
+</div>
+
+<div id="wrapper" class="clearfix">
+    <div id="body">
+        <div class="main" id="main">
+            <div id="cover">
+    <div class="cover-img"></div>
+    <div class="cover-info">
+        
+        <h1 class="cover-siteName">Treebacker</h1>
+        <h3 class="cover-siteTitle">愿麦子和麦子长在一起，愿河流与河流流归一处。</h3>
+        <p class="cover-siteDesc">岁月易逝，痕影难觅</p>
+        <div class="cover-sns">
+            
+            <div class="btn btn-github">
+                <a href="https://github.com/treebacker" target="_blank" title="github" ref="friend">
+                    <i class="fa fa-github"></i>
+                </a>
+            </div>
+            
+        </div>
+    </div>
+</div>
+            <div class="page-title">
+    <ul>
+        <li><a href="/">最新</a></li>
+        
+            
+                <li class="active">
+                    <a href="/categories/tech-notes" data-name="技术">技术</a>
+                </li>
+            
+                <li class="">
+                    <a href="/categories/essays" data-name="随笔">随笔</a>
+                </li>
+            
+                <li class="">
+                    <a href="/categories/cdcitizen-of-the-sun" data-name="海子">海子</a>
+                </li>
+            
+                <li class="">
+                    <a href="/categories/others" data-name="其他">其他</a>
+                </li>
+            
+        
+        <li class="page-search">
+    <form id="search" class="search-form">
+        <label for="s" class="sr-only">请输入关键字</label>
+        <input class="search-field" type="text" name="s" placeholder="请输入关键字">
+        <button type="submit" class="search-form-submit" title="搜索"><i class="fa fa-search"></i></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="请输入关键词...">
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(无标题)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '../../../../content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+</li>
+
+    </ul>
+</div>
+<div class="main-inner">
+    <article class="post" itemscope="" itemtype="http://schema.org/BlogPosting">
+        <div class="post-header">
+            <div class="post-author clearfix">
+                <a class="avatar fleft" href="" target="_blank">
+                    <img width="48" src="/images/favicon.png" alt="avatar">
+                </a>
+                <p><span class="label">作者</span>
+                    <a href="" target="_blank">Treebacker</a>
+                    <span title="最后编辑于2019-12-25">2019-12-25</span>
+                </p>
+                <p></p>
+            </div>
+            <h2 class="post-title">通用攻防patch思路与实现</h2>
+            <div class="post-meta">
+                本文总共7686个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
+            </div>
+        </div>
+        <div class="post-content markdown-body">
+            <h3 id="攻防通用Patch思路与实现"><a href="#攻防通用Patch思路与实现" class="headerlink" title="攻防通用Patch思路与实现"></a>攻防通用Patch思路与实现</h3><ul>
+<li><h4 id="起源"><a href="#起源" class="headerlink" title="起源"></a>起源</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">某实验室的面试中，问到了我在软件攻防中，如何给binary打上通用patch，使得攻击方无法获得shell。</span><br><span class="line">我想了想，说了一句“模块Hook系统调用execve”。</span><br><span class="line">对面：“额，一般攻防赛没有root权限”。</span><br><span class="line">。。。。有点尴尬</span><br></pre></td></tr></table></figure>
+</li>
+<li><h4 id="关于patch的思路"><a href="#关于patch的思路" class="headerlink" title="关于patch的思路"></a>关于patch的思路</h4><ul>
+<li><p>个人理解就是类似于Hook，不过需要能够绕过平台的check。</p>
+</li>
+<li><p>例如将一个有格式化字符串的漏洞patch的思路</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1、修改call printf为call puts</span><br><span class="line">2、过滤printf的输出（写一段安全代码，call 过去。哪怕输出一段固定的字符串？）。</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>栈溢出的漏洞patch</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">一般栈溢出利用会执行system(/bin/sh)；我们可以劫持system函数为puts等“无害”的地方去。</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><p>堆溢出漏洞</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">1、可以借鉴栈溢出</span><br><span class="line">2、将malloc函数的size参数自己设一个固定值。。。</span><br><span class="line">3、free函数hook下来，每次正常free之后，我们给它加一个 ptr = null</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<ul>
+<li><h4 id="手工patch"><a href="#手工patch" class="headerlink" title="手工patch"></a>手工patch</h4><ul>
+<li>利用IDA等反汇编工具修改关键指令（call、jmp、cmp等）<ul>
+<li>这种方式速度慢，且没有通用性可言。适合于破解，不适合于攻防patch！</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><h4 id="LD-PRELOAD的劫持"><a href="#LD-PRELOAD的劫持" class="headerlink" title="LD_PRELOAD的劫持"></a>LD_PRELOAD的劫持</h4><ul>
+<li>这个就是利用加载.so文件的顺序的关系, 利用我们自己的.so代替默认的.so文件.</li>
+</ul>
+</li>
+<li><h4 id="开源框架lief"><a href="#开源框架lief" class="headerlink" title="开源框架lief"></a>开源框架lief</h4><ul>
+<li><h5 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h5></li>
+<li><h5 id="patch-binary文件"><a href="#patch-binary文件" class="headerlink" title="patch binary文件"></a>patch binary文件</h5><ul>
+<li>patch引入的符号</li>
+<li>patch plt/got项</li>
+</ul>
+</li>
+<li><h5 id="patch-so文件（修改libc调用）"><a href="#patch-so文件（修改libc调用）" class="headerlink" title="patch .so文件（修改libc调用）"></a>patch .so文件（修改libc调用）</h5><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> lief</span><br><span class="line">lib = lief.parse(<span class="string">'/lib/x86_64-linux-gnu/libc.so.6'</span>)</span><br><span class="line"></span><br><span class="line">puts_symbols = filter(<span class="keyword">lambda</span> e:e.name==<span class="string">'puts'</span>,lib.dynamic_symbols).__next__()</span><br><span class="line">system_symbols = filter(<span class="keyword">lambda</span> e:e.name==<span class="string">'system'</span>,lib.dynamic_symbols).__next__()</span><br><span class="line"></span><br><span class="line">print(puts_symbols)</span><br><span class="line">print(system_symbols)</span><br><span class="line"></span><br><span class="line">puts_symbols.name = <span class="string">'system'</span></span><br><span class="line">system_symbols.name = <span class="string">'puts'</span></span><br><span class="line"></span><br><span class="line">print(<span class="string">"******** patch ************"</span>)</span><br><span class="line">print(puts_symbols)</span><br><span class="line">print(system_symbols)</span><br><span class="line"></span><br><span class="line">lib.write(<span class="string">"patch_libc.so.6"</span>)</span><br></pre></td></tr></table></figure>
+</li>
+<li><h5 id="patch-add-segment"><a href="#patch-add-segment" class="headerlink" title="patch add segment"></a>patch add segment</h5><ul>
+<li><p>就是向原binary文件新增一个segment，代码源于我们自己写的so文件。修改原binary下的某call指令偏移到我们新增的segment下。达到劫持某一个call指令的目的。</p>
+</li>
+<li><p>so文件hook函数的实现, 最好用汇编, 不然的化类似于病毒(自己找API)的原理, 这里直接用库函数会失败.</p>
+</li>
+<li><p>然后用lief的 patch_address修改call的地址.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">patch</span><span class="params">()</span>:</span></span><br><span class="line">	binary = lief.parse(sys.argv[<span class="number">1</span>])</span><br><span class="line">	hook = lief.parse(sys.argv[<span class="number">2</span>])</span><br><span class="line">	segment_added = binary.add(hook.segments[<span class="number">0</span>])</span><br><span class="line">	export_symbol = hook.get_symbol(<span class="string">"hook"</span>)</span><br><span class="line"></span><br><span class="line">	hook_addr = segment_added.virtual_address + export_symbol.value</span><br><span class="line">	print(<span class="string">"added_seg: "</span>, hex(segment_added.virtual_address))</span><br><span class="line">	print(<span class="string">"hook_addr: "</span>, hex(hook_addr))</span><br><span class="line">	patch_call(binary, <span class="number">0x4006c9</span>, hook_addr, <span class="string">"amd64"</span>)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>这种方式，很明显binary文件的改动很大。可能无法通过check.</p>
+<p><img src="通用攻防patch思路与实现\2.png" alt=""></p>
+</li>
+</ul>
+</li>
+<li><h5 id="patch-eh-frame"><a href="#patch-eh-frame" class="headerlink" title="patch .eh_frame"></a>patch .eh_frame</h5><ul>
+<li><p>.eh_frame_hdr和.eh_frame是用来在异常处理的时候, 产生描述如何展开堆栈.但是实际上gcc编译已经有了<strong>gcc_except_table</strong></p>
+</li>
+<li><p>换句话说, 该段对程序的正常执行没什么影响, 而当其拥有可执行权限时, 就可以不用add segment而直接将hook部分写在这里.</p>
+</li>
+<li><p>即使该eh_frame段的属性是只<strong>R</strong>的, 我们也可以修改属性为<strong>RX</strong>, 再将代码写进去.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">code_to_str</span><span class="params">(ori)</span>:</span></span><br><span class="line">	ans = <span class="string">''</span></span><br><span class="line">	<span class="keyword">while</span>(ori):</span><br><span class="line">		ans += chr(ori &amp; <span class="number">0xff</span>)</span><br><span class="line">		ori &gt;&gt;= <span class="number">8</span></span><br><span class="line">	ans = ans.ljust(<span class="number">4</span>, <span class="string">'\x00'</span>)</span><br><span class="line">	<span class="keyword">return</span> ans</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">patch_call</span><span class="params">(binary, start, target, arch)</span>:</span></span><br><span class="line">	print(<span class="string">'start'</span>, hex(start), <span class="string">'target: '</span>, hex(target))</span><br><span class="line">	call_code = code_to_str((target - (start + <span class="number">5</span>)) &amp; <span class="number">0xffffffff</span>)</span><br><span class="line">	</span><br><span class="line">	opcode = chr(<span class="number">0xe8</span>) + call_code</span><br><span class="line">	<span class="keyword">for</span> code <span class="keyword">in</span> call_code:</span><br><span class="line">		print(<span class="string">"code: "</span>, ord(code))</span><br><span class="line">	binary.patch_address(start, [ord(i) <span class="keyword">for</span> i <span class="keyword">in</span> opcode])	<span class="comment">#修改call的某个地址</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">bin_write</span><span class="params">(binary, target, opcode, arch)</span>:</span></span><br><span class="line">	print(disasm(opcode, arch=arch))</span><br><span class="line">	binary.patch_address(target, [i <span class="keyword">for</span> i <span class="keyword">in</span> opcode])</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">write_to_frame</span><span class="params">()</span>:</span></span><br><span class="line">	binary = lief.parse(sys.argv[<span class="number">1</span>])</span><br><span class="line">	<span class="keyword">with</span> open(sys.argv[<span class="number">2</span>], <span class="string">'rb'</span>) <span class="keyword">as</span> hook:</span><br><span class="line">		frame_code = hook.read()</span><br><span class="line"></span><br><span class="line">	frame_section = binary.get_section(<span class="string">'.eh_frame'</span>)</span><br><span class="line">	print(<span class="string">"frmae_addr: "</span>, frame_section.virtual_address)</span><br><span class="line">	print(<span class="string">"frame_flags: "</span>, frame_section.flags)</span><br><span class="line">	frame_section.flags |= <span class="number">1</span>		<span class="comment">#修改属性确保x</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	bin_write(binary, frame_section.virtual_address, frame_code, <span class="string">'amd64'</span>)</span><br><span class="line">	patch_call(binary, <span class="number">0x4006c9</span>, frame_section.virtual_address, <span class="string">'amd64'</span>)</span><br><span class="line"></span><br><span class="line">	binary.write(<span class="string">'frame_patch'</span>)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>这种方式下, 对原文件的修改在size上查不出来. 而且可以试想一下, 除了eh_frame. 别的段的空白地方是不是也可以呢? 这种方式其实是<strong>通用的</strong>。</p>
+<p><img src="通用攻防patch思路与实现\1.png" alt=""></p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><h4 id="实战"><a href="#实战" class="headerlink" title="实战"></a>实战</h4><ul>
+<li><h5 id="格式化字符串漏洞"><a href="#格式化字符串漏洞" class="headerlink" title="格式化字符串漏洞"></a>格式化字符串漏洞</h5><ul>
+<li><h6 id="问题代码"><a href="#问题代码" class="headerlink" title="问题代码"></a>问题代码</h6><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">char</span> input[<span class="number">16</span>]=&#123;<span class="number">0</span>&#125;;</span><br><span class="line">	<span class="built_in">puts</span>(<span class="string">"Input your cmd: "</span>);</span><br><span class="line">	gets(input);</span><br><span class="line">	<span class="built_in">printf</span>(input);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"\n"</span>);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>这里用到了函数puts和printf，所以可以直接替换二者的name。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">swap_binsym</span><span class="params">(obj, a, b)</span>:</span></span><br><span class="line">    symbol_a = next(filter(<span class="keyword">lambda</span> e : e.name == a, obj.imported_symbols))</span><br><span class="line">    symbol_b = next(filter(<span class="keyword">lambda</span> e : e.name == b, obj.imported_symbols))</span><br><span class="line">    b_name = symbol_b.name</span><br><span class="line">    symbol_b.name = symbol_a.name</span><br><span class="line">    symbol_a.name = b_name</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">patch</span><span class="params">()</span>:</span></span><br><span class="line">	binary = lief.parse(sys.argv[<span class="number">1</span>])</span><br><span class="line">	swap_binsym(binary, <span class="string">'printf'</span>, sys.argv[<span class="number">2</span>])</span><br><span class="line">	binary.write(<span class="string">'./p_fmt'</span>)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>效果</p>
+<p><img src="通用攻防patch思路与实现\3.png" alt=""></p>
+</li>
+<li><p>但是如果原binary没有puts呢，此时比较好的思路就是将call printf这条指令修改到可控的地址。利用add segment或者eh_frame。详细继续看！</p>
+</li>
+</ul>
+</li>
+<li><h5 id="栈溢出"><a href="#栈溢出" class="headerlink" title="栈溢出"></a>栈溢出</h5><ul>
+<li><p>问题代码</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">vuln</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">char</span> buf[<span class="number">0x10</span>]= &#123;<span class="number">0</span>&#125;;</span><br><span class="line">	read(<span class="number">0</span>, buf, <span class="number">0x100</span>); <span class="comment">/*溢出点*/</span></span><br><span class="line">	<span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="built_in">puts</span>(<span class="string">"Welcome to stack vuln!"</span>);</span><br><span class="line">	vuln();</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>这里明显的栈溢出，ROP可以快速获得shell。从patch角度来看，只有一个read和puts函数。不能继续像上面那样互换symbol。</p>
+</li>
+<li><p>此时可以从溢出点<strong>read</strong>函数入手，我们可以在类似于eh_frame段的位置，构造一个类似的read调用，但是却把洞给补上；或者只修改read之后对应ret位置的值。（好贱）</p>
+</li>
+<li><p>原vuln汇编</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">0x000000000040057e &lt;+24&gt;:    lea    rax,[rbp-0x10]</span><br><span class="line">0x0000000000400582 &lt;+28&gt;:    mov    edx,0x100</span><br><span class="line">0x0000000000400587 &lt;+33&gt;:    mov    rsi,rax</span><br><span class="line">0x000000000040058a &lt;+36&gt;:    mov    edi,0x0</span><br><span class="line">0x000000000040058f &lt;+41&gt;:    mov    eax,0x0</span><br><span class="line">0x0000000000400594 &lt;+46&gt;:    call   0x400440 &lt;read@plt&gt;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>例如，伪造的read调用</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*[思路a]*/</span> read(<span class="number">0</span>, buf, <span class="number">0x10</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">/*[思路b]*/</span> read(<span class="number">0</span>, buf, <span class="number">0x100</span>); (<span class="keyword">size_t</span>*)(rbp+<span class="number">8</span>)=<span class="number">0xdeadbeef</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>思路<strong>a</strong>实现（需要汇编实现）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">mov edx, 0x10		;only edx is modified</span><br><span class="line">syscall</span><br><span class="line">ret</span><br></pre></td></tr></table></figure>
+<ul>
+<li>效果</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">   0x000000000040057e &lt;+24&gt;:    lea    rax,[rbp-0x10]</span><br><span class="line">   0x0000000000400582 &lt;+28&gt;:    mov    edx,0x100</span><br><span class="line">   0x0000000000400587 &lt;+33&gt;:    mov    rsi,rax</span><br><span class="line">   0x000000000040058a &lt;+36&gt;:    mov    edi,0x0</span><br><span class="line">   0x000000000040058f &lt;+41&gt;:    mov    eax,0x0</span><br><span class="line">   0x0000000000400594 &lt;+46&gt;:    call   0x400698		/*eh_frame*/</span><br><span class="line">   0x0000000000400599 &lt;+51&gt;:    nop</span><br><span class="line">   0x000000000040059a &lt;+52&gt;:    leave  </span><br><span class="line">   0x000000000040059b &lt;+53&gt;:    ret    </span><br><span class="line">End of assembler dump.</span><br><span class="line">gdb-peda$ disassemble 0x400698,0x400698+0x8</span><br><span class="line">Dump of assembler code from 0x400698 to 0x4006a0:</span><br><span class="line">   0x0000000000400698:  mov    edx,0x10</span><br><span class="line">   0x000000000040069d:  syscall </span><br><span class="line">   0x000000000040069f:  ret    </span><br><span class="line">End of assembler dump.</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>测试，不存在覆盖ret了。。。</p>
+<p><img src="通用攻防patch思路与实现\4.png" alt=""></p>
+</li>
+</ul>
+</li>
+<li><p>思路<strong>b</strong>实现（不修改读入的长度，但是read之后，修改ret对应的值）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">syscall</span><br><span class="line">mov eax, 0xdeadbeef				;cover ret_addr</span><br><span class="line">mov [rbp+0x8], rax</span><br><span class="line">ret</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>效果, 无论payload是啥，我们都把ret地址改成0xdeadbeef。这种方式的好处很明显，就是对方不会察觉read长度变了之类，而是怀疑自己的<strong>payload</strong></p>
+<p><img src="通用攻防patch思路与实现\5.png" alt=""></p>
+</li>
+</ul>
+</li>
+<li><h5 id="堆溢出"><a href="#堆溢出" class="headerlink" title="堆溢出"></a>堆溢出</h5><ul>
+<li><h5 id="uaf的patch。"><a href="#uaf的patch。" class="headerlink" title="uaf的patch。"></a>uaf的patch。</h5><ul>
+<li><p>漏洞代码</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">delete</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> idx;</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"Enter the index: "</span>);</span><br><span class="line">	<span class="built_in">scanf</span>(<span class="string">"%d"</span>, &amp;idx);</span><br><span class="line">	<span class="keyword">if</span>(idx&gt;=<span class="number">0</span> &amp;&amp; idx &lt; cnt)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="built_in">free</span>(g_ptr[idx]);				<span class="comment">/*uaf*/</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>* patch前，构成double chain
+
+  ![](通用攻防patch思路与实现\6.png)
+
+* patch思路, 在free之后,  将free的参数指针置NULL.但这里与劫持read不同的是,read是原生测系统调用, free不是.这时候, 我们可以换一个思路, 不再像read那样, 通过系统掉实现, 而是将原来的call free@plt扩展到两句**call free@plt;  mov ptr = 0**
+
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">;原状态</span><br><span class="line">mov    rax,QWORD PTR [rax] ; 第二个rax是我们在free之后需要置0的</span><br><span class="line">mov    rdi,rax</span><br><span class="line">call   0x400680 &lt;free@plt&gt;</span><br><span class="line"></span><br><span class="line">;我们期待的patch状态</span><br><span class="line">mov 	r14, rax		;暂存rax</span><br><span class="line">mov    rax,QWORD PTR [rax]</span><br><span class="line">mov    rdi,rax</span><br><span class="line">call   0x400680 &lt;free@plt&gt;</span><br><span class="line">mov    QWORD PTR[r14], 0 ;清零</span><br></pre></td></tr></table></figure>
+
+
+* 至于free@plt的值, 可以用lief读取到. 或者直接从文件手工获取.
+
+* **但是主要问题是, 如何跳转到我们的hook部分, 因为在执行call free得到时候, 我们需要的rax已经不在了.**
+</code></pre><ul>
+<li><h5 id="堆溢出的patch"><a href="#堆溢出的patch" class="headerlink" title="堆溢出的patch"></a>堆溢出的patch</h5><ul>
+<li><p>漏洞代码</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">edit</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> idx, size;</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"Enter the index: "</span>);</span><br><span class="line">	<span class="built_in">scanf</span>(<span class="string">"%d"</span>, &amp;idx);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"Enter the size: "</span>);</span><br><span class="line">	<span class="built_in">scanf</span>(<span class="string">"%d"</span>, &amp;size);</span><br><span class="line">	<span class="keyword">if</span>(idx&gt;=<span class="number">0</span> &amp;&amp; idx &lt; cnt)		<span class="comment">/*index check*/</span></span><br><span class="line">	&#123;</span><br><span class="line">		read(<span class="number">0</span>, g_ptr[idx], size);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>* 漏洞利用的话, 典型的溢出. 没开启PIE就是unlink, 开启了就是
+
+* patch方式, 这里其实是和栈溢出差不多, 我们有两种方式, 一个限制read的size参数, 另一个就是修改输入的内容.
+</code></pre><ul>
+<li><p>其实, 堆的patch, 有一个比较通用的方式, 就是我们不再执着于补洞, 而是<strong>修改malloc的size</strong>.例如全改成0x10.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#首先获取malloc的plt地址</span></span><br><span class="line">malloc_plt_list = binary.get_content_from_virtual_address(call_addr+<span class="number">1</span>, <span class="number">4</span>)</span><br><span class="line">malloc_plt = <span class="number">0</span> </span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> malloc_plt_list[::<span class="number">-1</span>]:</span><br><span class="line">	malloc_plt = (malloc_plt &lt;&lt; <span class="number">8</span>) + i</span><br><span class="line">malloc_plt = ((malloc_plt) + (call_addr+<span class="number">5</span>)) &amp; <span class="number">0xffffffff</span></span><br><span class="line">print(<span class="string">'malloc_plt, '</span>, hex(malloc_plt))</span><br><span class="line"></span><br><span class="line">   <span class="comment">#向eh_frame写入hook代码</span></span><br><span class="line">frame_code = <span class="string">'\xbf\x10\x00\x00\x00'</span>				<span class="comment">#mov edi, 0x10</span></span><br><span class="line">frame_code += <span class="string">'\xe8'</span>							<span class="comment">#call malloc@plt</span></span><br><span class="line">call_malloc = code_to_str((malloc_plt - (frame_section.virtual_address+<span class="number">10</span>)) &amp; <span class="number">0xffffffff</span>)</span><br><span class="line">frame_code += call_malloc</span><br><span class="line">frame_code += <span class="string">'\xc3'</span>							<span class="comment">#ret</span></span><br><span class="line">    </span><br><span class="line">bin_write(binary, frame_section.virtual_address, frame_code, <span class="string">'amd64'</span>)</span><br><span class="line">   </span><br><span class="line">   <span class="comment">#修改call malloc到 call eh_frame</span></span><br><span class="line">patch_call(binary, call_addr, frame_section.virtual_address, <span class="string">'amd64'</span>)</span><br><span class="line">    </span><br><span class="line">binary.write(sys.argv[<span class="number">1</span>] + <span class="string">'_patch'</span>)</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<pre><code>* 效果
+
+  ![](通用攻防patch思路与实现\7.png)
+</code></pre><ul>
+<li>参考<ul>
+<li><a href="[http://p4nda.top/2018/07/02/patch-in-pwn/#%E5%A2%9E%E5%8A%A0segment](http://p4nda.top/2018/07/02/patch-in-pwn/#增加segment">P4nda师傅</a>)</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+        <div class="post-tool">
+            <a class="btn-thumbs-up" href="javascript:void(0);" data-cid="52" title="95">
+                <i class="fa fa-thumbs-up" aria-hidden="true"></i> 打赏
+            </a>
+        </div>
+        
+        <div class="post-tags">标签：
+            
+            <a href="../../../../tags/pwn-AWD/">pwn AWD</a>
+            
+        </div>
+        
+    </article>
+    
+    <p>本文代表个人观点，内容仅供参考。若有不恰当之处，望不吝赐教！</p>
+    
+    
+</div>
+<script src="../../../../js/busuanzi.pure.mini.js"></script>
+
+        </div><!-- end #main-->
+    </div><!-- end #body -->
+    <footer class="footer">
+    <div class="footer-inner">
+        <p>
+            <a href="/about" title="关于本站">关于本站</a>&nbsp;&nbsp<em>·</em>&nbsp;&nbsp
+            <!-- 自定义链接 -->
+            <a href="/help" title="help">急救中心</a>&nbsp;&nbsp<em>·</em>&nbsp;&nbsp
+            <a href="/app" title="App下载">App下载</a>
+        </p>
+        <p>
+            本站点采用<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享署名-非商业性使用-相同方式共享 4.0 国际许可协议</a>，已建立<a href="/timeline" id="siteBuildingTime"></a>天<br>
+            ©2017 基于<a href="http://hexo.io" target="_blank">Hexo</a>搭建
+            ，主题&nbsp<a href="https://github.com/tangkunyin/hexo-theme-jsimple" target="_blank">JSimple</a>
+            ，作者<a href="https://www.tangkunyin.com" target="_blank">唐先森</a>
+            ，Hosted by <a href="https://pages.coding.me" style="font-weight: bold">Coding Pages</a>
+        </p>
+        
+
+    </div>
+</footer>
+<script src="../../../../js/InsightSearch.js"></script>
+<script src="../../../../js/SimpleCore.js"></script>
+
+</div>
+<div class="fixed-btn">
+    <a class="btn-gotop" href="javascript:"> <i class="fa fa-angle-up"></i></a>
+</div>
+<script>
+    $(function () {
+        SimpleCore.init({
+            buildingTime: '11/22/2018',
+            current: $('.post-tags').length > 0 ? 'post' : 'archive',
+            snsQRCode: '/images/sns-qrcode.png',
+            donateImg: '/images/donate-qr.png',
+        });
+    });
+</script>
+</body>
+</html>
