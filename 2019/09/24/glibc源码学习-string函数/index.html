@@ -1,371 +1,107 @@
-<!DOCTYPE HTML>
-<html class="no-js" lang="zh-CN">
-<!--
-//                            _ooOoo_
-//                           o8888888o
-//                           88" . "88
-//                           (| -_- |)
-//                            O\ = /O
-//                        ____/`---'\____
-//                      .   ' \\| |// `.
-//                       / \\||| : |||// \
-//                     / _||||| -:- |||||- \
-//                       | | \\\ - /// | |
-//                     | \_| ''\---/'' | |
-//                      \ .-\__ `-` ___/-. /
-//                   ___`. .' /--.--\ `. . __
-//                ."" '< `.___\_<|>_/___.' >'"".
-//               | | : `- \`.;`\ _ /`;.`/ - ` : | |
-//                 \ \ `-. \_ __\ /__ _/ .-` / /
-//         ======`-.____`-.___\_____/___.-`____.-'======
-//                            `=---='
-//                 拦截插件累计拦截逗比攻击"1381438"次！
-//         .............................................
-//                  佛祖保佑             永无BUG
-//          佛曰:
-//                  写字楼里写字间，写字间里程序员；
-//                  程序人员写程序，又拿程序换酒钱。
-//                  酒醒只在网上坐，酒醉还来网下眠；
-//                  酒醉酒醒日复日，网上网下年复年。
-//                  但愿老死电脑间，不愿鞠躬老板前；
-//                  奔驰宝马贵者趣，公交自行程序员。
-//                  别人笑我忒疯癫，我笑自己命太贱；
-//                  不见满街漂亮妹，哪个归得程序员？
--->
-<head><meta name="generator" content="Hexo 3.8.0">
-    <!--[if lte IE 9]>
-<meta http-equiv="refresh" content="0;url=http://yoursite.com/warn.html">
-<![endif]-->
-<meta charset="utf-8">
+extends includes/layout.pug
 
-<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+block top_img
+  - var top_img = page.top_img || theme.post_meta.top_img || theme.top_img || config.top_img
+  if (top_img && page.top_img !== false)
+    - var bg_img = top_img !== true ? `background-image: url(${top_img})` : ''
+    - var flag = top_img === true ? 'no-bg' : ''
+    div#top-container(style=bg_img class=flag)
+      include ./includes/header.pug
+      #post-info
+        #post-title= page.title || _p('no_title')
+        #post-meta
+          if (theme.post_meta.date_type)
+            if (theme.post_meta.date_type === 'both')
+              time.post-meta__date
+                i.fa.fa-calendar(aria-hidden="true")
+                =' '+_p('post.created')+' '+date(page.date, config.date_format)
+                span.post-meta__separator |
+                i.fa.fa-calendar-check-o(aria-hidden="true")
+                =' '+_p('post.updated')+' '+date(page.updated, config.date_format)
+            else
+              - var date_type = theme.post_meta.date_type === 'updated' ? 'updated' : 'date'
+              time.post-meta__date #[i.fa.fa-calendar(aria-hidden="true")] #[=date(page[date_type], config.date_format)]
+          if (theme.post_meta.categories && page.categories.data.length > 0)
+            if (theme.post_meta.date_type)
+              span.post-meta__separator |
+            each item, index in page.categories.data
+              i.fa.fa-inbox.post-meta__icon(aria-hidden="true")
+              a(href=url_for(item.path)).post-meta__categories #[=item.name]
+              if (index < page.categories.data.length - 1)
+                 i.fa.fa-angle-right(aria-hidden="true")
+          if (theme.disqus.enable && theme.disqus.count)
+            if (theme.post_meta.date_type || theme.post_meta.categories && page.categories.data.length > 0)
+              span.post-meta__separator |
+            i.fa.fa-comment-o.post-meta__icon(aria-hidden="true")
+            a(href=url_for(page.path) + '#disqus_thread')
+              span.disqus-comment-count(data-disqus-identifier=page.path)
+          if (theme.wordcount && theme.wordcount.enable)
+            .post-meta-wordcount
+              span= _p('post.wordcount') + ': '
+              span.word-count= wordcount(page.content)
+              span.post-meta__separator |
+              span= _p('post.min2read', min2read(page.content, {cn: 350, en: 160}))
+  else
+    div#top-container.plain
+      include ./includes/header.pug
 
-<meta http-equiv="X-UA-Compatible" content="IE=Edge">
-<meta name="renderer" content="webkit">
-<meta name="viewport" content="width=device-width, initial-scale=1.0,user-scalable=no">
-<meta http-equiv="mobile-agent" content="format=html5; url=http://yoursite.com">
-<meta name="author" content="treebacker">
-<link rel="stylesheet" href="../../../../css/SimpleStyle.min.css">
-
-<link rel="shortcut icon" href="../../../../images/favicon.png">
-
-
-<title>glibc源码学习-string函数 - Watch Security</title>
-
-<meta name="keywords" content="glibc">
-
-<meta name="description " content="">
-
-</head>
-<body>
-<div id="nav">
-    <nav class="nav-menu">
-        <a class="site-name current" href="/" title="Tree">Tree</a>
-        <a class="site-index current" href="/"><i class="fa fa-home"></i><span>首页</span></a>
-        <a href="/archives" title="归档"><i class="fa fa-archives"></i><span>归档</span></a>
-        <a href="/tags" title="标签"><i class="fa fa-tags"></i><span>标签</span></a>
-        <!-- custom single page of menus -->
-        
-        
-        <a href="/help" title="帮助">
-            <i class="fa fa-question-circle"></i>
-            <span>帮助</span>
-        </a>
-        
-    </nav>
-</div>
-
-<div class="nav-user">
-    <a class="btn-search" href="#"><i class="fa fa-search"></i></a>
-    <a class="btn-read-mode" href="#"><i class="fa fa-sun-o"></i></a>
-    <a class="btn-sns-qr" href="javascript:"><i class="fa fa-telegram"></i></a>
-</div>
-
-<div id="wrapper" class="clearfix">
-    <div id="body">
-        <div class="main" id="main">
-            <div id="cover">
-    <div class="cover-img"></div>
-    <div class="cover-info">
-        
-        <h1 class="cover-siteName">Treebacker</h1>
-        <h3 class="cover-siteTitle">愿麦子和麦子长在一起，愿河流与河流流归一处。</h3>
-        <p class="cover-siteDesc">岁月易逝，痕影难觅</p>
-        <div class="cover-sns">
-            
-            <div class="btn btn-github">
-                <a href="https://github.com/treebacker" target="_blank" title="github" ref="friend">
-                    <i class="fa fa-github"></i>
-                </a>
-            </div>
-            
-        </div>
-    </div>
-</div>
-            <div class="page-title">
-    <ul>
-        <li><a href="/">最新</a></li>
-        
-            
-                <li class="active">
-                    <a href="/categories/tech-notes" data-name="技术">技术</a>
-                </li>
-            
-                <li class="">
-                    <a href="/categories/essays" data-name="随笔">随笔</a>
-                </li>
-            
-                <li class="">
-                    <a href="/categories/cdcitizen-of-the-sun" data-name="海子">海子</a>
-                </li>
-            
-                <li class="">
-                    <a href="/categories/others" data-name="其他">其他</a>
-                </li>
-            
-        
-        <li class="page-search">
-    <form id="search" class="search-form">
-        <label for="s" class="sr-only">请输入关键字</label>
-        <input class="search-field" type="text" name="s" placeholder="请输入关键字">
-        <button type="submit" class="search-form-submit" title="搜索"><i class="fa fa-search"></i></button>
-    </form>
-    <div class="ins-search">
-    <div class="ins-search-mask"></div>
-    <div class="ins-search-container">
-        <div class="ins-input-wrapper">
-            <input type="text" class="ins-search-input" placeholder="请输入关键词...">
-            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
-        </div>
-        <div class="ins-section-wrapper">
-            <div class="ins-section-container"></div>
-        </div>
-    </div>
-</div>
-<script>
-(function (window) {
-    var INSIGHT_CONFIG = {
-        TRANSLATION: {
-            POSTS: '文章',
-            PAGES: '页面',
-            CATEGORIES: '分类',
-            TAGS: '标签',
-            UNTITLED: '(无标题)',
-        },
-        ROOT_URL: '/',
-        CONTENT_URL: '../../../../content.json',
-    };
-    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
-})(window);
-</script>
-</li>
-
-    </ul>
-</div>
-<div class="main-inner">
-    <article class="post" itemscope="" itemtype="http://schema.org/BlogPosting">
-        <div class="post-header">
-            <div class="post-author clearfix">
-                <a class="avatar fleft" href="" target="_blank">
-                    <img width="48" src="/images/favicon.png" alt="avatar">
-                </a>
-                <p><span class="label">作者</span>
-                    <a href="" target="_blank">Treebacker</a>
-                    <span title="最后编辑于2019-09-24">2019-09-24</span>
-                </p>
-                <p></p>
-            </div>
-            <h2 class="post-title">glibc源码学习-string函数</h2>
-            <div class="post-meta">
-                本文总共5964个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
-            </div>
-        </div>
-        <div class="post-content markdown-body">
-            <h3 id="glibc源码学习-string操作函数分析"><a href="#glibc源码学习-string操作函数分析" class="headerlink" title="glibc源码学习-string操作函数分析"></a>glibc源码学习-string操作函数分析</h3><ul>
-<li><p><strong>strlen函数</strong></p>
-<ul>
-<li>返回null结束的字符串的长度。</li>
-<li>但是有着非常有意思的实现方式，不同于我们的逐个字节的比较寻找null字节。该实现可以每次比较一个4bytes（32bits），8bytes（64bits）。</li>
-<li>主要是依赖于两个魔数.(64bits时需左移扩展)</li>
-</ul>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">himagic = <span class="number">0x80808080</span></span><br><span class="line">lomagic = <span class="number">0x01010101</span></span><br></pre></td></tr></table></figure>
-<ul>
-<li>这两个模数与任意一个4bytes数子tmp运算有如下规律</li>
-</ul>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> ((tmp - lomagic) &amp; ~tmp &amp; himagic) != <span class="number">0</span>,那就表明这<span class="number">4b</span>ytes里存在null,且结果会显示nul的位置,<span class="number">0x80000000</span>(第四个),<span class="number">0x800000</span>(第三位),<span class="number">0x8000</span>(第二位),<span class="number">0x80</span>(第一位)</span><br></pre></td></tr></table></figure>
-<ul>
-<li>其原理是借助于借位和符号位.    0可以保留进位的空间,1可以传递进位的效果。</li>
-</ul>
-</li>
-<li><p><strong>strnlen (const char *str, size_t maxlen)</strong></p>
-<ul>
-<li><p>类似于strlen的实现，通过下面的代码保证结果不超过maxlen</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="keyword">char</span> *char_ptr, *end_ptr = str + maxlen;</span><br><span class="line">.............</span><br><span class="line">.............</span><br><span class="line">  <span class="keyword">if</span> (char_ptr &gt; end_ptr)</span><br><span class="line">   char_ptr = end_ptr;</span><br><span class="line"> <span class="keyword">return</span> char_ptr - str;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-<li><h4 id="strcpy函数"><a href="#strcpy函数" class="headerlink" title="strcpy函数"></a>strcpy函数</h4><ul>
-<li><p>内部通过memcpy实现的，可以看到nbytes是src得长度+1，实际存在一个null字节的覆写。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">return</span> <span class="built_in">memcpy</span> (dest, src, <span class="built_in">strlen</span> (src) + <span class="number">1</span>);</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-<li><p><strong>strncpy (char <em>s1, const char </em>s2, size_t n)</strong></p>
-<ul>
-<li><p>通过strnlen保证不会溢出，memset会清除多余的，防止内存泄露。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">char</span> *</span><br><span class="line">STRNCPY (<span class="keyword">char</span> *s1, <span class="keyword">const</span> <span class="keyword">char</span> *s2, <span class="keyword">size_t</span> n)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">size_t</span> size = __strnlen (s2, n);</span><br><span class="line">  <span class="keyword">if</span> (size != n)</span><br><span class="line">    <span class="built_in">memset</span> (s1 + size, <span class="string">'\0'</span>, n - size);             <span class="comment">/*s2 不够的用'\x00'填充*/</span></span><br><span class="line">  <span class="keyword">return</span> <span class="built_in">memcpy</span> (s1, s2, size);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-<li><h4 id="memcpy函数"><a href="#memcpy函数" class="headerlink" title="memcpy函数"></a>memcpy函数</h4><ul>
-<li><p>内部实现分为三种复制方式, 逐字节复制和PAGE复制以及WORD复制。用以尽可能地提高效率。</p>
-<ul>
-<li>为实现src地址和dst地址WORD对齐，可能需要进行逐字节复制。</li>
-</ul>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* Copy exactly NBYTES bytes from SRC_BP to DST_BP,</span></span><br><span class="line"><span class="comment">   without any assumptions about alignment of the pointers.  */</span> <span class="comment">//从低地址到高地址复制</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> BYTE_COPY_FWD(dst_bp, src_bp, nbytes)				      \</span></span><br><span class="line">  <span class="keyword">do</span>									      \</span><br><span class="line">    &#123;									      \</span><br><span class="line">      <span class="keyword">size_t</span> __nbytes = (nbytes);					      \</span><br><span class="line">      <span class="keyword">while</span> (__nbytes &gt; <span class="number">0</span>)						      \</span><br><span class="line">	&#123;								      \</span><br><span class="line">	  byte __x = ((byte *) src_bp)[<span class="number">0</span>];				      \</span><br><span class="line">	  src_bp += <span class="number">1</span>;							      \</span><br><span class="line">	  __nbytes -= <span class="number">1</span>;						      \</span><br><span class="line">	  ((byte *) dst_bp)[<span class="number">0</span>] = __x;					      \</span><br><span class="line">	  dst_bp += <span class="number">1</span>;							      \</span><br><span class="line">	&#125;								      \</span><br><span class="line">    &#125; <span class="keyword">while</span> (<span class="number">0</span>)</span><br></pre></td></tr></table></figure>
-<ul>
-<li><p>对齐后，尝试进行PAGE复制。因为当所需复制得数目超过阈值0x400时，借助操作系统得虚拟内存空间复制效率更高。（当然会检查地址是否页对齐）</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* Threshold at which vm_copy is more efficient than well-optimized copying</span></span><br><span class="line"><span class="comment">   by words.  */</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> PAGE_COPY_THRESHOLD		(16384)</span></span><br><span class="line"></span><br><span class="line"><span class="meta"># <span class="meta-keyword">define</span> PAGE_COPY_FWD_MAYBE(dstp, srcp, nbytes_left, nbytes)		      \</span></span><br><span class="line">  <span class="keyword">do</span>									      \</span><br><span class="line">    &#123;									      \</span><br><span class="line">      <span class="keyword">if</span> ((nbytes) &gt;= PAGE_COPY_THRESHOLD				      \</span><br><span class="line">	  &amp;&amp; PAGE_OFFSET ((dstp) - (srcp)) == <span class="number">0</span>)			      \</span><br><span class="line">	&#123;								      \</span><br><span class="line">	  <span class="comment">/* The amount to copy is past the threshold for copying	      \</span></span><br><span class="line"><span class="comment">	     pages virtually with kernel VM operations, and the		      \</span></span><br><span class="line"><span class="comment">	     source and destination addresses have the same alignment.  */</span>    \</span><br><span class="line">	  <span class="keyword">size_t</span> nbytes_before = PAGE_OFFSET (-(dstp));			      \</span><br><span class="line">	  <span class="keyword">if</span> (nbytes_before != <span class="number">0</span>)					      \</span><br><span class="line">	    &#123;								      \</span><br><span class="line">	      <span class="comment">/* First copy the words before the first page boundary.  */</span>     \</span><br><span class="line">	      WORD_COPY_FWD (dstp, srcp, nbytes_left, nbytes_before);	      \</span><br><span class="line">	      assert (nbytes_left == <span class="number">0</span>);				      \</span><br><span class="line">	      nbytes -= nbytes_before;					      \</span><br><span class="line">	    &#125;								      \</span><br><span class="line">	  PAGE_COPY_FWD (dstp, srcp, nbytes_left, nbytes);		      \</span><br><span class="line">	&#125;								      \</span><br><span class="line">    &#125; <span class="keyword">while</span> (<span class="number">0</span>)</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-<ul>
-<li><h5 id="值得注意的是-并没有检查dst地址的空间是否充足-换句话说-memcpy和strcpy函数均存在缓冲区溢出的潜在危险"><a href="#值得注意的是-并没有检查dst地址的空间是否充足-换句话说-memcpy和strcpy函数均存在缓冲区溢出的潜在危险" class="headerlink" title="值得注意的是,并没有检查dst地址的空间是否充足,换句话说,memcpy和strcpy函数均存在缓冲区溢出的潜在危险."></a>值得注意的是,并没有检查dst地址的空间是否充足,换句话说,memcpy和strcpy函数均存在缓冲区溢出的潜在危险.</h5></li>
-</ul>
-<ul>
-<li><h4 id="strcat函数"><a href="#strcat函数" class="headerlink" title="strcat函数"></a>strcat函数</h4><ul>
-<li><p>内部实现是通过strcpy函数</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">STRCAT (<span class="keyword">char</span> *dest, <span class="keyword">const</span> <span class="keyword">char</span> *src)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="built_in">strcpy</span> (dest + <span class="built_in">strlen</span> (dest), src);</span><br><span class="line">  <span class="keyword">return</span> dest;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-</ul>
-<ul>
-<li>strcat函数覆盖原dst的null字节，同时strcpy会在新的dest后加null</li>
-</ul>
-<ul>
-<li><p><strong>strncat函数</strong></p>
-<ul>
-<li><p>通过strnlen和memcpy实现。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">STRNCAT (<span class="keyword">char</span> *s1, <span class="keyword">const</span> <span class="keyword">char</span> *s2, <span class="keyword">size_t</span> n)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">char</span> *s = s1;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* Find the end of S1.  */</span></span><br><span class="line">  s1 += <span class="built_in">strlen</span> (s1);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">size_t</span> ss = __strnlen (s2, n);</span><br><span class="line"></span><br><span class="line">  s1[ss] = <span class="string">'\0'</span>;</span><br><span class="line">  <span class="built_in">memcpy</span> (s1, s2, ss);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> s;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-<li><p><strong>小结</strong></p>
-<ul>
-<li>上述内存复制、连接函数多数都是默认操作指针null结束，如果这个前提不能保证，就可以导致memory漏洞。</li>
-</ul>
-</li>
-<li><p><strong>strcspn函数</strong></p>
-<ul>
-<li><p>返回src不包含特定字符的最大长度。</p>
-</li>
-<li><p>使用0x100大的map映射，0|1存在与否，每轮4byte快速计算。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">s = (<span class="keyword">unsigned</span> <span class="keyword">char</span>*) str;</span><br><span class="line"> <span class="keyword">if</span> (p[s[<span class="number">0</span>]]) <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line"> <span class="keyword">if</span> (p[s[<span class="number">1</span>]]) <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line"> <span class="keyword">if</span> (p[s[<span class="number">2</span>]]) <span class="keyword">return</span> <span class="number">2</span>;</span><br><span class="line"> <span class="keyword">if</span> (p[s[<span class="number">3</span>]]) <span class="keyword">return</span> <span class="number">3</span>;</span><br><span class="line">    </span><br><span class="line"> s = (<span class="keyword">unsigned</span> <span class="keyword">char</span> *) PTR_ALIGN_DOWN (s, <span class="number">4</span>);</span><br><span class="line">    </span><br><span class="line"> <span class="keyword">unsigned</span> <span class="keyword">int</span> c0, c1, c2, c3;</span><br><span class="line"> <span class="keyword">do</span></span><br><span class="line">   &#123;</span><br><span class="line">     s += <span class="number">4</span>;</span><br><span class="line">     c0 = p[s[<span class="number">0</span>]];</span><br><span class="line">     c1 = p[s[<span class="number">1</span>]];</span><br><span class="line">     c2 = p[s[<span class="number">2</span>]];</span><br><span class="line">     c3 = p[s[<span class="number">3</span>]];</span><br><span class="line">   &#125;</span><br><span class="line"> <span class="keyword">while</span> ((c0 | c1 | c2 | c3) == <span class="number">0</span>);</span><br><span class="line">    </span><br><span class="line"> <span class="keyword">size_t</span> count = s - (<span class="keyword">unsigned</span> <span class="keyword">char</span> *) str;</span><br><span class="line"> <span class="keyword">return</span> (c0 | c1) != <span class="number">0</span> ? count - c0 + <span class="number">1</span> : count - c2 + <span class="number">3</span>;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-</ul>
-<ul>
-<li><h4 id="strcmp函数"><a href="#strcmp函数" class="headerlink" title="strcmp函数"></a>strcmp函数</h4><ul>
-<li><p>由低地址向高地址逐字节比较两个字符串。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span></span><br><span class="line">STRCMP (<span class="keyword">const</span> <span class="keyword">char</span> *p1, <span class="keyword">const</span> <span class="keyword">char</span> *p2)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">const</span> <span class="keyword">unsigned</span> <span class="keyword">char</span> *s1 = (<span class="keyword">const</span> <span class="keyword">unsigned</span> <span class="keyword">char</span> *) p1;</span><br><span class="line">  <span class="keyword">const</span> <span class="keyword">unsigned</span> <span class="keyword">char</span> *s2 = (<span class="keyword">const</span> <span class="keyword">unsigned</span> <span class="keyword">char</span> *) p2;</span><br><span class="line">  <span class="keyword">unsigned</span> <span class="keyword">char</span> c1, c2;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">do</span></span><br><span class="line">    &#123;</span><br><span class="line">      c1 = (<span class="keyword">unsigned</span> <span class="keyword">char</span>) *s1++;</span><br><span class="line">      c2 = (<span class="keyword">unsigned</span> <span class="keyword">char</span>) *s2++;</span><br><span class="line">      <span class="keyword">if</span> (c1 == <span class="string">'\0'</span>)</span><br><span class="line">	<span class="keyword">return</span> c1 - c2;</span><br><span class="line">    &#125;</span><br><span class="line">  <span class="keyword">while</span> (c1 == c2);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> c1 - c2;</span><br><span class="line">&#125;<span class="comment">//返回值是某一字符串为'\x00'时的c1与c2的差值。</span></span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-<li><h4 id="strncmp函数"><a href="#strncmp函数" class="headerlink" title="strncmp函数"></a>strncmp函数</h4><ul>
-<li>实现源码</li>
-</ul>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span></span><br><span class="line">STRNCMP (<span class="keyword">const</span> <span class="keyword">char</span> *s1, <span class="keyword">const</span> <span class="keyword">char</span> *s2, <span class="keyword">size_t</span> n)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">unsigned</span> <span class="keyword">char</span> c1 = <span class="string">'\0'</span>;</span><br><span class="line">  <span class="keyword">unsigned</span> <span class="keyword">char</span> c2 = <span class="string">'\0'</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (n &gt;= <span class="number">4</span>)</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="keyword">size_t</span> n4 = n &gt;&gt; <span class="number">2</span>;</span><br><span class="line">      <span class="keyword">do</span></span><br><span class="line">	&#123;</span><br><span class="line">	  c1 = (<span class="keyword">unsigned</span> <span class="keyword">char</span>) *s1++;</span><br><span class="line">	  c2 = (<span class="keyword">unsigned</span> <span class="keyword">char</span>) *s2++;</span><br><span class="line">	  <span class="keyword">if</span> (c1 == <span class="string">'\0'</span> || c1 != c2)</span><br><span class="line">	    <span class="keyword">return</span> c1 - c2;</span><br><span class="line">	  c1 = (<span class="keyword">unsigned</span> <span class="keyword">char</span>) *s1++;</span><br><span class="line">	  c2 = (<span class="keyword">unsigned</span> <span class="keyword">char</span>) *s2++;</span><br><span class="line">	  <span class="keyword">if</span> (c1 == <span class="string">'\0'</span> || c1 != c2)</span><br><span class="line">	    <span class="keyword">return</span> c1 - c2;</span><br><span class="line">	  c1 = (<span class="keyword">unsigned</span> <span class="keyword">char</span>) *s1++;</span><br><span class="line">	  c2 = (<span class="keyword">unsigned</span> <span class="keyword">char</span>) *s2++;</span><br><span class="line">	  <span class="keyword">if</span> (c1 == <span class="string">'\0'</span> || c1 != c2)</span><br><span class="line">	    <span class="keyword">return</span> c1 - c2;</span><br><span class="line">	  c1 = (<span class="keyword">unsigned</span> <span class="keyword">char</span>) *s1++;</span><br><span class="line">	  c2 = (<span class="keyword">unsigned</span> <span class="keyword">char</span>) *s2++;</span><br><span class="line">	  <span class="keyword">if</span> (c1 == <span class="string">'\0'</span> || c1 != c2)</span><br><span class="line">	    <span class="keyword">return</span> c1 - c2;</span><br><span class="line">	&#125; <span class="keyword">while</span> (--n4 &gt; <span class="number">0</span>);              </span><br><span class="line">      n &amp;= <span class="number">3</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">while</span> (n &gt; <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">      c1 = (<span class="keyword">unsigned</span> <span class="keyword">char</span>) *s1++;</span><br><span class="line">      c2 = (<span class="keyword">unsigned</span> <span class="keyword">char</span>) *s2++;</span><br><span class="line">      <span class="keyword">if</span> (c1 == <span class="string">'\0'</span> || c1 != c2)</span><br><span class="line">	<span class="keyword">return</span> c1 - c2;</span><br><span class="line">      n--;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> c1 - c2;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>该函数只检查n个长度，当这个n是根据strlen计算的，如果是strlen我们的输入，在很多比较场合可以用来绕过检查。</li>
-</ul>
-</li>
-<li><p><strong>strdup</strong>函数</p>
-<ul>
-<li><p>使用malloc分配空间，在memcpy过去，得到一个和参数字符串内容一样的字符串。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* Duplicate S, returning an identical malloc'd string.  */</span></span><br><span class="line"><span class="keyword">char</span> *</span><br><span class="line">__strdup (<span class="keyword">const</span> <span class="keyword">char</span> *s)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">size_t</span> len = <span class="built_in">strlen</span> (s) + <span class="number">1</span>;</span><br><span class="line">  <span class="keyword">void</span> *<span class="keyword">new</span> = <span class="built_in">malloc</span> (len);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">new</span> == <span class="literal">NULL</span>)</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> (<span class="keyword">char</span> *) <span class="built_in">memcpy</span> (<span class="keyword">new</span>, s, len);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>对于返回的指针，可以使用free释放。</li>
-</ul>
-</li>
-</ul>
-</li>
-<li><p>小结</p>
-<ul>
-<li><p>上述的关于string的操作，单个来看似乎是没有问题的，但是在特定的组合下是会有问题的。</p>
-<ul>
-<li><p>例如，malloc和strcpy和strlen的组合。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ptr = <span class="built_in">malloc</span>(<span class="built_in">strlen</span>(src));</span><br><span class="line"><span class="comment">/*trigger null-by-one*/</span></span><br><span class="line"><span class="built_in">strcpy</span>(ptr, src);</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-<li></li>
-</ul>
-
-        </div>
-        <div class="post-tool">
-            <a class="btn-thumbs-up" href="javascript:void(0);" data-cid="52" title="95">
-                <i class="fa fa-thumbs-up" aria-hidden="true"></i> 打赏
-            </a>
-        </div>
-        
-        <div class="post-tags">标签：
-            
-            <a href="../../../../tags/string/">string</a>
-            
-        </div>
-        
-    </article>
-    
-    <p>本文代表个人观点，内容仅供参考。若有不恰当之处，望不吝赐教！</p>
-    
-    
-</div>
-<script src="../../../../js/busuanzi.pure.mini.js"></script>
-
-        </div><!-- end #main-->
-    </div><!-- end #body -->
-    <footer class="footer">
-    <div class="footer-inner">
-        <p>
-            <a href="/about" title="关于本站">关于本站</a>&nbsp;&nbsp<em>·</em>&nbsp;&nbsp
-            <!-- 自定义链接 -->
-            <a href="/help" title="help">急救中心</a>&nbsp;&nbsp<em>·</em>&nbsp;&nbsp
-            <a href="/app" title="App下载">App下载</a>
-        </p>
-        <p>
-            本站点采用<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享署名-非商业性使用-相同方式共享 4.0 国际许可协议</a>，已建立<a href="/timeline" id="siteBuildingTime"></a>天<br>
-            ©2017 基于<a href="http://hexo.io" target="_blank">Hexo</a>搭建
-            ，主题&nbsp<a href="https://github.com/tangkunyin/hexo-theme-jsimple" target="_blank">JSimple</a>
-            ，作者<a href="https://www.tangkunyin.com" target="_blank">唐先森</a>
-            ，Hosted by <a href="https://pages.coding.me" style="font-weight: bold">Coding Pages</a>
-        </p>
-        
-
-    </div>
-</footer>
-<script src="../../../../js/InsightSearch.js"></script>
-<script src="../../../../js/SimpleCore.js"></script>
-
-</div>
-<div class="fixed-btn">
-    <a class="btn-gotop" href="javascript:"> <i class="fa fa-angle-up"></i></a>
-</div>
-<script>
-    $(function () {
-        SimpleCore.init({
-            buildingTime: '11/22/2018',
-            current: $('.post-tags').length > 0 ? 'post' : 'archive',
-            snsQRCode: '/images/sns-qrcode.png',
-            donateImg: '/images/donate-qr.png',
-        });
-    });
-</script>
-</body>
-</html>
+block content
+  article#post(class="")
+    if (!top_img)
+      #post-title.plain= page.title || _p('no_title')
+      #post-meta
+        if (theme.post_meta.date_type)
+          - var date_type = theme.post_meta.date_type === 'updated' ? '' : 'date'
+          time.post-meta__date #[i.fa.fa-calendar(aria-hidden="true")] #[=date(page[date_type], config.date_format)]
+        if (theme.post_meta.categories && page.categories.data.length > 0)
+          if (theme.post_meta.date_type)
+            span.post-meta__separator |
+          each item, index in page.categories.data
+            i.fa.fa-inbox(aria-hidden="true")
+            a(href=url_for(item.path)).post-meta__categories  #[=item.name]
+            if (index < page.categories.data.length - 1)
+                i.fa.fa-angle-right.post-meta__separator(aria-hidden="true")
+        if (theme.disqus.enable && theme.disqus.count)
+          if (theme.post_meta.date_type || theme.post_meta.categories && page.categories.data.length > 0)
+            span.post-meta__separator |
+          i.fa.fa-comment-o(aria-hidden="true")
+          a(href=url_for(page.path) + '#disqus_thread')
+            span.disqus-comment-count(data-disqus-identifier=page.path)
+        if (theme.wordcount && theme.wordcount.enable)
+          span.post-meta__separator |
+          span.post-meta-wordcount
+            span= _p('post.wordcount') + ': '
+            span.word-count= wordcount(page.content)
+            span.post-meta__separator |
+            span= _p('post.min2read', min2read(page.content, {cn: 350, en: 160}))
+    #post-content.article-container!= page.content
+  if (theme.post_copyright && theme.post_copyright.enable)
+    .post-copyright
+      .post-copyright__author
+        span.post-copyright-meta= _p('post.copyright.author') + ": "
+        span.post-copyright-info
+          a(href=`mailto:${config.email}`) #[=config.author]
+      .post-copyright__type
+        span.post-copyright-meta= _p('post.copyright.link') + ": "
+        span.post-copyright-info
+          a(href=url_for(page.permalink)) #[=page.permalink]
+      .post-copyright__notice
+        span.post-copyright-meta= _p('post.copyright.copyright_notice') + ": "
+        span.post-copyright-info!= _p('post.copyright.copyright_content', theme.post_copyright.license_url, theme.post_copyright.license, config.url, config.title)
+  if (theme.post_meta.tags)
+    .post-meta__tag-list
+      each item, index in page.tags.data
+        a(href=url_for(item.path)).post-meta__tags #[=item.name]
+  if (theme.QR_code)
+    if (theme.QR_code.length > 0)
+      .post-qr-code
+        each item in theme.QR_code
+          .post-qr-code-item
+            img.post-qr-code__img(src=(item.itemlist||item).img)
+            .post-qr-code__desc=(item.itemlist||item).text
+  include includes/share/index.pug
+  include includes/pagination.pug
+  if (theme.adv && theme.adv.enable)
+    .post-adv!= theme.adv.info
+  if page.comments !== false
+    include includes/comments/index.pug

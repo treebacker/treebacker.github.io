@@ -1,321 +1,107 @@
-<!DOCTYPE HTML>
-<html class="no-js" lang="zh-CN">
-<!--
-//                            _ooOoo_
-//                           o8888888o
-//                           88" . "88
-//                           (| -_- |)
-//                            O\ = /O
-//                        ____/`---'\____
-//                      .   ' \\| |// `.
-//                       / \\||| : |||// \
-//                     / _||||| -:- |||||- \
-//                       | | \\\ - /// | |
-//                     | \_| ''\---/'' | |
-//                      \ .-\__ `-` ___/-. /
-//                   ___`. .' /--.--\ `. . __
-//                ."" '< `.___\_<|>_/___.' >'"".
-//               | | : `- \`.;`\ _ /`;.`/ - ` : | |
-//                 \ \ `-. \_ __\ /__ _/ .-` / /
-//         ======`-.____`-.___\_____/___.-`____.-'======
-//                            `=---='
-//                 拦截插件累计拦截逗比攻击"1381438"次！
-//         .............................................
-//                  佛祖保佑             永无BUG
-//          佛曰:
-//                  写字楼里写字间，写字间里程序员；
-//                  程序人员写程序，又拿程序换酒钱。
-//                  酒醒只在网上坐，酒醉还来网下眠；
-//                  酒醉酒醒日复日，网上网下年复年。
-//                  但愿老死电脑间，不愿鞠躬老板前；
-//                  奔驰宝马贵者趣，公交自行程序员。
-//                  别人笑我忒疯癫，我笑自己命太贱；
-//                  不见满街漂亮妹，哪个归得程序员？
--->
-<head><meta name="generator" content="Hexo 3.8.0">
-    <!--[if lte IE 9]>
-<meta http-equiv="refresh" content="0;url=http://yoursite.com/warn.html">
-<![endif]-->
-<meta charset="utf-8">
+extends includes/layout.pug
 
-<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+block top_img
+  - var top_img = page.top_img || theme.post_meta.top_img || theme.top_img || config.top_img
+  if (top_img && page.top_img !== false)
+    - var bg_img = top_img !== true ? `background-image: url(${top_img})` : ''
+    - var flag = top_img === true ? 'no-bg' : ''
+    div#top-container(style=bg_img class=flag)
+      include ./includes/header.pug
+      #post-info
+        #post-title= page.title || _p('no_title')
+        #post-meta
+          if (theme.post_meta.date_type)
+            if (theme.post_meta.date_type === 'both')
+              time.post-meta__date
+                i.fa.fa-calendar(aria-hidden="true")
+                =' '+_p('post.created')+' '+date(page.date, config.date_format)
+                span.post-meta__separator |
+                i.fa.fa-calendar-check-o(aria-hidden="true")
+                =' '+_p('post.updated')+' '+date(page.updated, config.date_format)
+            else
+              - var date_type = theme.post_meta.date_type === 'updated' ? 'updated' : 'date'
+              time.post-meta__date #[i.fa.fa-calendar(aria-hidden="true")] #[=date(page[date_type], config.date_format)]
+          if (theme.post_meta.categories && page.categories.data.length > 0)
+            if (theme.post_meta.date_type)
+              span.post-meta__separator |
+            each item, index in page.categories.data
+              i.fa.fa-inbox.post-meta__icon(aria-hidden="true")
+              a(href=url_for(item.path)).post-meta__categories #[=item.name]
+              if (index < page.categories.data.length - 1)
+                 i.fa.fa-angle-right(aria-hidden="true")
+          if (theme.disqus.enable && theme.disqus.count)
+            if (theme.post_meta.date_type || theme.post_meta.categories && page.categories.data.length > 0)
+              span.post-meta__separator |
+            i.fa.fa-comment-o.post-meta__icon(aria-hidden="true")
+            a(href=url_for(page.path) + '#disqus_thread')
+              span.disqus-comment-count(data-disqus-identifier=page.path)
+          if (theme.wordcount && theme.wordcount.enable)
+            .post-meta-wordcount
+              span= _p('post.wordcount') + ': '
+              span.word-count= wordcount(page.content)
+              span.post-meta__separator |
+              span= _p('post.min2read', min2read(page.content, {cn: 350, en: 160}))
+  else
+    div#top-container.plain
+      include ./includes/header.pug
 
-<meta http-equiv="X-UA-Compatible" content="IE=Edge">
-<meta name="renderer" content="webkit">
-<meta name="viewport" content="width=device-width, initial-scale=1.0,user-scalable=no">
-<meta http-equiv="mobile-agent" content="format=html5; url=http://yoursite.com">
-<meta name="author" content="treebacker">
-<link rel="stylesheet" href="../../../../css/SimpleStyle.min.css">
-
-<link rel="shortcut icon" href="../../../../images/favicon.png">
-
-
-<title>堆漏洞（二）之uaf - Watch Security</title>
-
-<meta name="keywords" content="pwn heap">
-
-<meta name="description " content="">
-
-</head>
-<body>
-<div id="nav">
-    <nav class="nav-menu">
-        <a class="site-name current" href="/" title="Tree">Tree</a>
-        <a class="site-index current" href="/"><i class="fa fa-home"></i><span>首页</span></a>
-        <a href="/archives" title="归档"><i class="fa fa-archives"></i><span>归档</span></a>
-        <a href="/tags" title="标签"><i class="fa fa-tags"></i><span>标签</span></a>
-        <!-- custom single page of menus -->
-        
-        
-        <a href="/help" title="帮助">
-            <i class="fa fa-question-circle"></i>
-            <span>帮助</span>
-        </a>
-        
-    </nav>
-</div>
-
-<div class="nav-user">
-    <a class="btn-search" href="#"><i class="fa fa-search"></i></a>
-    <a class="btn-read-mode" href="#"><i class="fa fa-sun-o"></i></a>
-    <a class="btn-sns-qr" href="javascript:"><i class="fa fa-telegram"></i></a>
-</div>
-
-<div id="wrapper" class="clearfix">
-    <div id="body">
-        <div class="main" id="main">
-            <div id="cover">
-    <div class="cover-img"></div>
-    <div class="cover-info">
-        
-        <h1 class="cover-siteName">Treebacker</h1>
-        <h3 class="cover-siteTitle">愿麦子和麦子长在一起，愿河流与河流流归一处。</h3>
-        <p class="cover-siteDesc">岁月易逝，痕影难觅</p>
-        <div class="cover-sns">
-            
-            <div class="btn btn-github">
-                <a href="https://github.com/treebacker" target="_blank" title="github" ref="friend">
-                    <i class="fa fa-github"></i>
-                </a>
-            </div>
-            
-        </div>
-    </div>
-</div>
-            <div class="page-title">
-    <ul>
-        <li><a href="/">最新</a></li>
-        
-            
-                <li class="active">
-                    <a href="/categories/tech-notes" data-name="技术">技术</a>
-                </li>
-            
-                <li class="">
-                    <a href="/categories/essays" data-name="随笔">随笔</a>
-                </li>
-            
-                <li class="">
-                    <a href="/categories/cdcitizen-of-the-sun" data-name="海子">海子</a>
-                </li>
-            
-                <li class="">
-                    <a href="/categories/others" data-name="其他">其他</a>
-                </li>
-            
-        
-        <li class="page-search">
-    <form id="search" class="search-form">
-        <label for="s" class="sr-only">请输入关键字</label>
-        <input class="search-field" type="text" name="s" placeholder="请输入关键字">
-        <button type="submit" class="search-form-submit" title="搜索"><i class="fa fa-search"></i></button>
-    </form>
-    <div class="ins-search">
-    <div class="ins-search-mask"></div>
-    <div class="ins-search-container">
-        <div class="ins-input-wrapper">
-            <input type="text" class="ins-search-input" placeholder="请输入关键词...">
-            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
-        </div>
-        <div class="ins-section-wrapper">
-            <div class="ins-section-container"></div>
-        </div>
-    </div>
-</div>
-<script>
-(function (window) {
-    var INSIGHT_CONFIG = {
-        TRANSLATION: {
-            POSTS: '文章',
-            PAGES: '页面',
-            CATEGORIES: '分类',
-            TAGS: '标签',
-            UNTITLED: '(无标题)',
-        },
-        ROOT_URL: '/',
-        CONTENT_URL: '../../../../content.json',
-    };
-    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
-})(window);
-</script>
-</li>
-
-    </ul>
-</div>
-<div class="main-inner">
-    <article class="post" itemscope="" itemtype="http://schema.org/BlogPosting">
-        <div class="post-header">
-            <div class="post-author clearfix">
-                <a class="avatar fleft" href="" target="_blank">
-                    <img width="48" src="/images/favicon.png" alt="avatar">
-                </a>
-                <p><span class="label">作者</span>
-                    <a href="" target="_blank">Treebacker</a>
-                    <span title="最后编辑于2019-04-20">2019-04-20</span>
-                </p>
-                <p></p>
-            </div>
-            <h2 class="post-title">堆漏洞（二）之UAF</h2>
-            <div class="post-meta">
-                本文总共2497个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
-            </div>
-        </div>
-        <div class="post-content markdown-body">
-            <h4 id="写在前面"><a href="#写在前面" class="headerlink" title="写在前面"></a>写在前面</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*堆分配因为其灵活性、不固定性、受用户输入的影响更大（包括何时请求分配、堆的大小，何时释放），尽管内存分配系统(例如ptmalloc)已经对很多操作进行了安全监测，但仍然有很多可利用的漏洞。*/</span></span><br></pre></td></tr></table></figure>
-<h4 id="Use-After-Free的真面目"><a href="#Use-After-Free的真面目" class="headerlink" title="Use After Free的真面目"></a>Use After Free的真面目</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">尽管英文水平有限，但也能从字面看出来其实就是在程序中使用了一个已经<span class="built_in">free</span>的堆块。一般来说<span class="built_in">free</span>之后会有三种情况（ 以<span class="built_in">free</span>(ptr)为例 ）：</span><br><span class="line">a. 将指针置空即 ptr = null。这时ptr指针是不可用的</span><br><span class="line">b. 不会对prt置空，也不会对ptr指向的内存区域做更改，那么很可能可以重新使用ptr进行相同的操作。</span><br><span class="line">c. 不会对ptr置空，但是会对ptr指向的内存区域进行重写等更改操作，使得ptr可以做一些有意思的事情。</span><br></pre></td></tr></table></figure>
-<pre><code>显然，我们能够利用的就是b、c这两种情况。
-</code></pre><h4 id="UAF利用自己的一点思考："><a href="#UAF利用自己的一点思考：" class="headerlink" title="UAF利用自己的一点思考："></a>UAF利用自己的一点思考：</h4><ul>
-<li>利用的基础是malloc分配得到的缓冲区的数据结构的特殊性，比如存在一个函数指针，</li>
-<li>利用的漏洞是由于free操作并不会完全改变缓冲区的内容，所以一个未被置null的结构体指针，仍然可以用来进行操作</li>
-<li>基本的思路是构造chunk，它们的大小要自己控制，使得我们能知道下一次的malloc操作的内存位置。</li>
-<li>通常对函数指针进行覆写，指向我们需要的函数。</li>
-<li>UAF最常用于信息泄露，配合unsorted bin通常能可以泄露main_arena地址，即可得到libc地址。</li>
-</ul>
-<h4 id="案例"><a href="#案例" class="headerlink" title="案例"></a>案例</h4><p> HITCON-training 中的 <a href="https://github.com/ctf-wiki/ctf-challenges/tree/mastker/pwn/heap/use_after_free/hitcon-training-hacknote" target="_blank" rel="noopener">lab 10 hacknote</a> 。</p>
-<h4 id="扩展1"><a href="#扩展1" class="headerlink" title="扩展1"></a>扩展1</h4><ul>
-<li><p>通常该漏洞常伴随着别的利用漏洞，例如Double free。可以达到任意代码执行的效果。</p>
-<p>以校赛的一道题目为例。</p>
-<h5 id="程序功能剖析"><a href="#程序功能剖析" class="headerlink" title="程序功能剖析"></a>程序功能剖析</h5><p>Add：使用了全局数来存储分配的地址。主要问题在于read后并没有截断（后面再提）</p>
-<img src="/2019/04/20/堆漏洞（二）之UAF/1.png" title="[]">
-<p> Delete：问题在于Free前并没有检查是否已经free，并且没有置NuLL, 存在double free利用。</p>
-<img src="/2019/04/20/堆漏洞（二）之UAF/3.png" title="[]">
-</li>
-</ul>
-<p>  Display: 输出信息</p>
-  <img src="/2019/04/20/堆漏洞（二）之UAF/3.png" title="[]">
-<p>   这里，其实存在泄露，因为read后并没有截断（当然因为这里并没有用一个随机分配的来存储chunk地址，所以并不需要泄露）</p>
-<h5 id="利用要点"><a href="#利用要点" class="headerlink" title="利用要点"></a>利用要点</h5><p>  a.    虽然不存在堆溢出，但是由于变相的UAF和Double free，我们仍然可以伪造chunk，达到目的。下图很好的展示了如何伪造</p>
-  <img src="/2019/04/20/堆漏洞（二）之UAF/2.webp" title="[]">
-<pre><code>通过fake_size和chunk1的fake_presize使得程序相信fakechunk0是一个(0x80+0x90)大小的chunk，且作为chunk2的前一个堆块，通过设置chunk2的size使得fake chunk0看起来是空闲的。
-</code></pre><p>  chunk3和chunk4的作用是防止free（chunk2）时发生向前合并。</p>
-<pre><code>这样free（chunk2）时发生向后合并，执行unlink（fake chunk0），向chunk_addr的位置写入chunk_addr - 0x18接着调用edit(0)将可控chunk_addr位置的8字节
-</code></pre><p>b.   这里比较好的就是chunk_addr我们是知道的（全局数组），所以直接构造payload；</p>
-<img src="/2019/04/20/堆漏洞（二）之UAF/4.png" title="[]">
-<p>通过这一步，我们可以使得原本存储note6的content的指针指向低0x18的位置，下次edit note6时，我们就完全可以控制指向note6的content的指针，达到任意写目的。</p>
-<p>c.    如， 泄露地址</p>
-<img src="/2019/04/20/堆漏洞（二）之UAF/5.png" title="[]">
-<p>d.   之后的利用，需要仔细检查一下程序的安全措施（因为一会发现got表无法复写）</p>
-<img src="/2019/04/20/堆漏洞（二）之UAF/6.png" title="[]">
-<pre><code>呃呃呃， 因为是Full RELRO. 在程序开始进入main函数之前就会解析用到的所有的函数在libc中的地址，而非延迟绑定。
-</code></pre><p>a.    换一个思路，GOT表无法复写，一般来说可以考虑ret_2_dllreslove,，但是这个太麻烦。我选择了后者复写free函数的hook函数（该函数在libc文件中实在.bss段的）</p>
-<p>b.   如下</p>
-<img src="/2019/04/20/堆漏洞（二）之UAF/7.png" title="[]">
-<h4 id="扩展2"><a href="#扩展2" class="headerlink" title="扩展2"></a>扩展2</h4><ul>
-<li><p>BUUCTF的cisin_2019_n_3</p>
-</li>
-<li><p>漏洞分析</p>
-<ul>
-<li><p>UAF漏洞</p>
-<img src="/2019/04/20/堆漏洞（二）之UAF/8.png" title="[]">
-</li>
-<li><p>note结构保存有函数指针</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">struct note_str</span><br><span class="line">&#123;</span><br><span class="line">  void *print;</span><br><span class="line">  void *free;</span><br><span class="line">  void *value;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-<li><p>利用思路</p>
-<ul>
-<li>可以利用UAF覆盖函数指针，泄露地址。</li>
-<li>再利用UAF，覆盖函数指针，执行system</li>
-</ul>
-</li>
-<li><p>难点</p>
-<ul>
-<li>note的大小始终0xc，且输入content的方式是fgets。我们无法覆盖content指针。</li>
-</ul>
-</li>
-<li><p>另一种思路</p>
-<ul>
-<li><p>利用unsortbin 来泄露地址，即分配不在fastbin的content，再释放，再查看信息即可泄露地址。这里记录下main_arena的偏移获得。在malloc.c源码下有</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span></span><br><span class="line">__malloc_trim (<span class="keyword">size_t</span> s)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">int</span> result = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (__malloc_initialized &lt; <span class="number">0</span>)</span><br><span class="line">    ptmalloc_init ();</span><br><span class="line"></span><br><span class="line">  mstate ar_ptr = &amp;main_arena;</span><br><span class="line">  <span class="keyword">do</span></span><br><span class="line">    &#123;</span><br><span class="line">      __libc_lock_lock (ar_ptr-&gt;mutex);</span><br><span class="line">      result |= mtrim (ar_ptr, s);</span><br><span class="line">      __libc_lock_unlock (ar_ptr-&gt;mutex);</span><br><span class="line"></span><br><span class="line">      ar_ptr = ar_ptr-&gt;next;</span><br><span class="line">    &#125;</span><br><span class="line">  <span class="keyword">while</span> (ar_ptr != &amp;main_arena);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>因此可以在IDA查看malloc_trim函数，得到main_arena的偏移。</p>
-</li>
-<li><p>泄露地址后，再用system覆盖free指针，”sh”覆盖print指针，即可在free(note)操作时get shell。</p>
-</li>
-</ul>
-</li>
-</ul>
-<p>参考链接<a href="https://www.cnblogs.com/0xJDchen/p/6195919.html" target="_blank" rel="noopener">JDchen</a></p>
-
-        </div>
-        <div class="post-tool">
-            <a class="btn-thumbs-up" href="javascript:void(0);" data-cid="52" title="95">
-                <i class="fa fa-thumbs-up" aria-hidden="true"></i> 打赏
-            </a>
-        </div>
-        
-        <div class="post-tags">标签：
-            
-            <a href="../../../../tags/pwn/">pwn</a>
-            
-        </div>
-        
-    </article>
-    
-    <p>本文代表个人观点，内容仅供参考。若有不恰当之处，望不吝赐教！</p>
-    
-    
-</div>
-<script src="../../../../js/busuanzi.pure.mini.js"></script>
-
-        </div><!-- end #main-->
-    </div><!-- end #body -->
-    <footer class="footer">
-    <div class="footer-inner">
-        <p>
-            <a href="/about" title="关于本站">关于本站</a>&nbsp;&nbsp<em>·</em>&nbsp;&nbsp
-            <!-- 自定义链接 -->
-            <a href="/help" title="help">急救中心</a>&nbsp;&nbsp<em>·</em>&nbsp;&nbsp
-            <a href="/app" title="App下载">App下载</a>
-        </p>
-        <p>
-            本站点采用<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享署名-非商业性使用-相同方式共享 4.0 国际许可协议</a>，已建立<a href="/timeline" id="siteBuildingTime"></a>天<br>
-            ©2017 基于<a href="http://hexo.io" target="_blank">Hexo</a>搭建
-            ，主题&nbsp<a href="https://github.com/tangkunyin/hexo-theme-jsimple" target="_blank">JSimple</a>
-            ，作者<a href="https://www.tangkunyin.com" target="_blank">唐先森</a>
-            ，Hosted by <a href="https://pages.coding.me" style="font-weight: bold">Coding Pages</a>
-        </p>
-        
-
-    </div>
-</footer>
-<script src="../../../../js/InsightSearch.js"></script>
-<script src="../../../../js/SimpleCore.js"></script>
-
-</div>
-<div class="fixed-btn">
-    <a class="btn-gotop" href="javascript:"> <i class="fa fa-angle-up"></i></a>
-</div>
-<script>
-    $(function () {
-        SimpleCore.init({
-            buildingTime: '11/22/2018',
-            current: $('.post-tags').length > 0 ? 'post' : 'archive',
-            snsQRCode: '/images/sns-qrcode.png',
-            donateImg: '/images/donate-qr.png',
-        });
-    });
-</script>
-</body>
-</html>
+block content
+  article#post(class="")
+    if (!top_img)
+      #post-title.plain= page.title || _p('no_title')
+      #post-meta
+        if (theme.post_meta.date_type)
+          - var date_type = theme.post_meta.date_type === 'updated' ? '' : 'date'
+          time.post-meta__date #[i.fa.fa-calendar(aria-hidden="true")] #[=date(page[date_type], config.date_format)]
+        if (theme.post_meta.categories && page.categories.data.length > 0)
+          if (theme.post_meta.date_type)
+            span.post-meta__separator |
+          each item, index in page.categories.data
+            i.fa.fa-inbox(aria-hidden="true")
+            a(href=url_for(item.path)).post-meta__categories  #[=item.name]
+            if (index < page.categories.data.length - 1)
+                i.fa.fa-angle-right.post-meta__separator(aria-hidden="true")
+        if (theme.disqus.enable && theme.disqus.count)
+          if (theme.post_meta.date_type || theme.post_meta.categories && page.categories.data.length > 0)
+            span.post-meta__separator |
+          i.fa.fa-comment-o(aria-hidden="true")
+          a(href=url_for(page.path) + '#disqus_thread')
+            span.disqus-comment-count(data-disqus-identifier=page.path)
+        if (theme.wordcount && theme.wordcount.enable)
+          span.post-meta__separator |
+          span.post-meta-wordcount
+            span= _p('post.wordcount') + ': '
+            span.word-count= wordcount(page.content)
+            span.post-meta__separator |
+            span= _p('post.min2read', min2read(page.content, {cn: 350, en: 160}))
+    #post-content.article-container!= page.content
+  if (theme.post_copyright && theme.post_copyright.enable)
+    .post-copyright
+      .post-copyright__author
+        span.post-copyright-meta= _p('post.copyright.author') + ": "
+        span.post-copyright-info
+          a(href=`mailto:${config.email}`) #[=config.author]
+      .post-copyright__type
+        span.post-copyright-meta= _p('post.copyright.link') + ": "
+        span.post-copyright-info
+          a(href=url_for(page.permalink)) #[=page.permalink]
+      .post-copyright__notice
+        span.post-copyright-meta= _p('post.copyright.copyright_notice') + ": "
+        span.post-copyright-info!= _p('post.copyright.copyright_content', theme.post_copyright.license_url, theme.post_copyright.license, config.url, config.title)
+  if (theme.post_meta.tags)
+    .post-meta__tag-list
+      each item, index in page.tags.data
+        a(href=url_for(item.path)).post-meta__tags #[=item.name]
+  if (theme.QR_code)
+    if (theme.QR_code.length > 0)
+      .post-qr-code
+        each item in theme.QR_code
+          .post-qr-code-item
+            img.post-qr-code__img(src=(item.itemlist||item).img)
+            .post-qr-code__desc=(item.itemlist||item).text
+  include includes/share/index.pug
+  include includes/pagination.pug
+  if (theme.adv && theme.adv.enable)
+    .post-adv!= theme.adv.info
+  if page.comments !== false
+    include includes/comments/index.pug

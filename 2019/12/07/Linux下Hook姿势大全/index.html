@@ -1,459 +1,107 @@
-<!DOCTYPE HTML>
-<html class="no-js" lang="zh-CN">
-<!--
-//                            _ooOoo_
-//                           o8888888o
-//                           88" . "88
-//                           (| -_- |)
-//                            O\ = /O
-//                        ____/`---'\____
-//                      .   ' \\| |// `.
-//                       / \\||| : |||// \
-//                     / _||||| -:- |||||- \
-//                       | | \\\ - /// | |
-//                     | \_| ''\---/'' | |
-//                      \ .-\__ `-` ___/-. /
-//                   ___`. .' /--.--\ `. . __
-//                ."" '< `.___\_<|>_/___.' >'"".
-//               | | : `- \`.;`\ _ /`;.`/ - ` : | |
-//                 \ \ `-. \_ __\ /__ _/ .-` / /
-//         ======`-.____`-.___\_____/___.-`____.-'======
-//                            `=---='
-//                 拦截插件累计拦截逗比攻击"1381438"次！
-//         .............................................
-//                  佛祖保佑             永无BUG
-//          佛曰:
-//                  写字楼里写字间，写字间里程序员；
-//                  程序人员写程序，又拿程序换酒钱。
-//                  酒醒只在网上坐，酒醉还来网下眠；
-//                  酒醉酒醒日复日，网上网下年复年。
-//                  但愿老死电脑间，不愿鞠躬老板前；
-//                  奔驰宝马贵者趣，公交自行程序员。
-//                  别人笑我忒疯癫，我笑自己命太贱；
-//                  不见满街漂亮妹，哪个归得程序员？
--->
-<head><meta name="generator" content="Hexo 3.8.0">
-    <!--[if lte IE 9]>
-<meta http-equiv="refresh" content="0;url=http://yoursite.com/warn.html">
-<![endif]-->
-<meta charset="utf-8">
+extends includes/layout.pug
 
-<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+block top_img
+  - var top_img = page.top_img || theme.post_meta.top_img || theme.top_img || config.top_img
+  if (top_img && page.top_img !== false)
+    - var bg_img = top_img !== true ? `background-image: url(${top_img})` : ''
+    - var flag = top_img === true ? 'no-bg' : ''
+    div#top-container(style=bg_img class=flag)
+      include ./includes/header.pug
+      #post-info
+        #post-title= page.title || _p('no_title')
+        #post-meta
+          if (theme.post_meta.date_type)
+            if (theme.post_meta.date_type === 'both')
+              time.post-meta__date
+                i.fa.fa-calendar(aria-hidden="true")
+                =' '+_p('post.created')+' '+date(page.date, config.date_format)
+                span.post-meta__separator |
+                i.fa.fa-calendar-check-o(aria-hidden="true")
+                =' '+_p('post.updated')+' '+date(page.updated, config.date_format)
+            else
+              - var date_type = theme.post_meta.date_type === 'updated' ? 'updated' : 'date'
+              time.post-meta__date #[i.fa.fa-calendar(aria-hidden="true")] #[=date(page[date_type], config.date_format)]
+          if (theme.post_meta.categories && page.categories.data.length > 0)
+            if (theme.post_meta.date_type)
+              span.post-meta__separator |
+            each item, index in page.categories.data
+              i.fa.fa-inbox.post-meta__icon(aria-hidden="true")
+              a(href=url_for(item.path)).post-meta__categories #[=item.name]
+              if (index < page.categories.data.length - 1)
+                 i.fa.fa-angle-right(aria-hidden="true")
+          if (theme.disqus.enable && theme.disqus.count)
+            if (theme.post_meta.date_type || theme.post_meta.categories && page.categories.data.length > 0)
+              span.post-meta__separator |
+            i.fa.fa-comment-o.post-meta__icon(aria-hidden="true")
+            a(href=url_for(page.path) + '#disqus_thread')
+              span.disqus-comment-count(data-disqus-identifier=page.path)
+          if (theme.wordcount && theme.wordcount.enable)
+            .post-meta-wordcount
+              span= _p('post.wordcount') + ': '
+              span.word-count= wordcount(page.content)
+              span.post-meta__separator |
+              span= _p('post.min2read', min2read(page.content, {cn: 350, en: 160}))
+  else
+    div#top-container.plain
+      include ./includes/header.pug
 
-<meta http-equiv="X-UA-Compatible" content="IE=Edge">
-<meta name="renderer" content="webkit">
-<meta name="viewport" content="width=device-width, initial-scale=1.0,user-scalable=no">
-<meta http-equiv="mobile-agent" content="format=html5; url=http://yoursite.com">
-<meta name="author" content="treebacker">
-<link rel="stylesheet" href="../../../../css/SimpleStyle.min.css">
-
-<link rel="shortcut icon" href="../../../../images/favicon.png">
-
-
-<title>linux下hook姿势大全 - Watch Security</title>
-
-<meta name="keywords" content="Hook">
-
-<meta name="description " content="Linux下Hook姿势">
-
-</head>
-<body>
-<div id="nav">
-    <nav class="nav-menu">
-        <a class="site-name current" href="/" title="Tree">Tree</a>
-        <a class="site-index current" href="/"><i class="fa fa-home"></i><span>首页</span></a>
-        <a href="/archives" title="归档"><i class="fa fa-archives"></i><span>归档</span></a>
-        <a href="/tags" title="标签"><i class="fa fa-tags"></i><span>标签</span></a>
-        <!-- custom single page of menus -->
-        
-        
-        <a href="/help" title="帮助">
-            <i class="fa fa-question-circle"></i>
-            <span>帮助</span>
-        </a>
-        
-    </nav>
-</div>
-
-<div class="nav-user">
-    <a class="btn-search" href="#"><i class="fa fa-search"></i></a>
-    <a class="btn-read-mode" href="#"><i class="fa fa-sun-o"></i></a>
-    <a class="btn-sns-qr" href="javascript:"><i class="fa fa-telegram"></i></a>
-</div>
-
-<div id="wrapper" class="clearfix">
-    <div id="body">
-        <div class="main" id="main">
-            <div id="cover">
-    <div class="cover-img"></div>
-    <div class="cover-info">
-        
-        <h1 class="cover-siteName">Treebacker</h1>
-        <h3 class="cover-siteTitle">愿麦子和麦子长在一起，愿河流与河流流归一处。</h3>
-        <p class="cover-siteDesc">岁月易逝，痕影难觅</p>
-        <div class="cover-sns">
-            
-            <div class="btn btn-github">
-                <a href="https://github.com/treebacker" target="_blank" title="github" ref="friend">
-                    <i class="fa fa-github"></i>
-                </a>
-            </div>
-            
-        </div>
-    </div>
-</div>
-            <div class="page-title">
-    <ul>
-        <li><a href="/">最新</a></li>
-        
-            
-                <li class="active">
-                    <a href="/categories/tech-notes" data-name="技术">技术</a>
-                </li>
-            
-                <li class="">
-                    <a href="/categories/essays" data-name="随笔">随笔</a>
-                </li>
-            
-                <li class="">
-                    <a href="/categories/cdcitizen-of-the-sun" data-name="海子">海子</a>
-                </li>
-            
-                <li class="">
-                    <a href="/categories/others" data-name="其他">其他</a>
-                </li>
-            
-        
-        <li class="page-search">
-    <form id="search" class="search-form">
-        <label for="s" class="sr-only">请输入关键字</label>
-        <input class="search-field" type="text" name="s" placeholder="请输入关键字">
-        <button type="submit" class="search-form-submit" title="搜索"><i class="fa fa-search"></i></button>
-    </form>
-    <div class="ins-search">
-    <div class="ins-search-mask"></div>
-    <div class="ins-search-container">
-        <div class="ins-input-wrapper">
-            <input type="text" class="ins-search-input" placeholder="请输入关键词...">
-            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
-        </div>
-        <div class="ins-section-wrapper">
-            <div class="ins-section-container"></div>
-        </div>
-    </div>
-</div>
-<script>
-(function (window) {
-    var INSIGHT_CONFIG = {
-        TRANSLATION: {
-            POSTS: '文章',
-            PAGES: '页面',
-            CATEGORIES: '分类',
-            TAGS: '标签',
-            UNTITLED: '(无标题)',
-        },
-        ROOT_URL: '/',
-        CONTENT_URL: '../../../../content.json',
-    };
-    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
-})(window);
-</script>
-</li>
-
-    </ul>
-</div>
-<div class="main-inner">
-    <article class="post" itemscope="" itemtype="http://schema.org/BlogPosting">
-        <div class="post-header">
-            <div class="post-author clearfix">
-                <a class="avatar fleft" href="" target="_blank">
-                    <img width="48" src="/images/favicon.png" alt="avatar">
-                </a>
-                <p><span class="label">作者</span>
-                    <a href="" target="_blank">Treebacker</a>
-                    <span title="最后编辑于2019-12-07">2019-12-07</span>
-                </p>
-                <p></p>
-            </div>
-            <h2 class="post-title">Linux下Hook姿势大全</h2>
-            <div class="post-meta">
-                本文总共19231个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
-            </div>
-        </div>
-        <div class="post-content markdown-body">
-            <h3 id="Linux下Hook方式汇总"><a href="#Linux下Hook方式汇总" class="headerlink" title="Linux下Hook方式汇总"></a>Linux下Hook方式汇总</h3><ul>
-<li><h4 id="导语"><a href="#导语" class="headerlink" title="导语"></a>导语</h4><ul>
-<li><p>Linux下的Hook方式，从ring3到ring0，姿势很多，但其实是互通的，这里总结自己实现的几个。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">/******    Ring3	******/</span><br><span class="line">LD_PRELOAD劫持.so</span><br><span class="line">ptrace API调试技术Hook</span><br><span class="line">PLT劫持</span><br><span class="line"></span><br><span class="line">/******* Ring 0 *******/</span><br><span class="line">针对系统调用的hook</span><br><span class="line">	--首先获得sys_call_table</span><br><span class="line">利用sys函数的嵌套实现hook调用的子函数</span><br><span class="line">修改系统调用的前几个字节为jmp之类的指令（内联</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>网上很多教程是针对Linux2.6左右的，很多方法需要自己重新摸索，记录踩坑。</p>
-<ul>
-<li>注： 以下所有代码在<strong>Linux 5.0.3.  x86_64</strong>内核调试通过。</li>
-</ul>
-</li>
-</ul>
-</li>
-<li><h4 id="LD-PRELOAD劫持-so"><a href="#LD-PRELOAD劫持-so" class="headerlink" title="LD_PRELOAD劫持.so"></a>LD_PRELOAD劫持.so</h4><ul>
-<li><p>LD_PRELOAD是一个Linux下的动态链接的程序的环境变量，几乎我们用到的函数实现来自于glibc，.so文件是glibc编译得到的库，类似于Win下的DLL。而LD_PRELOAD变量<strong>优先于相关配置</strong>指定链接到哪个.so文件。</p>
-</li>
-<li><p>一旦我们可以控制该变量，也就可以决定程序调用函数时会做什么。</p>
-</li>
-<li><p>实例展示</p>
-<ul>
-<li><p>目标文件target.c</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> *argv[])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span>( <span class="built_in">strcmp</span>(argv[<span class="number">1</span>], <span class="string">"password"</span>) )</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"Incorrect password\n"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"Correct password\n"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//gcc target.c -o target</span></span><br></pre></td></tr></table></figure>
-</li>
-<li><p>伪造的.so文件preload.c</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;dlfcn.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">typedef</span> <span class="title">int</span><span class="params">(*Strcmp)</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span>*, <span class="keyword">const</span> <span class="keyword">char</span>*)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">strcmp</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span>* s1, <span class="keyword">const</span> <span class="keyword">char</span>* s2)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">static</span> <span class="keyword">void</span>* handle = <span class="literal">NULL</span>;</span><br><span class="line">	<span class="keyword">static</span> Strcmp org_strcmp = <span class="literal">NULL</span>;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span>(!handle)</span><br><span class="line">	&#123;	<span class="comment">//解析得到真实的strcmp函数</span></span><br><span class="line">		handle = dlopen(<span class="string">"libc.so.6"</span>, RTLD_LAZY);</span><br><span class="line">		org_strcmp = (Strcmp)dlsym(handle, <span class="string">"strcmp"</span>);</span><br><span class="line">	&#125;</span><br><span class="line">    <span class="comment">//做我们想做的</span></span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"Hacked by way of ld_preload\n\n\n"</span>);</span><br><span class="line">    <span class="comment">//完成真实地功能</span></span><br><span class="line">	<span class="keyword">return</span> org_strcmp(s1, s2);	</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//gcc -fPIC preload.c -shared -o preload.so -ldl</span></span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-<li><p>这种方式比较简单，前提是程序不是静态链接的。（不会再解析.so，程序已经包含了库函数的实现）。</p>
-</li>
-<li><p>防护方案</p>
-<ul>
-<li>关闭LD_PRELOAD</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-<ul>
-<li><h4 id="ptrace-API调试技术Hook"><a href="#ptrace-API调试技术Hook" class="headerlink" title="ptrace API调试技术Hook"></a>ptrace API调试技术Hook</h4><ul>
-<li><p>ptrace是很多Linux平台下调试器实现的基础，包括syscall跟踪程序strace。</p>
-</li>
-<li><p>ptrace可以实现调试程序、跟踪；但是一个进程只能被一个进程跟踪。所以无法在gdb或者其他程序调试的时候去ptrace一个程序，同样也无法在ptrace一个进程的时候，再去gdb调试。后者经常作为一个简单的反调试手段。</p>
-</li>
-<li><p>而且Linux下的攻防中，ptrace也由于自己的特殊性，常常是必争之地。</p>
-</li>
-<li><p>总体思路</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">ptrace attach目标进程</span><br><span class="line">保存rip</span><br><span class="line">控制跳转到mmap分配一段rwx内存</span><br><span class="line">将一段机器码copy进去</span><br><span class="line">控制跳转到机器码（可以以bin文件的形式）</span><br><span class="line">恢复执行。</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>简单示例代码</p>
-<ul>
-<li>首先需要知道一些函数在目标进程的地址，下面是已知pid获取libc基地址（读取<strong>/proc/pid/maps</strong>），和函数地址(<strong>dlsym</strong>)</li>
-</ul>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">size_t</span> getLibcbase(<span class="keyword">int</span> pid)</span><br><span class="line">  &#123;</span><br><span class="line">  	<span class="keyword">size_t</span> libcAddr;</span><br><span class="line">  	<span class="keyword">char</span>* buf;</span><br><span class="line">  	<span class="keyword">char</span>* end;</span><br><span class="line">  	<span class="keyword">char</span>* mapfile[<span class="number">0x18</span>];</span><br><span class="line">  	<span class="built_in">sprintf</span>(mapfile, Mapfile, pid);</span><br><span class="line">  	FILE* fd = fopen(mapfile, <span class="string">"r"</span>);</span><br><span class="line">  </span><br><span class="line">  	<span class="keyword">if</span>(!fd)</span><br><span class="line">  	&#123;</span><br><span class="line">  		<span class="built_in">printf</span>(<span class="string">"open maps error!"</span>);</span><br><span class="line">  		<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">  	&#125;</span><br><span class="line">  	<span class="comment">//search the libc-.....</span></span><br><span class="line">  	buf = (<span class="keyword">char</span>*) <span class="built_in">malloc</span>(<span class="number">0x100</span>);</span><br><span class="line">  	<span class="keyword">do</span>&#123;</span><br><span class="line">  		fgets(buf, <span class="number">0x100</span>, fd);</span><br><span class="line">  	&#125; <span class="keyword">while</span>(!<span class="built_in">strstr</span>(buf, <span class="string">"libc-"</span>));</span><br><span class="line">  </span><br><span class="line">  	end = <span class="built_in">strchr</span>(buf, <span class="string">'-'</span>);</span><br><span class="line">  	libcAddr = strtol(buf, &amp;end, <span class="number">16</span>);</span><br><span class="line">  	<span class="built_in">printf</span>(<span class="string">"The process %d's libcbase is: 0x%lx\n"</span>, pid, libcAddr);</span><br><span class="line">  	fclose(fd);</span><br><span class="line">  	<span class="keyword">return</span> libcAddr;</span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">size_t</span> getFuncAddr(<span class="keyword">int</span> pid, <span class="keyword">char</span>* funcName)</span><br><span class="line">  &#123;</span><br><span class="line">  	<span class="keyword">size_t</span> funcAddr;</span><br><span class="line">  	<span class="keyword">char</span>* buf;</span><br><span class="line">  	<span class="keyword">char</span>* end;</span><br><span class="line">  	<span class="keyword">char</span>* mapfile[<span class="number">0x18</span>];</span><br><span class="line">  	<span class="built_in">sprintf</span>(mapfile, Mapfile, pid);</span><br><span class="line">  </span><br><span class="line">  	<span class="comment">//get function offset from self process, the shared libc.so</span></span><br><span class="line">  	funcAddr = (<span class="keyword">size_t</span>)dlsym(<span class="number">0</span>, funcName);</span><br><span class="line">  	funcAddr -= getLibcbase(getpid());</span><br><span class="line">  </span><br><span class="line">  </span><br><span class="line">  	funcAddr += libc_addr;</span><br><span class="line">  </span><br><span class="line">  	<span class="built_in">printf</span>(<span class="string">"function %s address is: 0x%lx\n"</span>, funcName, funcAddr);</span><br><span class="line">  	<span class="keyword">return</span> funcAddr;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-</ul>
-<pre><code>* **main**代码
-
-  * 为了得到存放shellcode的地址，我们需要先执行mmap，而执行mmap也需要一段可执行地址。这里其实我们可以直接使用libc_base。在libc_base处写入下面的opcode，其中int 0x3是为了发出信号，让我们知道该opcode执行完成。
-
-    <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">call rax</span><br><span class="line">int 0x3</span><br><span class="line">;&quot;\xff\xd0\xcd\x03&quot;</span><br></pre></td></tr></table></figure>
-
-
-  * 实现mmap调用
-
-    * 备份数据，写入opcode，设置mmap参数
-
-      <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//save a bak of regs</span></span><br><span class="line">ptrace(PTRACE_GETREGS, traced, <span class="number">0</span>, &amp;regs_bak);</span><br><span class="line"><span class="built_in">memcpy</span>(&amp;regs, &amp;regs_bak, <span class="keyword">sizeof</span>(struct user_regs_struct));</span><br><span class="line">          </span><br><span class="line"><span class="comment">//use libc_base to write our short hook code</span></span><br><span class="line">buf.val = ptrace(PTRACE_PEEKTEXT, traced, libc_addr, <span class="number">0</span>);</span><br><span class="line">hook_bak.val = buf.val;</span><br><span class="line">          </span><br><span class="line"><span class="built_in">memcpy</span>(buf.chars, Call, <span class="number">4</span>);</span><br><span class="line">ptrace(PTRACE_POKETEXT, traced, libc_addr, buf.val);</span><br><span class="line">          </span><br><span class="line">fd = open(argv[<span class="number">2</span>], O_RDONLY);</span><br><span class="line">fstat(fd, &amp;sb);</span><br><span class="line"><span class="keyword">if</span>(fd &lt; <span class="number">0</span>)</span><br><span class="line">&#123;	</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"open shellcode error!\n"</span>);</span><br><span class="line">	<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">&#125;</span><br><span class="line">shellcode = <span class="built_in">malloc</span>(sb.st_size + <span class="number">1</span>);</span><br><span class="line">read(fd, shellcode, sb.st_size);</span><br><span class="line">          </span><br><span class="line">regs.rax = mmap_addr;</span><br><span class="line"><span class="comment">//prepare for the mmap args</span></span><br><span class="line">regs.rdi = <span class="number">0</span>;</span><br><span class="line">regs.rsi = sb.st_size;</span><br><span class="line">regs.rdx = <span class="number">0x7</span>;</span><br><span class="line">regs.rcx = MAP_PRIVATE | MAP_ANONYMOUS;</span><br><span class="line">regs.r8 = <span class="number">-1</span>;</span><br><span class="line">regs.r9 = <span class="number">0</span>;</span><br><span class="line">          </span><br><span class="line">regs.rip = libc_addr;	<span class="comment">//jmp to call rax</span></span><br><span class="line">ptrace(PTRACE_SETREGS, traced, <span class="number">0</span>, &amp;regs);</span><br><span class="line">          </span><br><span class="line">ptrace(PTRACE_CONT, traced, <span class="number">0</span>, <span class="number">0</span>);</span><br><span class="line"><span class="comment">//wait mmap is executed</span></span><br><span class="line">waitpid(traced, &amp;status, WUNTRACED);</span><br><span class="line"><span class="keyword">if</span> (WIFSTOPPED(status) &amp;&amp; WSTOPSIG(status) == SIGTRAP)&#123;</span><br><span class="line">  	 	<span class="built_in">printf</span>(<span class="string">"SIGTRAP receivedn\n"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-  * 这里有几个坑
-
-    - mmap的fd参数，必须是open打开的返回值，而不能是fopen这种。
-    - x64传参，顺序是**rdi、rsi、rdx、rcx、r8、r9**；有些地方可能会说第四个参数是r10，发现有误导。
-
-    <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">mmap</span><span class="params">(<span class="keyword">void</span> *addr, <span class="keyword">size_t</span> length, <span class="keyword">int</span> prot, <span class="keyword">int</span> flags,</span></span></span><br><span class="line"><span class="function"><span class="params">                  <span class="keyword">int</span> fd, <span class="keyword">off_t</span> offset)</span></span>;</span><br></pre></td></tr></table></figure>
-
-
-    - 由于我们open是在注入进程得到的fd，而mmap是在被hook进程执行的，所以这个fd是不可以被当作参数的。我们必须使用flag **MAP_PRIVATE | MAP_ANONYMOUS**
-
-  * 往mmap返回的地址里写入shellcode，并执行。
-
-  <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">ptrace(PTRACE_GETREGS, traced, <span class="number">0</span>, &amp;regs);</span><br><span class="line">tmp_addr = regs.rax;/</span><br><span class="line"><span class="built_in">printf</span>(<span class="string">"We get address from mmap: 0x%lx\n"</span>, tmp_addr);</span><br><span class="line"></span><br><span class="line">copy_code(tmp_addr, shellcode, sb.st_size);</span><br><span class="line">tmp_val = ptrace(PTRACE_PEEKTEXT, traced, tmp_addr, <span class="number">0</span>);</span><br><span class="line"><span class="built_in">printf</span>(<span class="string">"the mapped val: 0x%lx\n"</span>, tmp_val);</span><br><span class="line"></span><br><span class="line"><span class="comment">//jmp to shellcode from file</span></span><br><span class="line">      </span><br><span class="line">regs.rip = tmp_addr;</span><br><span class="line">ptrace(PTRACE_SETREGS, traced, <span class="number">0</span>, &amp;regs);</span><br><span class="line">      </span><br><span class="line">ptrace(PTRACE_CONT, traced, <span class="number">0</span>, <span class="number">0</span>);</span><br><span class="line">      </span><br><span class="line"><span class="comment">//wait shellcode is executed</span></span><br><span class="line">waitpid(traced, &amp;status, WUNTRACED);</span><br><span class="line"><span class="keyword">if</span> (WIFSTOPPED(status) &amp;&amp; WSTOPSIG(status) == SIGTRAP)&#123;</span><br><span class="line">  	 	<span class="built_in">printf</span>(<span class="string">"SIGTRAP receivedn\n"</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">ptrace(PTRACE_SETREGS, traced, <span class="number">0</span>, &amp;regs_bak);</span><br><span class="line">ptrace(PTRACE_CONT, traced, <span class="number">0</span>, <span class="number">0</span>);</span><br><span class="line">close(fd);</span><br></pre></td></tr></table></figure>
-
-
-* 其中copy_code的实现通过**POKETEXT**，每次可以向目标进程任意地址写入long大小的值
-
-  <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">copy_code</span><span class="params">(<span class="keyword">size_t</span> addr, <span class="keyword">char</span>* shellcode, <span class="keyword">int</span> len)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> i=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">long</span> word;</span><br><span class="line">	<span class="keyword">for</span>(i=<span class="number">0</span>; i&lt;len; i+=<span class="keyword">sizeof</span>(<span class="keyword">long</span>))&#123;	</span><br><span class="line">		<span class="built_in">memcpy</span>(&amp;word, shellcode+i, <span class="keyword">sizeof</span>(<span class="keyword">long</span>));</span><br><span class="line">		<span class="keyword">if</span>(ptrace(PTRACE_POKETEXT, traced, addr+i, word) == <span class="number">-1</span>)&#123;</span><br><span class="line">			printerror();</span><br><span class="line">			<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</code></pre><ul>
-<li><p>我的shellcode，就是<strong>write(1, ‘cba’, 8)</strong>，目标进程就是当前终端<strong>/bin/bash</strong>看下效果。</p>
-<p><img src="Linux下Hook姿势大全/1.png" alt=""></p>
-</li>
-</ul>
-<ul>
-<li><h4 id="PLT重定向劫持Hook"><a href="#PLT重定向劫持Hook" class="headerlink" title="PLT重定向劫持Hook"></a>PLT重定向劫持Hook</h4><ul>
-<li><p>这个主要是利用ELF文件的，GOT和PLT的方式解决地址无关的链接.so文件的机制。</p>
-</li>
-<li><p>在第一次调用前，Got里是PLT的地址；一般在调用之后Got里会写入库函数的真实地址。</p>
-</li>
-<li><p>PLT在text段，一般不可写；（所以迷，为啥有这一技术）</p>
-<ul>
-<li>是因为<strong>ptrace可以无视’rwx’</strong>，这也是为什么gdb可以修改text，下断点。</li>
-<li>所以这个来说，算是plt和ptrace结合的一种方式。</li>
-</ul>
-</li>
-<li><p>一个简单的在PLT处下断，执行完操作后恢复的样例。这里主要解决的是代码重定位的问题，我们从<strong>/proc/pid/maps</strong>下读出Codebase即可。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/reg.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/ptrace.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/user.h&gt;		 </span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/wait.h&gt;  </span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/stat.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;fcntl.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;signal.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;errno.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> Mapfile <span class="meta-string">"/proc/%d/maps"</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">//用于获取plt内容</span></span><br><span class="line"><span class="keyword">union</span> pltval&#123;</span><br><span class="line">	<span class="keyword">size_t</span> val;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">char</span> chars[<span class="keyword">sizeof</span>(<span class="keyword">size_t</span>)];</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">usage</span><span class="params">(<span class="keyword">char</span>** argv)</span></span>&#123;</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"USAGE: \n --- %s　pid plt_offset \n"</span>, argv[<span class="number">0</span>]);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">printerror</span><span class="params">()</span></span>&#123;</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"Status: %s\n"</span>, strerror(errno));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">mod_handle</span><span class="params">(<span class="keyword">pid_t</span> tracee, <span class="keyword">void</span>* addr1, <span class="keyword">void</span>* addr2)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">union</span> pltval buf;</span><br><span class="line">	buf.val = ptrace(PTRACE_PEEKDATA, tracee, addr1, <span class="number">0</span>);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"mod_handle: "</span>);</span><br><span class="line">	printerror();</span><br><span class="line"></span><br><span class="line">	<span class="built_in">memcpy</span>(buf.chars, <span class="string">"hooked"</span>, <span class="number">6</span>);</span><br><span class="line">	buf.chars[<span class="number">6</span>] = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">	ptrace(PTRACE_POKEDATA, tracee, addr1, buf.val);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"hook: "</span>);</span><br><span class="line">	printerror();</span><br><span class="line"></span><br><span class="line">	buf.val = ptrace(PTRACE_PEEKDATA, tracee, addr2, <span class="number">0</span>);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"mod_handle: "</span>);</span><br><span class="line">	printerror();</span><br><span class="line"></span><br><span class="line">	<span class="built_in">memcpy</span>(buf.chars, <span class="string">"/hooked"</span>, <span class="number">7</span>);</span><br><span class="line">	buf.chars[<span class="number">7</span>] = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">	ptrace(PTRACE_POKEDATA, tracee, addr2, buf.val);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"/hooked: "</span>);</span><br><span class="line">	printerror();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">size_t</span> getCodebase(<span class="keyword">pid_t</span> pid)</span><br><span class="line">&#123;	</span><br><span class="line">	<span class="keyword">size_t</span> addr;</span><br><span class="line">	<span class="keyword">char</span> buf[<span class="number">2</span> * <span class="keyword">sizeof</span>(<span class="keyword">size_t</span>)];</span><br><span class="line">	<span class="keyword">char</span>* end;</span><br><span class="line">	<span class="keyword">char</span>* mapfile[<span class="number">0x18</span>];</span><br><span class="line">	<span class="built_in">sprintf</span>(mapfile, Mapfile, pid);</span><br><span class="line">	<span class="keyword">int</span> fd = open(mapfile, O_RDONLY);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span>(fd == <span class="number">-1</span>)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">"open maps error!"</span>);</span><br><span class="line">		<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	read(fd, buf, <span class="number">2</span> * <span class="keyword">sizeof</span>(<span class="keyword">size_t</span>));</span><br><span class="line">	end = <span class="built_in">strchr</span>(buf, <span class="string">'-'</span>);</span><br><span class="line">	addr = strtol(buf, &amp;end, <span class="number">16</span>);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"The codebase is: 0x%lx\n"</span>, addr);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	close(fd);</span><br><span class="line">	<span class="keyword">return</span> addr;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line">	<span class="keyword">pid_t</span> tracee; </span><br><span class="line">	<span class="keyword">union</span> pltval plt;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">user_regs_struct</span> <span class="title">regs</span>;</span></span><br><span class="line">	<span class="keyword">siginfo_t</span> si;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">int</span> status;</span><br><span class="line">	<span class="keyword">size_t</span> plt_offset, plt_addr, bak;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span>(argc &lt; <span class="number">2</span>)&#123;</span><br><span class="line">		usage(argv);</span><br><span class="line">		<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	tracee = atoi(argv[<span class="number">1</span>]);</span><br><span class="line">	plt_offset = atoi(argv[<span class="number">2</span>]);</span><br><span class="line">	<span class="comment">//获取codebase</span></span><br><span class="line">	plt_addr = plt_offset + getCodebase(tracee);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"plt_addr ==&gt; %lx\n"</span>, plt_addr);</span><br><span class="line"></span><br><span class="line">	<span class="comment">//attach the process</span></span><br><span class="line">	ptrace(PTRACE_ATTACH, tracee, <span class="number">0</span>, <span class="number">0</span>);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"Attach: "</span>);</span><br><span class="line">	printerror();</span><br><span class="line"></span><br><span class="line">	wait(&amp;status);</span><br><span class="line"></span><br><span class="line">	<span class="comment">//获取目标的plt值，保存，修改，写入，　继续运行</span></span><br><span class="line">	plt.val = ptrace(PTRACE_PEEKDATA, tracee, plt_addr, <span class="number">0</span>);</span><br><span class="line">	bak = plt.val;</span><br><span class="line">	plt.chars[<span class="number">0</span>] = <span class="number">0xcc</span>;		<span class="comment">//breakpoint</span></span><br><span class="line">	ptrace(PTRACE_POKEDATA, tracee, plt_addr, plt.val);</span><br><span class="line">	ptrace(PTRACE_CONT, tracee, <span class="number">0</span>, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">	<span class="comment">//监视有没有触发断点</span></span><br><span class="line">	<span class="keyword">while</span>(<span class="number">1</span>)&#123;</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">"Wait....\n"</span>);</span><br><span class="line">		wait(&amp;status);</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">"Done!\n"</span>);</span><br><span class="line"></span><br><span class="line">		<span class="keyword">if</span>(WIFEXITED(status)) <span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">		<span class="comment">//获取regs和sig信息，判断是否到达plt</span></span><br><span class="line">		ptrace(PTRACE_GETSIGINFO, tracee, <span class="number">0</span>, &amp;si);</span><br><span class="line">		ptrace(PTRACE_GETREGS, tracee, <span class="number">0</span>, &amp;regs);</span><br><span class="line"></span><br><span class="line">		<span class="keyword">if</span>((si.si_signo != SIGTRAP) || (regs.rip != (<span class="keyword">size_t</span>)plt_addr + <span class="number">1</span>))&#123;</span><br><span class="line">			ptrace(PTRACE_GETREGS, tracee, <span class="number">0</span>, &amp;regs);</span><br><span class="line">			ptrace(PTRACE_CONT, tracee, <span class="number">0</span>, <span class="number">0</span>);</span><br><span class="line">			<span class="keyword">continue</span>;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="comment">//hook &amp; modify</span></span><br><span class="line">		mod_handle(tracee, (<span class="keyword">void</span>*)argv[<span class="number">0</span>], (<span class="keyword">void</span>*)argv[<span class="number">1</span>]);</span><br><span class="line"></span><br><span class="line">		<span class="comment">//修改回原值</span></span><br><span class="line">		plt.val = bak;</span><br><span class="line">		ptrace(PTRACE_POKEDATA, tracee, plt_addr, plt.val);</span><br><span class="line">		<span class="comment">//返回0xcc前</span></span><br><span class="line">		regs.rip -= <span class="number">1</span>;</span><br><span class="line">		ptrace(PTRACE_SETREGS, tracee, <span class="number">0</span>, &amp;regs);</span><br><span class="line">		ptrace(PTRACE_SINGLESTEP, tracee, <span class="number">0</span>, <span class="number">0</span>);</span><br><span class="line">		wait(<span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">		ptrace(PTRACE_GETREGS, tracee, <span class="number">0</span>, &amp;regs);</span><br><span class="line">		plt.chars[<span class="number">0</span>] = <span class="number">0xcc</span>;</span><br><span class="line">		ptrace(PTRACE_POKEDATA, tracee, plt_addr, plt.val);</span><br><span class="line">		ptrace(PTRACE_CONT, tracee, <span class="number">0</span>, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-<li><h4 id="Ring0级别的Hook"><a href="#Ring0级别的Hook" class="headerlink" title="Ring0级别的Hook"></a>Ring0级别的Hook</h4><ul>
-<li><h5 id="前置知识"><a href="#前置知识" class="headerlink" title="前置知识"></a>前置知识</h5><ul>
-<li><p>linux内核的编译</p>
-<ul>
-<li>最好选择一个和自己虚拟机内核版本一致的源码，网上也很多教程。</li>
-<li>再编译一个busybox的文件系统，为了方便添加文件。</li>
-</ul>
-</li>
-<li><p>模块编译</p>
-<ul>
-<li><p>makefile的基本格式（用于本机加载的模块）</p>
-<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">obj-m += inter.o</span><br><span class="line">CURRENT_PATH := <span class="variable">$(<span class="built_in">shell</span> pwd)</span></span><br><span class="line">LINUX_KERNEL := <span class="variable">$(<span class="built_in">shell</span> uname -r)</span></span><br><span class="line">LINUX_KERNEL_PATH := /usr/src/linux-headers-<span class="variable">$(LINUX_KERNEL)</span></span><br><span class="line"></span><br><span class="line"><span class="section">all:</span></span><br><span class="line">	make -C <span class="variable">$(LINUX_KERNEL_PATH)</span> M=<span class="variable">$(CURRENT_PATH)</span> modules</span><br><span class="line"><span class="section">clean:</span></span><br><span class="line">	make -C <span class="variable">$(LINUX_KERNEL_PATH)</span> M=<span class="variable">$(CURRENT_PATH)</span> clean</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>交叉编译（本机和编译的内核不同）</p>
-<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">obj-m += mod1.o</span><br><span class="line">CURRENT_PATH := <span class="variable">$(<span class="built_in">shell</span> pwd)</span></span><br><span class="line">LINUX_KERNEL := <span class="variable">$(<span class="built_in">shell</span> uname -r)</span></span><br><span class="line">LINUX_KERNEL_PATH := /home/tree/kernel/linux-5.0.3</span><br><span class="line"></span><br><span class="line"><span class="section">all:</span></span><br><span class="line">	make -C <span class="variable">$(LINUX_KERNEL_PATH)</span> M=<span class="variable">$(CURRENT_PATH)</span> modules</span><br><span class="line"><span class="section">clean:</span></span><br><span class="line">	make -C <span class="variable">$(LINUX_KERNEL_PATH)</span> M=<span class="variable">$(CURRENT_PATH)</span> clean</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-<li><p><strong>sys_call_table</strong></p>
-<ul>
-<li><p>都知道linux通过int 0x80或者syscall都可以进入kernel完成系统调用，而我们需要把对应的系统调用号传给rax。两者最终还是用了system_call。</p>
-</li>
-<li><p>int 0x80工作原理</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">1、系统维护一个叫做“向量中断表的”，每个int xx都会去对应的向量表的xx处</span><br><span class="line">2、0x80对应系统调用的服务例程，记录了syscall的地址。</span><br><span class="line">3、而eax的值，对应具体的系统调用号。</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>syscall的具体实现，可以看到这里有sys_call_table符号。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">.globl system_call, buserr, trap, resume</span><br><span class="line">.globl sys_call_table</span><br><span class="line">................</span><br><span class="line">................</span><br><span class="line">ENTRY(system_call)</span><br><span class="line">	SAVE_ALL_SYS							//保存</span><br><span class="line"></span><br><span class="line">	GET_CURRENT(%d1)</span><br><span class="line">	movel	%d1,%a1</span><br><span class="line"></span><br><span class="line">	| save top of frame</span><br><span class="line">	movel	%sp,%curptr@(TASK_THREAD+THREAD_ESP0)</span><br><span class="line"></span><br><span class="line">	| syscall trace?						//有没有被ptrace跟踪</span><br><span class="line">	tstb	%a1@(TINFO_FLAGS+2)</span><br><span class="line">	jmi	do_trace_entry</span><br><span class="line">	cmpl	#NR_syscalls,%d0</span><br><span class="line">	jcc	badsys</span><br><span class="line">syscall:									//真实的执行系统调用</span><br><span class="line">	jbsr	@(sys_call_table,%d0:l:4)@(0)</span><br><span class="line">	movel	%d0,%sp@(PT_OFF_D0)	| save the return value</span><br><span class="line">ret_from_syscall:</span><br><span class="line">	|oriw	#0x0700,%sr</span><br><span class="line">	movel	%curptr@(TASK_STACK),%a1</span><br><span class="line">	movew	%a1@(TINFO_FLAGS+2),%d0</span><br><span class="line">	jne	syscall_exit_work</span><br><span class="line">1:	RESTORE_ALL</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-<ul>
-<li><p><strong>获得sys_call_table地址的方式</strong></p>
-<ul>
-<li><p>由于syscall实现处有sys_call_table的符号，我们可以从这里拿到地址。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">1. 获取中断描述符表(IDT)的地址(使用C ASM汇编)</span><br><span class="line">2. 从中查找0x80中断(系统调用中断)的服务例程(8*0x80偏移)</span><br><span class="line">3. 搜索该例程的内存空间</span><br><span class="line">4. 从其中获取sys_call_table(保存所有系统调用例程的入口地址)的地址</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>使用kallsyms_lookup_name读取。该函数本身也是一个符号，如果没有导出就不能使用。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sys_call_table_addr = kallsyms_lookup_name(<span class="string">"sys_call_table"</span>)</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>读取/proc/kallsyms文件。我的理解就是和/proc/pid/maps差不多特殊的一个文件，由内核动态生成，需要root权限，普通用户读到的全是0（但是加载模块也是需要root权限的，所以不是问题）</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo cat /proc/kallsyms | grep sys_call_table</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>修改内核，添加EXPORT_SYMBOL(sys_call_table)或EXPORT_SYMBOL_GPL(sys_call_table)。<br>这种方法适用于可以修改内核的情形。在可以修改内核的情况下，这是最简单的方式。</p>
-</li>
-</ul>
-</li>
-<li><p>实战——hook系统调用 mkdir，我这里使用<strong>kallsyms_lookup_name</strong></p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">* This kernel module locates the sys_call_table by kallsyms_lookup_name</span></span><br><span class="line"><span class="comment">* </span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;linux/init.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;linux/module.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;linux/moduleparam.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;linux/unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;linux/sched.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;linux/syscalls.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;linux/string.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;linux/fs.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;linux/fdtable.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;linux/uaccess.h&gt; </span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;linux/kallsyms.h&gt; </span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;linux/rtc.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;linux/vmalloc.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;linux/slab.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">** module macros</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line">MODULE_LICENSE(<span class="string">"GPL"</span>);</span><br><span class="line">MODULE_DESCRIPTION(<span class="string">"hook sys_mkdir"</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">** module constructor/destructor</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="function"><span class="keyword">typedef</span> <span class="keyword">unsigned</span> <span class="title">long</span> <span class="params">(*<span class="keyword">sys_call_ptr_t</span>)</span><span class="params">(<span class="keyword">void</span>)</span></span>;</span><br><span class="line"><span class="keyword">sys_call_ptr_t</span> *_sys_call_table = <span class="literal">NULL</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">typedef</span> asmlinkage <span class="title">long</span> <span class="params">(*<span class="keyword">old_mkdir_t</span>)</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> __user *pathname, <span class="keyword">umode_t</span> mode)</span></span>;</span><br><span class="line"><span class="keyword">old_mkdir_t</span> old_mkdir = <span class="literal">NULL</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// hooked mkdir function</span></span><br><span class="line"><span class="function">asmlinkage <span class="keyword">long</span> <span class="title">hooked_mkdir</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> __user *pathname, <span class="keyword">umode_t</span> mode)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        printk(<span class="string">"hooked sys_mkdir(), mkdir name: "</span>);</span><br><span class="line">        printk(pathname);</span><br><span class="line">        old_mkdir(pathname, mode);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// memory protection shinanigans</span></span><br><span class="line"><span class="keyword">unsigned</span> <span class="keyword">int</span> level;</span><br><span class="line"><span class="keyword">pte_t</span> *pte;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">//obtain sys_call_table</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">get_sys_call_table</span><span class="params">(<span class="keyword">void</span>)</span></span>&#123;</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> tmp_sys_call_table = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">int</span> ans = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    tmp_sys_call_table = kallsyms_lookup_name(<span class="string">"sys_call_table"</span>);</span><br><span class="line">    <span class="keyword">if</span>(tmp_sys_call_table != <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        ans = <span class="number">1</span>;</span><br><span class="line">        _sys_call_table = tmp_sys_call_table;</span><br><span class="line">        printk(<span class="string">"[+] find sys_call_table: 0x%lx\n"</span>, tmp_sys_call_table);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> ans;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// initialize the module</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">hooked_init</span><span class="params">(<span class="keyword">void</span>)</span> </span>&#123;</span><br><span class="line">    printk(<span class="string">"+ Loading hook_mkdir module\n"</span>);</span><br><span class="line">    <span class="keyword">if</span>(!get_sys_call_table())&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;   </span><br><span class="line">    <span class="comment">// now we can hook syscalls ...such as uname</span></span><br><span class="line">    <span class="comment">// first, save the old gate (fptr)</span></span><br><span class="line">    old_mkdir = (<span class="keyword">old_mkdir_t</span>) _sys_call_table[__NR_mkdir];</span><br><span class="line"></span><br><span class="line">    <span class="comment">// unprotect sys_call_table memory page</span></span><br><span class="line">    pte = lookup_address((<span class="keyword">unsigned</span> <span class="keyword">long</span>) _sys_call_table, &amp;level);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// change PTE to allow writing</span></span><br><span class="line">    set_pte_atomic(pte, pte_mkwrite(*pte));</span><br><span class="line"></span><br><span class="line">    printk(<span class="string">"+ unprotected kernel memory page containing sys_call_table\n"</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// now overwrite the __NR_uname entry with address to our uname</span></span><br><span class="line">    _sys_call_table[__NR_mkdir] = (<span class="keyword">sys_call_ptr_t</span>) hooked_mkdir;</span><br><span class="line"></span><br><span class="line">    printk(<span class="string">"+ sys_mkdir hooked!\n"</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">hooked_exit</span><span class="params">(<span class="keyword">void</span>)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(old_mkdir != <span class="literal">NULL</span>) &#123;</span><br><span class="line">        <span class="comment">// restore sys_call_table to original state</span></span><br><span class="line">        _sys_call_table[__NR_mkdir] = (<span class="keyword">sys_call_ptr_t</span>) old_mkdir;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// reprotect page</span></span><br><span class="line">        set_pte_atomic(pte, pte_clear_flags(*pte, _PAGE_RW));</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    printk(<span class="string">"+ Unloading hook_mkdir module\n"</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">** entry/exit macros</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line">module_init(hooked_init);</span><br><span class="line">module_exit(hooked_exit);</span><br></pre></td></tr></table></figure>
-<ul>
-<li><p>效果（不知道为啥pathname参数不能输出）</p>
-<p><img src="Linux下Hook姿势大全\2.png" alt=""></p>
-</li>
-</ul>
-</li>
-</ul>
-<ul>
-<li><p><strong>system_call函数内存内搜索sys_call_table</strong>，实现execve的hook</p>
-<ul>
-<li><p>这里注意这种方式在x86和x64上的区别。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span>、x86或者x64的兼容模式：使用<span class="keyword">int</span> <span class="number">0x80</span>,MSR寄存器地址为<span class="number">0xc0000083</span>,宏MSR_CSTAR来代表. 使用sidt获取system_call地址</span><br><span class="line"><span class="number">2</span>、x64的<span class="keyword">long</span>模式：使用syscall,MSR寄存器地址为<span class="number">0xc0000082</span>，宏MSR_LSTAR来代表. 使用rdmsrl指令获取system_call地址</span><br><span class="line"><span class="number">3</span>、x86 sys_call_table的特征码  \xff\x14\x85</span><br><span class="line"><span class="number">4</span>、x86_64下 sys_call_table的特征码  \xff\x14\xc5</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>网上有一大堆x86的获取sys_call_table的方法，我本来打算用下面的思路实现一个x64的。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">1、在x64下，通过rdmsrl(MSR_LSTAR, xxxx)可以拿到entry_SYSCALL_64的地址。entry_SYSCALL_64的实现里会有sys_call_table的机器码。</span><br><span class="line">2、所以有两种hook的思路</span><br><span class="line">	a、修改entry_SYSCALL_64起始的几个字节（内联hook）</span><br><span class="line">	b、找到sys_call_table，修改对应的系统调用。</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>但是在linux内核5.x里，entry_SYSCALL_64的实现改了，不再试图用过call sys_call_table[index]的方式进行系统调用，而是引入了一个do_syscall_64的符号。具体的看下面截取的源码</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">ENTRY(entry_SYSCALL_64)</span><br><span class="line">	UNWIND_HINT_EMPTY</span><br><span class="line">	.......</span><br><span class="line">	.......</span><br><span class="line">	/* IRQs are off. */</span><br><span class="line">	movq	%rax, %rdi</span><br><span class="line">	movq	%rsp, %rsi</span><br><span class="line">	call	do_syscall_64		/* returns with IRQs disabled */</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>于是我找到了do_syscall_64的实现，幸运的是在这里找到了对sys_call_table的直接引用。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> CONFIG_X86_64</span></span><br><span class="line">__<span class="function">visible <span class="keyword">void</span> <span class="title">do_syscall_64</span><span class="params">(<span class="keyword">unsigned</span> <span class="keyword">long</span> nr, struct pt_regs *regs)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">thread_info</span> *<span class="title">ti</span>;</span></span><br><span class="line"></span><br><span class="line">	enter_from_user_mode();</span><br><span class="line">	local_irq_enable();</span><br><span class="line">	ti = current_thread_info();</span><br><span class="line">	<span class="keyword">if</span> (READ_ONCE(ti-&gt;flags) &amp; _TIF_WORK_SYSCALL_ENTRY)</span><br><span class="line">		nr = syscall_trace_enter(regs);</span><br><span class="line">	<span class="comment">/*</span></span><br><span class="line"><span class="comment">	 * NB: Native and x32 syscalls are dispatched from the same</span></span><br><span class="line"><span class="comment">	 * table.  The only functional difference is the x32 bit in</span></span><br><span class="line"><span class="comment">	 * regs-&gt;orig_ax, which changes the behavior of some syscalls.</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	nr &amp;= __SYSCALL_MASK;</span><br><span class="line">	<span class="keyword">if</span> (likely(nr &lt; NR_syscalls)) &#123;</span><br><span class="line">		nr = array_index_nospec(nr, NR_syscalls);</span><br><span class="line">		regs-&gt;ax = sys_call_table[nr](regs);	<span class="comment">//这里sys_call_table的直接引用</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	syscall_return_slowpath(regs);</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br></pre></td></tr></table></figure>
-</li>
-<li><p>所以，显然我们就需要多一次的搜索，特征码可以在gdb里查或者看它的汇编指令。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1、在entry_SYSCALL_64里搜索do_syscall_64； 特征码&apos;\x48\x89\xe6\xe8&apos; &lt;= mov rsi, rsp; call ....</span><br><span class="line">2、在do_syscall_64里搜索sys_call_table；  特征码 &apos;\x48\x8b\x04\xfd&apos; &lt;= mov rax []</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>通过entry_SYSCALL_64的call do_syscall_64找到call do_syscall_64地址</p>
-<p><img src="Linux下Hook姿势大全\3.png" alt=""></p>
-</li>
-<li><p>通过do_syscall_64对sys_call_table的引用找到sys_call_table</p>
-<p><img src="Linux下Hook姿势大全\4.png" alt=""></p>
-</li>
-<li><p>代码实现</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">void</span>*</span><br><span class="line">get_lstar_dosys_addr(<span class="keyword">void</span>)&#123;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">long</span> lstar;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// temp variables for scan</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> i;</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">char</span> *off;</span><br><span class="line">    rdmsrl(MSR_LSTAR, lstar);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// print out int 0x80 handler</span></span><br><span class="line">    printk(<span class="string">"[+] entry_SYSCALL_64 is at 0x%lx\n"</span>, lstar);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// scan for known pattern(0xff14c5xx)</span></span><br><span class="line">    <span class="comment">// pattern is just before sys_call_table address</span></span><br><span class="line">    <span class="keyword">for</span>(i = <span class="number">0</span>; i &lt;= PAGE_SIZE; i++) &#123;</span><br><span class="line">        off = (<span class="keyword">char</span>*)lstar + i;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span>(*(off) == <span class="number">0x48</span> &amp;&amp; *(off+<span class="number">1</span>) == <span class="number">0x89</span> &amp;&amp; *(off+<span class="number">2</span>) == <span class="number">0xe6</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> (off + <span class="number">3</span>);						<span class="comment">//call do_syscall_64</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">void</span>*</span><br><span class="line">get_lstar_dosys(<span class="keyword">void</span>)</span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">long</span>* lstar_dosys_addr = get_lstar_dosys_addr();</span><br><span class="line">	<span class="keyword">if</span>(lstar_dosys_addr != <span class="literal">NULL</span>) &#123;</span><br><span class="line">		printk(<span class="string">"[+] call_do_syscall_64 at: 0x%lx\n"</span>, lstar_dosys_addr);</span><br><span class="line">		<span class="keyword">unsigned</span> <span class="keyword">int</span> offset = *(<span class="keyword">unsigned</span> <span class="keyword">int</span>*)((<span class="keyword">char</span>*)lstar_dosys_addr + <span class="number">1</span>);</span><br><span class="line">		printk(<span class="string">"[+] offset is: 0x%08x\n"</span>, offset);</span><br><span class="line">		<span class="keyword">unsigned</span> <span class="keyword">long</span> base = <span class="number">0xffffffff00000000</span>;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">return</span> (<span class="keyword">void</span>*)(base | ((<span class="keyword">unsigned</span> <span class="keyword">long</span>)lstar_dosys_addr + <span class="number">5</span> + offset));</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">void</span>* </span><br><span class="line">get_sys_sct_addr(<span class="keyword">unsigned</span> <span class="keyword">long</span>* do_syscall_64_addr)</span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">char</span>* off;</span><br><span class="line">	<span class="keyword">int</span> i;</span><br><span class="line">	<span class="keyword">for</span>(i = <span class="number">0</span>; i &lt;= PAGE_SIZE; i++) &#123;</span><br><span class="line">		off = (<span class="keyword">char</span>*)do_syscall_64_addr + i;</span><br><span class="line">		<span class="keyword">if</span>(*(off) == <span class="number">0x48</span> &amp;&amp; *(off+<span class="number">1</span>) == <span class="number">0x8b</span> &amp;&amp; *(off+<span class="number">2</span>) == <span class="number">0x04</span> &amp;&amp; *(off+<span class="number">3</span>) == <span class="number">0xfd</span>) &#123;</span><br><span class="line">			<span class="keyword">return</span> (off+<span class="number">4</span>);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">static</span> <span class="keyword">void</span>*</span><br><span class="line">get_sys_sct(<span class="keyword">unsigned</span> <span class="keyword">long</span>* do_syscall_64_addr) </span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">long</span>* sct_addr = get_sys_sct_addr(do_syscall_64_addr);</span><br><span class="line">	<span class="keyword">if</span>(!sct_addr)&#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">int</span> offset = *(<span class="keyword">unsigned</span> <span class="keyword">int</span>*)(sct_addr);</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">long</span> base = <span class="number">0xffffffff00000000</span>;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> (<span class="keyword">void</span>*)(base | offset);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">//hooked execve</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">hook_execve_init</span><span class="params">(<span class="keyword">void</span>)</span></span>&#123;</span><br><span class="line"></span><br><span class="line">	printk(<span class="string">"[+] Finding sys_call_table\n"</span>);</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">long</span>* do_syscall_64_addr = <span class="number">0</span>;</span><br><span class="line">	do_syscall_64_addr = get_lstar_dosys();</span><br><span class="line">	<span class="keyword">if</span>(!do_syscall_64_addr)&#123;</span><br><span class="line">		printk(<span class="string">"[x] Failed to find do_syscall_64_addr\n"</span>);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	printk(<span class="string">"[+] Found do_syscall_64_addr at: 0x%lx\n"</span>, do_syscall_64_addr);</span><br><span class="line">	_sys_call_table = get_sys_sct(do_syscall_64_addr);</span><br><span class="line">	<span class="keyword">if</span>(!_sys_call_table) &#123;</span><br><span class="line">		printk(<span class="string">"[x] Failed to find sys_call_table\n"</span>);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	printk(<span class="string">"[+] Found sys_call_table at: 0x%lx\n"</span>, _sys_call_table);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>注意处理一些细节问题（比如unsigned long 还是 unsinged int），最终可以达到想要的效果。</p>
-<p><img src="Linux下Hook姿势大全\5.png" alt=""></p>
-</li>
-</ul>
-</li>
-</ul>
-<ul>
-<li>参考链接<ul>
-<li><a href="https://ixyzero.com/blog/archives/3137.html" target="_blank" rel="noopener">LINUX的LD_PRELOAD相关知识学习</a></li>
-<li><a href="https://nullprogram.com/blog/2018/06/23/" target="_blank" rel="noopener">Intercepting and Emulating Linux System Calls with Ptrace</a></li>
-<li><a href="http://nicephil.blinkenshell.org/my_book/ch10.html" target="_blank" rel="noopener">ptrace注入进程</a></li>
-<li><a href="https://www.cnblogs.com/klb561/p/9048662.html" target="_blank" rel="noopener">Linux内核模块编译</a></li>
-<li><a href="https://www.cnblogs.com/bittorrent/p/3804141.html" target="_blank" rel="noopener">获取Linux内核未导出符号的几种方式</a></li>
-</ul>
-</li>
-</ul>
-
-        </div>
-        <div class="post-tool">
-            <a class="btn-thumbs-up" href="javascript:void(0);" data-cid="52" title="95">
-                <i class="fa fa-thumbs-up" aria-hidden="true"></i> 打赏
-            </a>
-        </div>
-        
-        <div class="post-tags">标签：
-            
-            <a href="../../../../tags/Linux-Hook/">Linux Hook</a>
-            
-        </div>
-        
-    </article>
-    
-    <p>本文代表个人观点，内容仅供参考。若有不恰当之处，望不吝赐教！</p>
-    
-    
-</div>
-<script src="../../../../js/busuanzi.pure.mini.js"></script>
-
-        </div><!-- end #main-->
-    </div><!-- end #body -->
-    <footer class="footer">
-    <div class="footer-inner">
-        <p>
-            <a href="/about" title="关于本站">关于本站</a>&nbsp;&nbsp<em>·</em>&nbsp;&nbsp
-            <!-- 自定义链接 -->
-            <a href="/help" title="help">急救中心</a>&nbsp;&nbsp<em>·</em>&nbsp;&nbsp
-            <a href="/app" title="App下载">App下载</a>
-        </p>
-        <p>
-            本站点采用<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享署名-非商业性使用-相同方式共享 4.0 国际许可协议</a>，已建立<a href="/timeline" id="siteBuildingTime"></a>天<br>
-            ©2017 基于<a href="http://hexo.io" target="_blank">Hexo</a>搭建
-            ，主题&nbsp<a href="https://github.com/tangkunyin/hexo-theme-jsimple" target="_blank">JSimple</a>
-            ，作者<a href="https://www.tangkunyin.com" target="_blank">唐先森</a>
-            ，Hosted by <a href="https://pages.coding.me" style="font-weight: bold">Coding Pages</a>
-        </p>
-        
-
-    </div>
-</footer>
-<script src="../../../../js/InsightSearch.js"></script>
-<script src="../../../../js/SimpleCore.js"></script>
-
-</div>
-<div class="fixed-btn">
-    <a class="btn-gotop" href="javascript:"> <i class="fa fa-angle-up"></i></a>
-</div>
-<script>
-    $(function () {
-        SimpleCore.init({
-            buildingTime: '11/22/2018',
-            current: $('.post-tags').length > 0 ? 'post' : 'archive',
-            snsQRCode: '/images/sns-qrcode.png',
-            donateImg: '/images/donate-qr.png',
-        });
-    });
-</script>
-</body>
-</html>
+block content
+  article#post(class="")
+    if (!top_img)
+      #post-title.plain= page.title || _p('no_title')
+      #post-meta
+        if (theme.post_meta.date_type)
+          - var date_type = theme.post_meta.date_type === 'updated' ? '' : 'date'
+          time.post-meta__date #[i.fa.fa-calendar(aria-hidden="true")] #[=date(page[date_type], config.date_format)]
+        if (theme.post_meta.categories && page.categories.data.length > 0)
+          if (theme.post_meta.date_type)
+            span.post-meta__separator |
+          each item, index in page.categories.data
+            i.fa.fa-inbox(aria-hidden="true")
+            a(href=url_for(item.path)).post-meta__categories  #[=item.name]
+            if (index < page.categories.data.length - 1)
+                i.fa.fa-angle-right.post-meta__separator(aria-hidden="true")
+        if (theme.disqus.enable && theme.disqus.count)
+          if (theme.post_meta.date_type || theme.post_meta.categories && page.categories.data.length > 0)
+            span.post-meta__separator |
+          i.fa.fa-comment-o(aria-hidden="true")
+          a(href=url_for(page.path) + '#disqus_thread')
+            span.disqus-comment-count(data-disqus-identifier=page.path)
+        if (theme.wordcount && theme.wordcount.enable)
+          span.post-meta__separator |
+          span.post-meta-wordcount
+            span= _p('post.wordcount') + ': '
+            span.word-count= wordcount(page.content)
+            span.post-meta__separator |
+            span= _p('post.min2read', min2read(page.content, {cn: 350, en: 160}))
+    #post-content.article-container!= page.content
+  if (theme.post_copyright && theme.post_copyright.enable)
+    .post-copyright
+      .post-copyright__author
+        span.post-copyright-meta= _p('post.copyright.author') + ": "
+        span.post-copyright-info
+          a(href=`mailto:${config.email}`) #[=config.author]
+      .post-copyright__type
+        span.post-copyright-meta= _p('post.copyright.link') + ": "
+        span.post-copyright-info
+          a(href=url_for(page.permalink)) #[=page.permalink]
+      .post-copyright__notice
+        span.post-copyright-meta= _p('post.copyright.copyright_notice') + ": "
+        span.post-copyright-info!= _p('post.copyright.copyright_content', theme.post_copyright.license_url, theme.post_copyright.license, config.url, config.title)
+  if (theme.post_meta.tags)
+    .post-meta__tag-list
+      each item, index in page.tags.data
+        a(href=url_for(item.path)).post-meta__tags #[=item.name]
+  if (theme.QR_code)
+    if (theme.QR_code.length > 0)
+      .post-qr-code
+        each item in theme.QR_code
+          .post-qr-code-item
+            img.post-qr-code__img(src=(item.itemlist||item).img)
+            .post-qr-code__desc=(item.itemlist||item).text
+  include includes/share/index.pug
+  include includes/pagination.pug
+  if (theme.adv && theme.adv.enable)
+    .post-adv!= theme.adv.info
+  if page.comments !== false
+    include includes/comments/index.pug

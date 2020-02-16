@@ -1,374 +1,107 @@
-<!DOCTYPE HTML>
-<html class="no-js" lang="zh-CN">
-<!--
-//                            _ooOoo_
-//                           o8888888o
-//                           88" . "88
-//                           (| -_- |)
-//                            O\ = /O
-//                        ____/`---'\____
-//                      .   ' \\| |// `.
-//                       / \\||| : |||// \
-//                     / _||||| -:- |||||- \
-//                       | | \\\ - /// | |
-//                     | \_| ''\---/'' | |
-//                      \ .-\__ `-` ___/-. /
-//                   ___`. .' /--.--\ `. . __
-//                ."" '< `.___\_<|>_/___.' >'"".
-//               | | : `- \`.;`\ _ /`;.`/ - ` : | |
-//                 \ \ `-. \_ __\ /__ _/ .-` / /
-//         ======`-.____`-.___\_____/___.-`____.-'======
-//                            `=---='
-//                 拦截插件累计拦截逗比攻击"1381438"次！
-//         .............................................
-//                  佛祖保佑             永无BUG
-//          佛曰:
-//                  写字楼里写字间，写字间里程序员；
-//                  程序人员写程序，又拿程序换酒钱。
-//                  酒醒只在网上坐，酒醉还来网下眠；
-//                  酒醉酒醒日复日，网上网下年复年。
-//                  但愿老死电脑间，不愿鞠躬老板前；
-//                  奔驰宝马贵者趣，公交自行程序员。
-//                  别人笑我忒疯癫，我笑自己命太贱；
-//                  不见满街漂亮妹，哪个归得程序员？
--->
-<head><meta name="generator" content="Hexo 3.8.0">
-    <!--[if lte IE 9]>
-<meta http-equiv="refresh" content="0;url=http://yoursite.com/warn.html">
-<![endif]-->
-<meta charset="utf-8">
+extends includes/layout.pug
 
-<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+block top_img
+  - var top_img = page.top_img || theme.post_meta.top_img || theme.top_img || config.top_img
+  if (top_img && page.top_img !== false)
+    - var bg_img = top_img !== true ? `background-image: url(${top_img})` : ''
+    - var flag = top_img === true ? 'no-bg' : ''
+    div#top-container(style=bg_img class=flag)
+      include ./includes/header.pug
+      #post-info
+        #post-title= page.title || _p('no_title')
+        #post-meta
+          if (theme.post_meta.date_type)
+            if (theme.post_meta.date_type === 'both')
+              time.post-meta__date
+                i.fa.fa-calendar(aria-hidden="true")
+                =' '+_p('post.created')+' '+date(page.date, config.date_format)
+                span.post-meta__separator |
+                i.fa.fa-calendar-check-o(aria-hidden="true")
+                =' '+_p('post.updated')+' '+date(page.updated, config.date_format)
+            else
+              - var date_type = theme.post_meta.date_type === 'updated' ? 'updated' : 'date'
+              time.post-meta__date #[i.fa.fa-calendar(aria-hidden="true")] #[=date(page[date_type], config.date_format)]
+          if (theme.post_meta.categories && page.categories.data.length > 0)
+            if (theme.post_meta.date_type)
+              span.post-meta__separator |
+            each item, index in page.categories.data
+              i.fa.fa-inbox.post-meta__icon(aria-hidden="true")
+              a(href=url_for(item.path)).post-meta__categories #[=item.name]
+              if (index < page.categories.data.length - 1)
+                 i.fa.fa-angle-right(aria-hidden="true")
+          if (theme.disqus.enable && theme.disqus.count)
+            if (theme.post_meta.date_type || theme.post_meta.categories && page.categories.data.length > 0)
+              span.post-meta__separator |
+            i.fa.fa-comment-o.post-meta__icon(aria-hidden="true")
+            a(href=url_for(page.path) + '#disqus_thread')
+              span.disqus-comment-count(data-disqus-identifier=page.path)
+          if (theme.wordcount && theme.wordcount.enable)
+            .post-meta-wordcount
+              span= _p('post.wordcount') + ': '
+              span.word-count= wordcount(page.content)
+              span.post-meta__separator |
+              span= _p('post.min2read', min2read(page.content, {cn: 350, en: 160}))
+  else
+    div#top-container.plain
+      include ./includes/header.pug
 
-<meta http-equiv="X-UA-Compatible" content="IE=Edge">
-<meta name="renderer" content="webkit">
-<meta name="viewport" content="width=device-width, initial-scale=1.0,user-scalable=no">
-<meta http-equiv="mobile-agent" content="format=html5; url=http://yoursite.com">
-<meta name="author" content="treebacker">
-<link rel="stylesheet" href="../../../../css/SimpleStyle.min.css">
-
-<link rel="shortcut icon" href="../../../../images/favicon.png">
-
-
-<title>windows-seh机制 - Watch Security</title>
-
-<meta name="keywords" content="SEH">
-
-<meta name="description " content="">
-
-</head>
-<body>
-<div id="nav">
-    <nav class="nav-menu">
-        <a class="site-name current" href="/" title="Tree">Tree</a>
-        <a class="site-index current" href="/"><i class="fa fa-home"></i><span>首页</span></a>
-        <a href="/archives" title="归档"><i class="fa fa-archives"></i><span>归档</span></a>
-        <a href="/tags" title="标签"><i class="fa fa-tags"></i><span>标签</span></a>
-        <!-- custom single page of menus -->
-        
-        
-        <a href="/help" title="帮助">
-            <i class="fa fa-question-circle"></i>
-            <span>帮助</span>
-        </a>
-        
-    </nav>
-</div>
-
-<div class="nav-user">
-    <a class="btn-search" href="#"><i class="fa fa-search"></i></a>
-    <a class="btn-read-mode" href="#"><i class="fa fa-sun-o"></i></a>
-    <a class="btn-sns-qr" href="javascript:"><i class="fa fa-telegram"></i></a>
-</div>
-
-<div id="wrapper" class="clearfix">
-    <div id="body">
-        <div class="main" id="main">
-            <div id="cover">
-    <div class="cover-img"></div>
-    <div class="cover-info">
-        
-        <h1 class="cover-siteName">Treebacker</h1>
-        <h3 class="cover-siteTitle">愿麦子和麦子长在一起，愿河流与河流流归一处。</h3>
-        <p class="cover-siteDesc">岁月易逝，痕影难觅</p>
-        <div class="cover-sns">
-            
-            <div class="btn btn-github">
-                <a href="https://github.com/treebacker" target="_blank" title="github" ref="friend">
-                    <i class="fa fa-github"></i>
-                </a>
-            </div>
-            
-        </div>
-    </div>
-</div>
-            <div class="page-title">
-    <ul>
-        <li><a href="/">最新</a></li>
-        
-            
-                <li class="active">
-                    <a href="/categories/tech-notes" data-name="技术">技术</a>
-                </li>
-            
-                <li class="">
-                    <a href="/categories/essays" data-name="随笔">随笔</a>
-                </li>
-            
-                <li class="">
-                    <a href="/categories/cdcitizen-of-the-sun" data-name="海子">海子</a>
-                </li>
-            
-                <li class="">
-                    <a href="/categories/others" data-name="其他">其他</a>
-                </li>
-            
-        
-        <li class="page-search">
-    <form id="search" class="search-form">
-        <label for="s" class="sr-only">请输入关键字</label>
-        <input class="search-field" type="text" name="s" placeholder="请输入关键字">
-        <button type="submit" class="search-form-submit" title="搜索"><i class="fa fa-search"></i></button>
-    </form>
-    <div class="ins-search">
-    <div class="ins-search-mask"></div>
-    <div class="ins-search-container">
-        <div class="ins-input-wrapper">
-            <input type="text" class="ins-search-input" placeholder="请输入关键词...">
-            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
-        </div>
-        <div class="ins-section-wrapper">
-            <div class="ins-section-container"></div>
-        </div>
-    </div>
-</div>
-<script>
-(function (window) {
-    var INSIGHT_CONFIG = {
-        TRANSLATION: {
-            POSTS: '文章',
-            PAGES: '页面',
-            CATEGORIES: '分类',
-            TAGS: '标签',
-            UNTITLED: '(无标题)',
-        },
-        ROOT_URL: '/',
-        CONTENT_URL: '../../../../content.json',
-    };
-    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
-})(window);
-</script>
-</li>
-
-    </ul>
-</div>
-<div class="main-inner">
-    <article class="post" itemscope="" itemtype="http://schema.org/BlogPosting">
-        <div class="post-header">
-            <div class="post-author clearfix">
-                <a class="avatar fleft" href="" target="_blank">
-                    <img width="48" src="/images/favicon.png" alt="avatar">
-                </a>
-                <p><span class="label">作者</span>
-                    <a href="" target="_blank">Treebacker</a>
-                    <span title="最后编辑于2019-10-02">2019-10-02</span>
-                </p>
-                <p></p>
-            </div>
-            <h2 class="post-title">Windows-SEH机制</h2>
-            <div class="post-meta">
-                本文总共5739个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
-            </div>
-        </div>
-        <div class="post-content markdown-body">
-            <h3 id="SEH机制"><a href="#SEH机制" class="headerlink" title="SEH机制"></a>SEH机制</h3><h4 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h4><ul>
-<li>SEH即结构化异常处理，是windows下提高系统健壮性的一种机制。</li>
-<li>主要包括两部分<ul>
-<li>终止处理</li>
-<li>异常处理</li>
-</ul>
-</li>
-</ul>
-<h4 id="终止处理"><a href="#终止处理" class="headerlink" title="终止处理"></a>终止处理</h4><ul>
-<li><p>如下的结构</p>
-<ul>
-<li>该结构由编译器解释处理。</li>
-<li>在try中发生的强制退出try块的行为，例如return、goto、continue、break等；编译器会局部展开（local unwind），使得程序先将try的结果保存在一个特殊的位置，待执行完finally块之后，再取出结果退出程序。</li>
-<li>但是，在try块中的以<strong>Exitprocess</strong>等终止进程或者线程的行为，将不会执行finally块。</li>
-</ul>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">__try&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line">__finally&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>实例程序</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">sehDemo</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	<span class="keyword">int</span> dwTemp = <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">while</span> (dwTemp &lt; <span class="number">10</span>) &#123;</span><br><span class="line">		__try &#123;</span><br><span class="line">			<span class="keyword">if</span> (dwTemp == <span class="number">2</span>)</span><br><span class="line">				<span class="keyword">continue</span>;</span><br><span class="line">			<span class="keyword">if</span> (dwTemp == <span class="number">3</span>)</span><br><span class="line">				<span class="keyword">break</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		__finally &#123;</span><br><span class="line">			dwTemp += <span class="number">1</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		dwTemp += <span class="number">1</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	dwTemp += <span class="number">10</span>;</span><br><span class="line">	<span class="keyword">return</span> dwTemp;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<ul>
-<li><p>如果没有SEH终止处理，该函数将永远无法结束（dwTemp = 2时，一致continue在while里）；但是由于SEH的处理，将能正常结束，且返回结果是 14。执行的块流程</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">while</span> -&gt; twTemp = <span class="number">2</span>。</span><br><span class="line">			-&gt; <span class="keyword">continue</span> -&gt; finally -&gt; dwTemp = <span class="number">3</span></span><br><span class="line">    										--&gt; <span class="keyword">break</span> -&gt; finally -&gt; <span class="number">4</span></span><br><span class="line">    															--&gt;out of <span class="keyword">while</span></span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-<li><p>应用场景</p>
-<ul>
-<li><p>清理工作（能够将资源在线程退出前清理）；像下面这样将清理工作集中</p>
-<ul>
-<li>需要注意的是局部扩展需要编译器加入代码，对效率有一定的影响；微软在编译器加入<strong>__leave</strong>关键字，可以将在遇到该关键字时跳转到try块的结束，也就可以正常的进入finally块，节省开销。</li>
-</ul>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">sehDemo2</span><span class="params">()</span>  </span>&#123;</span><br><span class="line">	HANDLE hFile = INVAILD_HANDLE_VALUE;</span><br><span class="line">	PVIOD pvBuf = <span class="literal">NULL</span>;</span><br><span class="line">	</span><br><span class="line">	<span class="comment">//假设该过程失败</span></span><br><span class="line">	BOOL bFunctionOk = FALSE;</span><br><span class="line">	</span><br><span class="line">	__try &#123;</span><br><span class="line">		DWORD dwBytesRead;</span><br><span class="line">		BOOL bOk;</span><br><span class="line">		hFile = CreateFile(<span class="string">"tmp.txt"</span>, GENERIC_READ, FILE_SHARE_READ,</span><br><span class="line">			<span class="literal">NULL</span>, OPEN_EXISTING, <span class="number">0</span>, <span class="literal">NULL</span>);</span><br><span class="line">		<span class="keyword">if</span>(hFile == <span class="literal">NULL</span> == INVAILD_HANDLE_VALUE)&#123;</span><br><span class="line">			__leave;</span><br><span class="line">		&#125;</span><br><span class="line">		</span><br><span class="line">		pvBuf = VirtualAlloc(<span class="literal">NULL</span>, <span class="number">1024</span>, MEM_COMMIT, PAGE_READWRITE);</span><br><span class="line">		<span class="keyword">if</span>(pvBuf == <span class="literal">NULL</span>) &#123;</span><br><span class="line">			__leave;</span><br><span class="line">		&#125;</span><br><span class="line">		</span><br><span class="line">		bOk = ReadFile(hFile, pvBuf, <span class="number">1024</span>, &amp;dwBytesRead, <span class="literal">NULL</span>);</span><br><span class="line">		<span class="keyword">if</span>(!bOk || dwBytesRead == <span class="number">0</span>) &#123;</span><br><span class="line">			__leave</span><br><span class="line">		&#125;</span><br><span class="line">		</span><br><span class="line">		<span class="comment">//return value</span></span><br><span class="line">		bFunctionOk = TRUE;</span><br><span class="line">	&#125;</span><br><span class="line">	__finally &#123;</span><br><span class="line">		<span class="comment">//清理资源</span></span><br><span class="line">		<span class="keyword">if</span>(pvBuf != <span class="literal">NULL</span>) </span><br><span class="line">			VirtualFree(pvBuf, MEM_RELEASE| EMM_COMMIT);</span><br><span class="line">		<span class="keyword">if</span>(hFile != INVAILD_HANDLE_VALUE)</span><br><span class="line">			CloseHandle(hFile);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">//继续</span></span><br><span class="line">	<span class="keyword">return</span> bFunctionOk;</span><br><span class="line">	</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-</ul>
-<h4 id="异常处理"><a href="#异常处理" class="headerlink" title="异常处理"></a>异常处理</h4><ul>
-<li><p>除了熟知的“非法内存访问、除0”等硬件异常外，操作系统和软件程序也可以抛出异常，就是软件异常</p>
-</li>
-<li><p>使用语法结构</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">__try &#123;</span><br><span class="line"><span class="comment">//Guarded body</span></span><br><span class="line">&#125;</span><br><span class="line">__except (exception filter)&#123;</span><br><span class="line"><span class="comment">//Exception handler</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>注意try后面必须有finally或者except，但是不能同时有；可以联合嵌套使用。</li>
-</ul>
-</li>
-<li><p>与终止处理不同，异常处理主要由操作系统完成；也就是说同样的情况下，try except不会带来局部展开这样的额外开销。</p>
-</li>
-<li><p>实例程序</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">DWORD <span class="title">TriggerException</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	DWORD dwTemp = <span class="number">0</span>;</span><br><span class="line">	__try &#123;</span><br><span class="line">		dwTemp = <span class="number">5</span> / dwTemp; <span class="comment">//除0错误</span></span><br><span class="line">		dwTemp = <span class="number">10</span>;<span class="comment">//不会执行</span></span><br><span class="line">	&#125;</span><br><span class="line">	__except(EXCEPTION_EXECUTE_HANDLER) &#123;</span><br><span class="line">		MessageBeep(<span class="number">0</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> dwTemp;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>在发生异常后，转到__except模块处理异常，处理完毕后，从except后的第一句代码继续，正常return，所以返回值是0。</li>
-</ul>
-</li>
-<li><h5 id="异常过滤程序的返回值"><a href="#异常过滤程序的返回值" class="headerlink" title="异常过滤程序的返回值"></a>异常过滤程序的返回值</h5><ul>
-<li><strong>EXCEPTION_EXECUTE_HANDLE         1</strong></li>
-<li><strong>EXCEPTION_CONTINUE_SEARCH       2</strong></li>
-<li><strong>EXCEPTION_CONTINUE_EXECUTION     3</strong></li>
-</ul>
-</li>
-<li><h5 id="系统处理异常的步骤"><a href="#系统处理异常的步骤" class="headerlink" title="系统处理异常的步骤"></a>系统处理异常的步骤</h5><img src="/2019/10/02/Windows-SEH机制/1.png" title="[]">
-</li>
-<li><h5 id="EXCEPTION-EXECUTE-HANDLE类型"><a href="#EXCEPTION-EXECUTE-HANDLE类型" class="headerlink" title="EXCEPTION_EXECUTE_HANDLE类型"></a>EXCEPTION_EXECUTE_HANDLE类型</h5><ul>
-<li><p>当异常过滤计算的值是1时，系统必须执行全局展开</p>
-</li>
-<li><p>就是在执行try对应的except块之前，执行所有已经执行了try却没有finally的块。在调用栈上，这些try-finally块位于try-except块的下方。全局展开的流程如下图。</p>
-<img src="/2019/10/02/Windows-SEH机制/2.png" title="[]">
-</li>
-<li><p>下面的代码展示了全局展开的作用</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">fun1</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	....</span><br><span class="line">	__try &#123;</span><br><span class="line">		...</span><br><span class="line">		fun2();</span><br><span class="line">	&#125;</span><br><span class="line">	__except(EXCEPTION_EXECUTE_HANDLE) &#123;</span><br><span class="line">		...</span><br><span class="line">		MessageBox(...);</span><br><span class="line">	&#125;</span><br><span class="line">	....</span><br><span class="line">	<span class="comment">//continue code</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">fun2</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    ...</span><br><span class="line">        dwTemp = <span class="number">0</span>;</span><br><span class="line">      __try &#123;</span><br><span class="line">        WaitForSingle(g_hMem, INFINITE);</span><br><span class="line">        </span><br><span class="line">        g_dwProtectedData = <span class="number">5</span> / dwTemp;<span class="comment">//an exception</span></span><br><span class="line">    &#125;</span><br><span class="line">    __finally &#123;</span><br><span class="line">        <span class="comment">//Release</span></span><br><span class="line">        ReleaseSemaphore(g_hMem, <span class="number">1</span>, <span class="literal">NULL</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">       <span class="comment">// continue code;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>上面的异常处理except之前会全局展开，先执行fun2()的finally块，释放资源；然后再执行fun1的except块。</li>
-<li>在finally块中的return语句会终止全局展开。</li>
-</ul>
-</li>
-</ul>
-</li>
-<li><h5 id="EXCEPTION-CONTINUE-EXECUTE类型"><a href="#EXCEPTION-CONTINUE-EXECUTE类型" class="headerlink" title="EXCEPTION_CONTINUE_EXECUTE类型"></a>EXCEPTION_CONTINUE_EXECUTE类型</h5><ul>
-<li><p>当异常过滤程序（可以是个函数）计算值是-1时，系统会将程序控制流跳转到导致异常的指令，并尝试重新执行。（简单地说，该异常会尝试纠正引起异常的错误）</p>
-</li>
-<li><p>它的作用下面的程序可以简单的阐明。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">TCHAR g_szBuufer[10];</span><br><span class="line">void fun1() &#123;</span><br><span class="line">	int x = 0;</span><br><span class="line">	TCHAR *pchBuffer = NULL;	/*a*/</span><br><span class="line">	__try &#123;</span><br><span class="line">		*pchBuffer = TEXT(&apos;J&apos;);</span><br><span class="line">	&#125;</span><br><span class="line">	__except(Filter(&amp;pchBuffer)) &#123;	/*b*/</span><br><span class="line">		MessageBox(...)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">LONG Filter(TCHAR** ppchBuffer) &#123;</span><br><span class="line">	if(*ppchBuffer = NULL) &#123;					/*c*/</span><br><span class="line">		*ppchBuffer = g_szBuffer;</span><br><span class="line">		return (EXCEPTION_CONTINUE_EXECUTE);</span><br><span class="line">	&#125;</span><br><span class="line">	return (EXCEPTION_EXECUTE_HANDLER)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-</ul>
-<pre><code>* 上面的代码中，在**a**处触发了非法访问的异常，进入**b**处的except，先执行过滤程序，在过滤中**c**处对NULL的情况重新分配指针，并返回-1。将使得控制流转向**a**，重新执行。
-</code></pre><ul>
-<li>要注意的是，尝试纠正异常的原因是不太可靠的，错误在代码级别还是汇编的指令级别；看编译器和CPU的运作。</li>
-</ul>
-<ul>
-<li><h5 id="EXCEPTION-CONTINUE-SEARCH"><a href="#EXCEPTION-CONTINUE-SEARCH" class="headerlink" title="EXCEPTION_CONTINUE_SEARCH"></a>EXCEPTION_CONTINUE_SEARCH</h5><ul>
-<li><p>当异常过滤程序返回值是0的时候，系统会向上搜索有except的try块，并调用try块的异常过滤程序。</p>
-</li>
-<li><p>一个有趣的例子。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">TCHAR g_szBuufer[<span class="number">10</span>];</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">fun1</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	<span class="keyword">int</span> x = <span class="number">0</span>;</span><br><span class="line">	TCHAR *pchBuffer = <span class="literal">NULL</span>;	<span class="comment">/*a*/</span></span><br><span class="line">	__try &#123;</span><br><span class="line">		fun2(pchBuffer);</span><br><span class="line">	&#125;</span><br><span class="line">	__except(Filter(&amp;pchBuffer)) &#123;	<span class="comment">/*b*/</span></span><br><span class="line">		MessageBox(...)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">fun2</span><span class="params">(TCHAR* sz)</span> </span>&#123;</span><br><span class="line">	__try &#123;</span><br><span class="line">		*sz = TEXT(<span class="string">'J'</span>);						<span class="comment">/*d*/</span></span><br><span class="line">	&#125;</span><br><span class="line">	__except(EXCEPTION_CONTINUE_SEARCH) &#123;		<span class="comment">/*e*/</span></span><br><span class="line">		....</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function">LONG <span class="title">Filter</span><span class="params">(TCHAR** ppchBuffer)</span> </span>&#123;</span><br><span class="line">	<span class="keyword">if</span>(*ppchBuffer = <span class="literal">NULL</span>) &#123;					<span class="comment">/*c*/</span></span><br><span class="line">		*ppchBuffer = g_szBuffer;</span><br><span class="line">		<span class="keyword">return</span> (EXCEPTION_CONTINUE_EXECUTE);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> (EXCEPTION_EXECUTE_HANDLER)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>多加了一个调用，且异常发生在fun2里，该try有一个except块，过滤程序返回0，系统继续向上寻找有except的try块，找到了fun1，并调用Filter，这里pchBuffert不再NULL，返回-1，控制流到了引发异常的指令<strong>d</strong>处，但是此时sz作为局部变量仍然null，再次异常，重新到达<strong>c</strong>时，不再是NULL，返回0.结束。</li>
-</ul>
-</li>
-</ul>
-</li>
-<li><p>内在函数<strong>GetExceptionCode</strong>可以返回引发异常的类型。</p>
-<ul>
-<li>该函数不可以在异常过滤程序中调用（但是可以作为参数）</li>
-<li>只能在except块调用。</li>
-</ul>
-</li>
-</ul>
-<h4 id="SEH的系统内部处理"><a href="#SEH的系统内部处理" class="headerlink" title="SEH的系统内部处理"></a>SEH的系统内部处理</h4><ul>
-<li><p>当一个异常发生时，系统向发生异常的线程的栈中压入三个结构：<strong>EXCEPTTION_RECORD，CONTEXT，EXCEPTION_POINTER</strong>。</p>
-<ul>
-<li><p>RECORD里是异常信息（无关CPU）</p>
-</li>
-<li><p>context里既有异常信息，又有CPU信息。</p>
-</li>
-<li><p>pointer是指向前两种结构的指针。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> _<span class="title">EXCEPTION_POINTERS</span> &#123;</span></span><br><span class="line">	PEXCEPTION_RECORD Exception_Record;</span><br><span class="line">	PCONTEXT Context_Record;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> _<span class="title">EXCEPTION_RECORD</span> &#123;</span></span><br><span class="line">    DWORD ExceptionCode;</span><br><span class="line">    DWORD ExceptionFlags;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> _<span class="title">EXCEPTION_POINTERS</span>* <span class="title">ExceptionRecord</span>;</span>	<span class="comment">//指向下一个异常结构</span></span><br><span class="line">    PVOID ExceptionAddress;							<span class="comment">//异常指令地址</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">/*附加信息*/</span></span><br><span class="line">    DWORD NumberParameters;</span><br><span class="line">    ULONG_PTR_ExceptionInformation[EXCEPTION_MAXIMUN_PARAMETERS];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>注意上述数据只有在异常过滤程序中是有效的，一旦程序控制流程转移到异常处理程序或是别的地方，这些栈上的数据就销毁了。</p>
-</li>
-<li><p>特别的，在处理<strong>EXCEPTION_ACCESS_VIOLATION</strong>异常时，ExceptionInformation[0]包含一个标志，0表示非法读取、1表示非法写，当DEP数据执行保护出发时，该标志为8（IA-64平台为2）。</p>
-</li>
-</ul>
-</li>
-</ul>
-<h4 id="安全性"><a href="#安全性" class="headerlink" title="安全性"></a>安全性</h4><ul>
-<li>不同于Linux下的漏洞利用方式，SEH机制给利用者提供了一个新的思路——<strong>覆盖或者伪造SEH</strong></li>
-<li></li>
-</ul>
-
-        </div>
-        <div class="post-tool">
-            <a class="btn-thumbs-up" href="javascript:void(0);" data-cid="52" title="95">
-                <i class="fa fa-thumbs-up" aria-hidden="true"></i> 打赏
-            </a>
-        </div>
-        
-        <div class="post-tags">标签：
-            
-            <a href="../../../../tags/Windows-Pwn/">Windows Pwn</a>
-            
-        </div>
-        
-    </article>
-    
-    <p>本文代表个人观点，内容仅供参考。若有不恰当之处，望不吝赐教！</p>
-    
-    
-</div>
-<script src="../../../../js/busuanzi.pure.mini.js"></script>
-
-        </div><!-- end #main-->
-    </div><!-- end #body -->
-    <footer class="footer">
-    <div class="footer-inner">
-        <p>
-            <a href="/about" title="关于本站">关于本站</a>&nbsp;&nbsp<em>·</em>&nbsp;&nbsp
-            <!-- 自定义链接 -->
-            <a href="/help" title="help">急救中心</a>&nbsp;&nbsp<em>·</em>&nbsp;&nbsp
-            <a href="/app" title="App下载">App下载</a>
-        </p>
-        <p>
-            本站点采用<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享署名-非商业性使用-相同方式共享 4.0 国际许可协议</a>，已建立<a href="/timeline" id="siteBuildingTime"></a>天<br>
-            ©2017 基于<a href="http://hexo.io" target="_blank">Hexo</a>搭建
-            ，主题&nbsp<a href="https://github.com/tangkunyin/hexo-theme-jsimple" target="_blank">JSimple</a>
-            ，作者<a href="https://www.tangkunyin.com" target="_blank">唐先森</a>
-            ，Hosted by <a href="https://pages.coding.me" style="font-weight: bold">Coding Pages</a>
-        </p>
-        
-
-    </div>
-</footer>
-<script src="../../../../js/InsightSearch.js"></script>
-<script src="../../../../js/SimpleCore.js"></script>
-
-</div>
-<div class="fixed-btn">
-    <a class="btn-gotop" href="javascript:"> <i class="fa fa-angle-up"></i></a>
-</div>
-<script>
-    $(function () {
-        SimpleCore.init({
-            buildingTime: '11/22/2018',
-            current: $('.post-tags').length > 0 ? 'post' : 'archive',
-            snsQRCode: '/images/sns-qrcode.png',
-            donateImg: '/images/donate-qr.png',
-        });
-    });
-</script>
-</body>
-</html>
+block content
+  article#post(class="")
+    if (!top_img)
+      #post-title.plain= page.title || _p('no_title')
+      #post-meta
+        if (theme.post_meta.date_type)
+          - var date_type = theme.post_meta.date_type === 'updated' ? '' : 'date'
+          time.post-meta__date #[i.fa.fa-calendar(aria-hidden="true")] #[=date(page[date_type], config.date_format)]
+        if (theme.post_meta.categories && page.categories.data.length > 0)
+          if (theme.post_meta.date_type)
+            span.post-meta__separator |
+          each item, index in page.categories.data
+            i.fa.fa-inbox(aria-hidden="true")
+            a(href=url_for(item.path)).post-meta__categories  #[=item.name]
+            if (index < page.categories.data.length - 1)
+                i.fa.fa-angle-right.post-meta__separator(aria-hidden="true")
+        if (theme.disqus.enable && theme.disqus.count)
+          if (theme.post_meta.date_type || theme.post_meta.categories && page.categories.data.length > 0)
+            span.post-meta__separator |
+          i.fa.fa-comment-o(aria-hidden="true")
+          a(href=url_for(page.path) + '#disqus_thread')
+            span.disqus-comment-count(data-disqus-identifier=page.path)
+        if (theme.wordcount && theme.wordcount.enable)
+          span.post-meta__separator |
+          span.post-meta-wordcount
+            span= _p('post.wordcount') + ': '
+            span.word-count= wordcount(page.content)
+            span.post-meta__separator |
+            span= _p('post.min2read', min2read(page.content, {cn: 350, en: 160}))
+    #post-content.article-container!= page.content
+  if (theme.post_copyright && theme.post_copyright.enable)
+    .post-copyright
+      .post-copyright__author
+        span.post-copyright-meta= _p('post.copyright.author') + ": "
+        span.post-copyright-info
+          a(href=`mailto:${config.email}`) #[=config.author]
+      .post-copyright__type
+        span.post-copyright-meta= _p('post.copyright.link') + ": "
+        span.post-copyright-info
+          a(href=url_for(page.permalink)) #[=page.permalink]
+      .post-copyright__notice
+        span.post-copyright-meta= _p('post.copyright.copyright_notice') + ": "
+        span.post-copyright-info!= _p('post.copyright.copyright_content', theme.post_copyright.license_url, theme.post_copyright.license, config.url, config.title)
+  if (theme.post_meta.tags)
+    .post-meta__tag-list
+      each item, index in page.tags.data
+        a(href=url_for(item.path)).post-meta__tags #[=item.name]
+  if (theme.QR_code)
+    if (theme.QR_code.length > 0)
+      .post-qr-code
+        each item in theme.QR_code
+          .post-qr-code-item
+            img.post-qr-code__img(src=(item.itemlist||item).img)
+            .post-qr-code__desc=(item.itemlist||item).text
+  include includes/share/index.pug
+  include includes/pagination.pug
+  if (theme.adv && theme.adv.enable)
+    .post-adv!= theme.adv.info
+  if page.comments !== false
+    include includes/comments/index.pug

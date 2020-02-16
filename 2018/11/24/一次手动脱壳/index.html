@@ -1,276 +1,107 @@
-<!DOCTYPE HTML>
-<html class="no-js" lang="zh-CN">
-<!--
-//                            _ooOoo_
-//                           o8888888o
-//                           88" . "88
-//                           (| -_- |)
-//                            O\ = /O
-//                        ____/`---'\____
-//                      .   ' \\| |// `.
-//                       / \\||| : |||// \
-//                     / _||||| -:- |||||- \
-//                       | | \\\ - /// | |
-//                     | \_| ''\---/'' | |
-//                      \ .-\__ `-` ___/-. /
-//                   ___`. .' /--.--\ `. . __
-//                ."" '< `.___\_<|>_/___.' >'"".
-//               | | : `- \`.;`\ _ /`;.`/ - ` : | |
-//                 \ \ `-. \_ __\ /__ _/ .-` / /
-//         ======`-.____`-.___\_____/___.-`____.-'======
-//                            `=---='
-//                 拦截插件累计拦截逗比攻击"1381438"次！
-//         .............................................
-//                  佛祖保佑             永无BUG
-//          佛曰:
-//                  写字楼里写字间，写字间里程序员；
-//                  程序人员写程序，又拿程序换酒钱。
-//                  酒醒只在网上坐，酒醉还来网下眠；
-//                  酒醉酒醒日复日，网上网下年复年。
-//                  但愿老死电脑间，不愿鞠躬老板前；
-//                  奔驰宝马贵者趣，公交自行程序员。
-//                  别人笑我忒疯癫，我笑自己命太贱；
-//                  不见满街漂亮妹，哪个归得程序员？
--->
-<head><meta name="generator" content="Hexo 3.8.0">
-    <!--[if lte IE 9]>
-<meta http-equiv="refresh" content="0;url=http://yoursite.com/warn.html">
-<![endif]-->
-<meta charset="utf-8">
+extends includes/layout.pug
 
-<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+block top_img
+  - var top_img = page.top_img || theme.post_meta.top_img || theme.top_img || config.top_img
+  if (top_img && page.top_img !== false)
+    - var bg_img = top_img !== true ? `background-image: url(${top_img})` : ''
+    - var flag = top_img === true ? 'no-bg' : ''
+    div#top-container(style=bg_img class=flag)
+      include ./includes/header.pug
+      #post-info
+        #post-title= page.title || _p('no_title')
+        #post-meta
+          if (theme.post_meta.date_type)
+            if (theme.post_meta.date_type === 'both')
+              time.post-meta__date
+                i.fa.fa-calendar(aria-hidden="true")
+                =' '+_p('post.created')+' '+date(page.date, config.date_format)
+                span.post-meta__separator |
+                i.fa.fa-calendar-check-o(aria-hidden="true")
+                =' '+_p('post.updated')+' '+date(page.updated, config.date_format)
+            else
+              - var date_type = theme.post_meta.date_type === 'updated' ? 'updated' : 'date'
+              time.post-meta__date #[i.fa.fa-calendar(aria-hidden="true")] #[=date(page[date_type], config.date_format)]
+          if (theme.post_meta.categories && page.categories.data.length > 0)
+            if (theme.post_meta.date_type)
+              span.post-meta__separator |
+            each item, index in page.categories.data
+              i.fa.fa-inbox.post-meta__icon(aria-hidden="true")
+              a(href=url_for(item.path)).post-meta__categories #[=item.name]
+              if (index < page.categories.data.length - 1)
+                 i.fa.fa-angle-right(aria-hidden="true")
+          if (theme.disqus.enable && theme.disqus.count)
+            if (theme.post_meta.date_type || theme.post_meta.categories && page.categories.data.length > 0)
+              span.post-meta__separator |
+            i.fa.fa-comment-o.post-meta__icon(aria-hidden="true")
+            a(href=url_for(page.path) + '#disqus_thread')
+              span.disqus-comment-count(data-disqus-identifier=page.path)
+          if (theme.wordcount && theme.wordcount.enable)
+            .post-meta-wordcount
+              span= _p('post.wordcount') + ': '
+              span.word-count= wordcount(page.content)
+              span.post-meta__separator |
+              span= _p('post.min2read', min2read(page.content, {cn: 350, en: 160}))
+  else
+    div#top-container.plain
+      include ./includes/header.pug
 
-<meta http-equiv="X-UA-Compatible" content="IE=Edge">
-<meta name="renderer" content="webkit">
-<meta name="viewport" content="width=device-width, initial-scale=1.0,user-scalable=no">
-<meta http-equiv="mobile-agent" content="format=html5; url=http://yoursite.com">
-<meta name="author" content="treebacker">
-<link rel="stylesheet" href="../../../../css/SimpleStyle.min.css">
-
-<link rel="shortcut icon" href="../../../../images/favicon.png">
-
-
-<title>一次手动脱壳 - Watch Security</title>
-
-<meta name="keywords" content="Reverse, Security, New">
-
-<meta name="description " content="">
-
-</head>
-<body>
-<div id="nav">
-    <nav class="nav-menu">
-        <a class="site-name current" href="/" title="Tree">Tree</a>
-        <a class="site-index current" href="/"><i class="fa fa-home"></i><span>首页</span></a>
-        <a href="/archives" title="归档"><i class="fa fa-archives"></i><span>归档</span></a>
-        <a href="/tags" title="标签"><i class="fa fa-tags"></i><span>标签</span></a>
-        <!-- custom single page of menus -->
-        
-        
-        <a href="/help" title="帮助">
-            <i class="fa fa-question-circle"></i>
-            <span>帮助</span>
-        </a>
-        
-    </nav>
-</div>
-
-<div class="nav-user">
-    <a class="btn-search" href="#"><i class="fa fa-search"></i></a>
-    <a class="btn-read-mode" href="#"><i class="fa fa-sun-o"></i></a>
-    <a class="btn-sns-qr" href="javascript:"><i class="fa fa-telegram"></i></a>
-</div>
-
-<div id="wrapper" class="clearfix">
-    <div id="body">
-        <div class="main" id="main">
-            <div id="cover">
-    <div class="cover-img"></div>
-    <div class="cover-info">
-        
-        <h1 class="cover-siteName">Treebacker</h1>
-        <h3 class="cover-siteTitle">愿麦子和麦子长在一起，愿河流与河流流归一处。</h3>
-        <p class="cover-siteDesc">岁月易逝，痕影难觅</p>
-        <div class="cover-sns">
-            
-            <div class="btn btn-github">
-                <a href="https://github.com/treebacker" target="_blank" title="github" ref="friend">
-                    <i class="fa fa-github"></i>
-                </a>
-            </div>
-            
-        </div>
-    </div>
-</div>
-            <div class="page-title">
-    <ul>
-        <li><a href="/">最新</a></li>
-        
-            
-                <li class="active">
-                    <a href="/categories/tech-notes" data-name="技术">技术</a>
-                </li>
-            
-                <li class="">
-                    <a href="/categories/essays" data-name="随笔">随笔</a>
-                </li>
-            
-                <li class="">
-                    <a href="/categories/cdcitizen-of-the-sun" data-name="海子">海子</a>
-                </li>
-            
-                <li class="">
-                    <a href="/categories/others" data-name="其他">其他</a>
-                </li>
-            
-        
-        <li class="page-search">
-    <form id="search" class="search-form">
-        <label for="s" class="sr-only">请输入关键字</label>
-        <input class="search-field" type="text" name="s" placeholder="请输入关键字">
-        <button type="submit" class="search-form-submit" title="搜索"><i class="fa fa-search"></i></button>
-    </form>
-    <div class="ins-search">
-    <div class="ins-search-mask"></div>
-    <div class="ins-search-container">
-        <div class="ins-input-wrapper">
-            <input type="text" class="ins-search-input" placeholder="请输入关键词...">
-            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
-        </div>
-        <div class="ins-section-wrapper">
-            <div class="ins-section-container"></div>
-        </div>
-    </div>
-</div>
-<script>
-(function (window) {
-    var INSIGHT_CONFIG = {
-        TRANSLATION: {
-            POSTS: '文章',
-            PAGES: '页面',
-            CATEGORIES: '分类',
-            TAGS: '标签',
-            UNTITLED: '(无标题)',
-        },
-        ROOT_URL: '/',
-        CONTENT_URL: '../../../../content.json',
-    };
-    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
-})(window);
-</script>
-</li>
-
-    </ul>
-</div>
-<div class="main-inner">
-    <article class="post" itemscope="" itemtype="http://schema.org/BlogPosting">
-        <div class="post-header">
-            <div class="post-author clearfix">
-                <a class="avatar fleft" href="" target="_blank">
-                    <img width="48" src="/images/favicon.png" alt="avatar">
-                </a>
-                <p><span class="label">作者</span>
-                    <a href="" target="_blank">Treebacker</a>
-                    <span title="最后编辑于2018-11-24">2018-11-24</span>
-                </p>
-                <p></p>
-            </div>
-            <h2 class="post-title">一次手动脱壳</h2>
-            <div class="post-meta">
-                本文总共2641个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
-            </div>
-        </div>
-        <div class="post-content markdown-body">
-            <p>这个题目的分值是200，对我来说是个不小的挑战啊。</p>
-<p>查了一下壳，没有发现什么</p>
-<img src="/2018/11/24/一次手动脱壳/1.png" title="[]">
-<p>真的这么简单？拖入IDA观察：</p>
-<img src="/2018/11/24/一次手动脱壳/2.png" title="[]">
-<p>呃呃呃，果然不简单；在IDA里面没有任何函数的痕迹。只有一个.text段。</p>
-<p>猜测，应该是加了某种壳对源程序加密过。用OD载入。</p>
-<img src="/2018/11/24/一次手动脱壳/3.png" title="[]">
-<p>看到OD的提示，再看到这里的循环pushad，看来应该是有壳，可是工具又查不出来，手动？<br>这时想到了ESP定律，记录个大佬的ESP定律讲解链接：<a href="https://blog.csdn.net/D_R_L_T/article/details/74625872" target="_blank" rel="noopener">https://blog.csdn.net/D_R_L_T/article/details/74625872</a><br>将的很详细具体。<br>我就抱着试一试的态度开始了ESP大法的操作。</p>
-<p>1、先F8到pushad下一条指令，找到此时的ESP<br>2、转到ESP地址出的数据，下硬件内存访问断点。<br>3、F9到popad附近<br>4、F8单步寻找popad<br>5、附近找到jmp指令（一般是大的jmp）<br>6、跳过去就是OEP啦</p>
-<img src="/2018/11/24/一次手动脱壳/4.png" title="[]">
-<img src="/2018/11/24/一次手动脱壳/5.png" title="[]">
-<p>嗯哼，接下来就可以用OD的插件Ollydump脱壳dump下来啦：</p>
-<img src="/2018/11/24/一次手动脱壳/6.png" title="[]">
-<p>到底是不是呢？我们将dump下来的程序拖进IDA查看，会发现已经建立了函数。</p>
-<img src="/2018/11/24/一次手动脱壳/7.png" title="[]">
-<p> 接下来就是F5啦：</p>
-<img src="/2018/11/24/一次手动脱壳/8.png" title="[]">
-<p>对这些函数逐个查看（详细的就不讲了）。</p>
-<p>每个函数的功能：<br>sub_4018F0   下载一张图片，得到图片的字节数，返回存储图片数据的缓冲区的首地址。<br>sub_401740    初始化一个byte数组   KEY[264]<br>sub_401800    一个算法，得到与文件等长一段数据存在缓冲区buffer<br>sub_401220    对上述得到的缓冲区的数据进行一个简单的异或</p>
-<p>纪录下自己的掉进的坑：在初始化数组时，自己没有注意到移位运算的优先级低于 加减 ，导致得到了乱码，半天才找到错误（长记性）。</p>
-<p>附送逆向get的代码（C++）：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line">#include&lt;bits/stdc++.h&gt;</span><br><span class="line">using namespace std;</span><br><span class="line">int main()</span><br><span class="line">&#123;</span><br><span class="line">    FILE *fp,*dump;</span><br><span class="line">    fp =fopen(&quot;x.jpg&quot;,&quot;rb&quot;);</span><br><span class="line">    dump = fopen(&quot;shell.txt&quot;,&quot;wb&quot;);</span><br><span class="line"> </span><br><span class="line">    fseek(fp,0,SEEK_END);</span><br><span class="line">    int file_len = ftell(fp);//文件的长度</span><br><span class="line">    fseek(fp,0,SEEK_SET);</span><br><span class="line">    cout&lt;&lt;file_len&lt;&lt;endl;</span><br><span class="line">    char file[file_len];</span><br><span class="line">    fread(file,file_len,1,fp);</span><br><span class="line">   fclose(fp);</span><br><span class="line">    unsigned char key[264];</span><br><span class="line">    long long first = 0x4A8754F5745174;</span><br><span class="line"> </span><br><span class="line">    for(int i=0;i&lt;8;i++)</span><br><span class="line">    &#123;</span><br><span class="line">        key[i] = 0;</span><br><span class="line">    &#125;</span><br><span class="line">    for(int i=0;i&lt;256;i++)</span><br><span class="line">        key[i+8] = ((i + (first &gt;&gt;(i % 8 * 8)))&amp;0xff);//运算符的优先级</span><br><span class="line">    int len = 264;</span><br><span class="line">    int dkey[len/4];</span><br><span class="line"> </span><br><span class="line">    int temp;</span><br><span class="line">    unsigned char temp4,temp5;</span><br><span class="line"> </span><br><span class="line">    for(int i=0;i&lt;len/4;i++)</span><br><span class="line">    &#123;</span><br><span class="line">        temp = 0;</span><br><span class="line">        for(int j=3;j&gt;-1;j--)</span><br><span class="line">        &#123;</span><br><span class="line">            temp = (temp&lt;&lt;8) + key[4 * i + j];</span><br><span class="line">        &#125;</span><br><span class="line">        dkey[i] = temp;</span><br><span class="line">    &#125;</span><br><span class="line">    char flag[file_len];</span><br><span class="line"> </span><br><span class="line">    for(int i=0;i&lt;file_len;i++)</span><br><span class="line">    &#123;</span><br><span class="line">        dkey[0] = (dkey[0]+ 1)%256;</span><br><span class="line">        dkey[1] = (key[dkey[0] + 8] + dkey[1])%256;</span><br><span class="line">        temp4 = key[dkey[0] + 8];</span><br><span class="line">        temp5 = key[dkey[1] + 8];</span><br><span class="line">        key[dkey[0] + 8] = temp5;</span><br><span class="line">        key[dkey[1] + 8] = temp4;</span><br><span class="line">       flag[i] = (key[(temp4 + temp5 )%256 + 8] ^ file[i] ^ i)%256;</span><br><span class="line">       fputc(flag[i],dump);</span><br><span class="line">    &#125;</span><br><span class="line">    fclose(dump);</span><br><span class="line">/*</span><br><span class="line">    for(int i=file_len-1;i&gt;=4;i --)</span><br><span class="line">    &#123;</span><br><span class="line">        if(flag[i]==0x68)</span><br><span class="line">        &#123;</span><br><span class="line">            printf(&quot;%c%c%c%c&quot;,flag[i-4],flag[i-3],flag[i-2],flag[i-1]);</span><br><span class="line">            i -= 4;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    cout&lt;&lt;endl;</span><br><span class="line">*/</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>可以用16进制编辑器打开得到的文件</p>
-<img src="/2018/11/24/一次手动脱壳/9.png" title="[]">
-<p>可以看到很多字符，但好像是无序的；查看大佬的WP知道这是shellcode（惊）。</p>
-<p>自己在OD找段空白，copy进去：</p>
-<p>啊哈哈，刚好最近看书看到这段类似的代码实现；</p>
-<img src="/2018/11/24/一次手动脱壳/10.png" title="[]">
-<p>PEB-&gt; PEB_LAR_DATA-&gt; InInitalizationOrderMouduleList-&gt;DLL-&gt;API</p>
-<p>继续往下看；</p>
-<p>push一段字符串</p>
-<img src="/2018/11/24/一次手动脱壳/11.png" title="[]">
-<h2 id="注意小端序，即可得到了flag"><a href="#注意小端序，即可得到了flag" class="headerlink" title="注意小端序，即可得到了flag."></a>注意小端序，即可得到了flag.</h2>
-        </div>
-        <div class="post-tool">
-            <a class="btn-thumbs-up" href="javascript:void(0);" data-cid="52" title="95">
-                <i class="fa fa-thumbs-up" aria-hidden="true"></i> 打赏
-            </a>
-        </div>
-        
-        <div class="post-tags">标签：
-            
-        </div>
-        
-    </article>
-    
-    <p>本文代表个人观点，内容仅供参考。若有不恰当之处，望不吝赐教！</p>
-    
-    
-</div>
-<script src="../../../../js/busuanzi.pure.mini.js"></script>
-
-        </div><!-- end #main-->
-    </div><!-- end #body -->
-    <footer class="footer">
-    <div class="footer-inner">
-        <p>
-            <a href="/about" title="关于本站">关于本站</a>&nbsp;&nbsp<em>·</em>&nbsp;&nbsp
-            <!-- 自定义链接 -->
-            <a href="/help" title="help">急救中心</a>&nbsp;&nbsp<em>·</em>&nbsp;&nbsp
-            <a href="/app" title="App下载">App下载</a>
-        </p>
-        <p>
-            本站点采用<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享署名-非商业性使用-相同方式共享 4.0 国际许可协议</a>，已建立<a href="/timeline" id="siteBuildingTime"></a>天<br>
-            ©2017 基于<a href="http://hexo.io" target="_blank">Hexo</a>搭建
-            ，主题&nbsp<a href="https://github.com/tangkunyin/hexo-theme-jsimple" target="_blank">JSimple</a>
-            ，作者<a href="https://www.tangkunyin.com" target="_blank">唐先森</a>
-            ，Hosted by <a href="https://pages.coding.me" style="font-weight: bold">Coding Pages</a>
-        </p>
-        
-
-    </div>
-</footer>
-<script src="../../../../js/InsightSearch.js"></script>
-<script src="../../../../js/SimpleCore.js"></script>
-
-</div>
-<div class="fixed-btn">
-    <a class="btn-gotop" href="javascript:"> <i class="fa fa-angle-up"></i></a>
-</div>
-<script>
-    $(function () {
-        SimpleCore.init({
-            buildingTime: '11/22/2018',
-            current: $('.post-tags').length > 0 ? 'post' : 'archive',
-            snsQRCode: '/images/sns-qrcode.png',
-            donateImg: '/images/donate-qr.png',
-        });
-    });
-</script>
-</body>
-</html>
+block content
+  article#post(class="")
+    if (!top_img)
+      #post-title.plain= page.title || _p('no_title')
+      #post-meta
+        if (theme.post_meta.date_type)
+          - var date_type = theme.post_meta.date_type === 'updated' ? '' : 'date'
+          time.post-meta__date #[i.fa.fa-calendar(aria-hidden="true")] #[=date(page[date_type], config.date_format)]
+        if (theme.post_meta.categories && page.categories.data.length > 0)
+          if (theme.post_meta.date_type)
+            span.post-meta__separator |
+          each item, index in page.categories.data
+            i.fa.fa-inbox(aria-hidden="true")
+            a(href=url_for(item.path)).post-meta__categories  #[=item.name]
+            if (index < page.categories.data.length - 1)
+                i.fa.fa-angle-right.post-meta__separator(aria-hidden="true")
+        if (theme.disqus.enable && theme.disqus.count)
+          if (theme.post_meta.date_type || theme.post_meta.categories && page.categories.data.length > 0)
+            span.post-meta__separator |
+          i.fa.fa-comment-o(aria-hidden="true")
+          a(href=url_for(page.path) + '#disqus_thread')
+            span.disqus-comment-count(data-disqus-identifier=page.path)
+        if (theme.wordcount && theme.wordcount.enable)
+          span.post-meta__separator |
+          span.post-meta-wordcount
+            span= _p('post.wordcount') + ': '
+            span.word-count= wordcount(page.content)
+            span.post-meta__separator |
+            span= _p('post.min2read', min2read(page.content, {cn: 350, en: 160}))
+    #post-content.article-container!= page.content
+  if (theme.post_copyright && theme.post_copyright.enable)
+    .post-copyright
+      .post-copyright__author
+        span.post-copyright-meta= _p('post.copyright.author') + ": "
+        span.post-copyright-info
+          a(href=`mailto:${config.email}`) #[=config.author]
+      .post-copyright__type
+        span.post-copyright-meta= _p('post.copyright.link') + ": "
+        span.post-copyright-info
+          a(href=url_for(page.permalink)) #[=page.permalink]
+      .post-copyright__notice
+        span.post-copyright-meta= _p('post.copyright.copyright_notice') + ": "
+        span.post-copyright-info!= _p('post.copyright.copyright_content', theme.post_copyright.license_url, theme.post_copyright.license, config.url, config.title)
+  if (theme.post_meta.tags)
+    .post-meta__tag-list
+      each item, index in page.tags.data
+        a(href=url_for(item.path)).post-meta__tags #[=item.name]
+  if (theme.QR_code)
+    if (theme.QR_code.length > 0)
+      .post-qr-code
+        each item in theme.QR_code
+          .post-qr-code-item
+            img.post-qr-code__img(src=(item.itemlist||item).img)
+            .post-qr-code__desc=(item.itemlist||item).text
+  include includes/share/index.pug
+  include includes/pagination.pug
+  if (theme.adv && theme.adv.enable)
+    .post-adv!= theme.adv.info
+  if page.comments !== false
+    include includes/comments/index.pug

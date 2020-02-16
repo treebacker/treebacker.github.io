@@ -1,573 +1,107 @@
-<!DOCTYPE HTML>
-<html class="no-js" lang="zh-CN">
-<!--
-//                            _ooOoo_
-//                           o8888888o
-//                           88" . "88
-//                           (| -_- |)
-//                            O\ = /O
-//                        ____/`---'\____
-//                      .   ' \\| |// `.
-//                       / \\||| : |||// \
-//                     / _||||| -:- |||||- \
-//                       | | \\\ - /// | |
-//                     | \_| ''\---/'' | |
-//                      \ .-\__ `-` ___/-. /
-//                   ___`. .' /--.--\ `. . __
-//                ."" '< `.___\_<|>_/___.' >'"".
-//               | | : `- \`.;`\ _ /`;.`/ - ` : | |
-//                 \ \ `-. \_ __\ /__ _/ .-` / /
-//         ======`-.____`-.___\_____/___.-`____.-'======
-//                            `=---='
-//                 拦截插件累计拦截逗比攻击"1381438"次！
-//         .............................................
-//                  佛祖保佑             永无BUG
-//          佛曰:
-//                  写字楼里写字间，写字间里程序员；
-//                  程序人员写程序，又拿程序换酒钱。
-//                  酒醒只在网上坐，酒醉还来网下眠；
-//                  酒醉酒醒日复日，网上网下年复年。
-//                  但愿老死电脑间，不愿鞠躬老板前；
-//                  奔驰宝马贵者趣，公交自行程序员。
-//                  别人笑我忒疯癫，我笑自己命太贱；
-//                  不见满街漂亮妹，哪个归得程序员？
--->
-<head><meta name="generator" content="Hexo 3.8.0">
-    <!--[if lte IE 9]>
-<meta http-equiv="refresh" content="0;url=http://yoursite.com/warn.html">
-<![endif]-->
-<meta charset="utf-8">
+extends includes/layout.pug
 
-<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+block top_img
+  - var top_img = page.top_img || theme.post_meta.top_img || theme.top_img || config.top_img
+  if (top_img && page.top_img !== false)
+    - var bg_img = top_img !== true ? `background-image: url(${top_img})` : ''
+    - var flag = top_img === true ? 'no-bg' : ''
+    div#top-container(style=bg_img class=flag)
+      include ./includes/header.pug
+      #post-info
+        #post-title= page.title || _p('no_title')
+        #post-meta
+          if (theme.post_meta.date_type)
+            if (theme.post_meta.date_type === 'both')
+              time.post-meta__date
+                i.fa.fa-calendar(aria-hidden="true")
+                =' '+_p('post.created')+' '+date(page.date, config.date_format)
+                span.post-meta__separator |
+                i.fa.fa-calendar-check-o(aria-hidden="true")
+                =' '+_p('post.updated')+' '+date(page.updated, config.date_format)
+            else
+              - var date_type = theme.post_meta.date_type === 'updated' ? 'updated' : 'date'
+              time.post-meta__date #[i.fa.fa-calendar(aria-hidden="true")] #[=date(page[date_type], config.date_format)]
+          if (theme.post_meta.categories && page.categories.data.length > 0)
+            if (theme.post_meta.date_type)
+              span.post-meta__separator |
+            each item, index in page.categories.data
+              i.fa.fa-inbox.post-meta__icon(aria-hidden="true")
+              a(href=url_for(item.path)).post-meta__categories #[=item.name]
+              if (index < page.categories.data.length - 1)
+                 i.fa.fa-angle-right(aria-hidden="true")
+          if (theme.disqus.enable && theme.disqus.count)
+            if (theme.post_meta.date_type || theme.post_meta.categories && page.categories.data.length > 0)
+              span.post-meta__separator |
+            i.fa.fa-comment-o.post-meta__icon(aria-hidden="true")
+            a(href=url_for(page.path) + '#disqus_thread')
+              span.disqus-comment-count(data-disqus-identifier=page.path)
+          if (theme.wordcount && theme.wordcount.enable)
+            .post-meta-wordcount
+              span= _p('post.wordcount') + ': '
+              span.word-count= wordcount(page.content)
+              span.post-meta__separator |
+              span= _p('post.min2read', min2read(page.content, {cn: 350, en: 160}))
+  else
+    div#top-container.plain
+      include ./includes/header.pug
 
-<meta http-equiv="X-UA-Compatible" content="IE=Edge">
-<meta name="renderer" content="webkit">
-<meta name="viewport" content="width=device-width, initial-scale=1.0,user-scalable=no">
-<meta http-equiv="mobile-agent" content="format=html5; url=http://yoursite.com">
-<meta name="author" content="treebacker">
-<link rel="stylesheet" href="../../../../css/SimpleStyle.min.css">
-
-<link rel="shortcut icon" href="../../../../images/favicon.png">
-
-
-<title>linux命令学习笔记 - Watch Security</title>
-
-<meta name="keywords" content="Reverse, Security, New">
-
-<meta name="description " content="">
-
-</head>
-<body>
-<div id="nav">
-    <nav class="nav-menu">
-        <a class="site-name current" href="/" title="Tree">Tree</a>
-        <a class="site-index current" href="/"><i class="fa fa-home"></i><span>首页</span></a>
-        <a href="/archives" title="归档"><i class="fa fa-archives"></i><span>归档</span></a>
-        <a href="/tags" title="标签"><i class="fa fa-tags"></i><span>标签</span></a>
-        <!-- custom single page of menus -->
-        
-        
-        <a href="/help" title="帮助">
-            <i class="fa fa-question-circle"></i>
-            <span>帮助</span>
-        </a>
-        
-    </nav>
-</div>
-
-<div class="nav-user">
-    <a class="btn-search" href="#"><i class="fa fa-search"></i></a>
-    <a class="btn-read-mode" href="#"><i class="fa fa-sun-o"></i></a>
-    <a class="btn-sns-qr" href="javascript:"><i class="fa fa-telegram"></i></a>
-</div>
-
-<div id="wrapper" class="clearfix">
-    <div id="body">
-        <div class="main" id="main">
-            <div id="cover">
-    <div class="cover-img"></div>
-    <div class="cover-info">
-        
-        <h1 class="cover-siteName">Treebacker</h1>
-        <h3 class="cover-siteTitle">愿麦子和麦子长在一起，愿河流与河流流归一处。</h3>
-        <p class="cover-siteDesc">岁月易逝，痕影难觅</p>
-        <div class="cover-sns">
-            
-            <div class="btn btn-github">
-                <a href="https://github.com/treebacker" target="_blank" title="github" ref="friend">
-                    <i class="fa fa-github"></i>
-                </a>
-            </div>
-            
-        </div>
-    </div>
-</div>
-            <div class="page-title">
-    <ul>
-        <li><a href="/">最新</a></li>
-        
-            
-                <li class="active">
-                    <a href="/categories/tech-notes" data-name="技术">技术</a>
-                </li>
-            
-                <li class="">
-                    <a href="/categories/essays" data-name="随笔">随笔</a>
-                </li>
-            
-                <li class="">
-                    <a href="/categories/cdcitizen-of-the-sun" data-name="海子">海子</a>
-                </li>
-            
-                <li class="">
-                    <a href="/categories/others" data-name="其他">其他</a>
-                </li>
-            
-        
-        <li class="page-search">
-    <form id="search" class="search-form">
-        <label for="s" class="sr-only">请输入关键字</label>
-        <input class="search-field" type="text" name="s" placeholder="请输入关键字">
-        <button type="submit" class="search-form-submit" title="搜索"><i class="fa fa-search"></i></button>
-    </form>
-    <div class="ins-search">
-    <div class="ins-search-mask"></div>
-    <div class="ins-search-container">
-        <div class="ins-input-wrapper">
-            <input type="text" class="ins-search-input" placeholder="请输入关键词...">
-            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
-        </div>
-        <div class="ins-section-wrapper">
-            <div class="ins-section-container"></div>
-        </div>
-    </div>
-</div>
-<script>
-(function (window) {
-    var INSIGHT_CONFIG = {
-        TRANSLATION: {
-            POSTS: '文章',
-            PAGES: '页面',
-            CATEGORIES: '分类',
-            TAGS: '标签',
-            UNTITLED: '(无标题)',
-        },
-        ROOT_URL: '/',
-        CONTENT_URL: '../../../../content.json',
-    };
-    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
-})(window);
-</script>
-</li>
-
-    </ul>
-</div>
-<div class="main-inner">
-    <article class="post" itemscope="" itemtype="http://schema.org/BlogPosting">
-        <div class="post-header">
-            <div class="post-author clearfix">
-                <a class="avatar fleft" href="" target="_blank">
-                    <img width="48" src="/images/favicon.png" alt="avatar">
-                </a>
-                <p><span class="label">作者</span>
-                    <a href="" target="_blank">Treebacker</a>
-                    <span title="最后编辑于2019-08-23">2019-08-23</span>
-                </p>
-                <p></p>
-            </div>
-            <h2 class="post-title">Linux命令学习笔记</h2>
-            <div class="post-meta">
-                本文总共6324个字 | 您是第<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>位看到它们的小伙伴
-            </div>
-        </div>
-        <div class="post-content markdown-body">
-            <h3 id="Linux命令学习笔记"><a href="#Linux命令学习笔记" class="headerlink" title="Linux命令学习笔记"></a>Linux命令学习笔记</h3><h4 id="第一天——Cat"><a href="#第一天——Cat" class="headerlink" title="第一天——Cat"></a>第一天——Cat</h4><ul>
-<li>cat读取文件（一个或者多个），将文件内容拼接在一起并将结果发送到stdout<ul>
-<li>cat file1   file2   file3……</li>
-</ul>
-</li>
-<li>管道操作符结合<ul>
-<li>output_from_commands | cat</li>
-<li>echo “treebacker” | cat - file.txt<ul>
-<li>将stdin和文件内容拼接输出</li>
-<li>这里的 - 作为stdin的文本文件名</li>
-</ul>
-</li>
-</ul>
-</li>
-<li>去掉多余的空白行<ul>
-<li>cat -s file</li>
-</ul>
-</li>
-<li>输出行号<ul>
-<li>cat -n file</li>
-</ul>
-</li>
-<li>不可以用重定向来覆盖输入文件，下所示是错误的<ul>
-<li>cat -n filename &gt; filename</li>
-</ul>
-</li>
-<li>使用管道重定向到输入文件会清空输入文件<ul>
-<li>cat -n filename | cat &gt; filename</li>
-</ul>
-</li>
-<li>同样的 &gt; 覆盖文件， &gt;&gt;续写文件也适用于cat<ul>
-<li>cat &gt; file            （如果不存在file，就新生成文件file）</li>
-<li>cat &gt;&gt; file                </li>
-</ul>
-</li>
-</ul>
-<h4 id="第二天——Find"><a href="#第二天——Find" class="headerlink" title="第二天——Find"></a>第二天——Find</h4><ul>
-<li><p>从指定位置找所有文件以及子目录</p>
-<ul>
-<li>find base_path  -print<ul>
-<li>base_path可以是任意位置，find从该位置往下查找</li>
-<li>-print   选项以\n分割输出</li>
-</ul>
-</li>
-</ul>
-</li>
-<li><p>基于文件名的通配符或正则表达式进行搜索</p>
-<ul>
-<li>find base_path -name ‘*.txt’  -print<ul>
-<li>-iname   忽略大小写</li>
-<li>支持逻辑操作 -a -o（and 和or）</li>
-</ul>
-</li>
-<li>find base_path -regex ‘.*(.py|.sh)$’<ul>
-<li>-regex即正则表达式</li>
-<li>-iregex可以在匹配时忽略大小写</li>
-</ul>
-</li>
-</ul>
-</li>
-<li><p>否定参数（在匹配调价前加上”!”）</p>
-<ul>
-<li>find base_path ! -name “*.txt” -print</li>
-</ul>
-</li>
-<li><p>基于文件时间戳进行搜索</p>
-<ul>
-<li><p>三种时间戳</p>
-<ul>
-<li>访问时间(-atime)：用户最近一次访问时间（access)</li>
-<li>修改时间(-mtime)：用户最后一次修改时间（modify）</li>
-<li>变化时间(-ctime)：文件元数据（权限、所有者）最后一次修改时间（change）</li>
-<li>以上三种参数前加修饰’-‘或’+’，分别表示小于或大于</li>
-</ul>
-</li>
-<li><p>打印最近7天内被访问的所有文件</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">find . -type f -atime -7 -print</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>打印恰好在7天前访问的文件</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">find . -type f -atime 7 -print</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>打印出访问时间超过7天的所有文件</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">find . -type f -atime +7 -print</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>时间除以“天数”论外，也可以以分钟计算同上（-amin,     -mmin,      -cmin）</p>
-</li>
-</ul>
-</li>
-<li><p>基于文件大小搜索（-size)</p>
-<ul>
-<li><p>大小大于2k的文件</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">find . -type f -size -2</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>可用的大小单位b，c， w，k，M，G</p>
-</li>
-</ul>
-</li>
-<li><p>基于文件的权限查找（-perm）</p>
-<ul>
-<li><p>打印出所有744权限的文件</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">find . -type f -perm 744 -print</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-<li><p>基于文件的所有权进行查找（-user USER)</p>
-<ul>
-<li><p>打印出所有root用户的文件</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">find . -type f -user root -print</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-<li><p>其他</p>
-<ul>
-<li><p>删除匹配文件（-delete）</p>
-<ul>
-<li><p>删除当前目录下的.py文件</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">find . -type f -name "*.py" -delete</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-<li><p>j结合其他命令执行（-exec）</p>
-<ul>
-<li><p>将匹配到的root的文件改给tree</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">find . -type f -name ".elf" -exec chown tree &#123;&#125;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-<h4 id="第三天-——-xargs"><a href="#第三天-——-xargs" class="headerlink" title="第三天    ——   xargs"></a>第三天    ——   xargs</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">xargs命令重新格式化stdin接受到的数据，应该紧接在管道操作符之后。xargs默认执行echo命令</span><br></pre></td></tr></table></figure>
-<ul>
-<li><p>一般的输出格式化</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ls *.c | xargs grep main			//在一组C源码中找main</span><br><span class="line">cat example.txt | xargs				//单行输出</span><br><span class="line">cat example.txt | xargs -n 			//每行输出n个元素</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>默认空白字符为分隔符，-d参数指定分隔符</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo "treexhuixwherextoxgo" | -d x -n 1			//x分割，每行一个单词</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<h4 id="第四天-——qemu"><a href="#第四天-——qemu" class="headerlink" title="第四天    ——qemu"></a>第四天    ——qemu</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">qemu是一款模拟处理器自由软件；经常用来模拟arm、mips等各种架构的操作环境。</span><br><span class="line"></span><br><span class="line">记录一些经常用到的</span><br></pre></td></tr></table></figure>
-<ul>
-<li><p>用户模式下执行程序</p>
-<ul>
-<li><p>qemu-arm、qemu-mips、qemu-mipsel等等    </p>
-</li>
-<li><p>在某一环境下，运行程序命令格式“qemu-arm   [options]   program   [arguments]</p>
-<ul>
-<li>options有：-E 设置环境变量；-g   设置gdb连接的端口；LD_PRELOAD=newlib   使用指定的newlib劫持系统调用</li>
-</ul>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">qemu-arm hello				//arm环境下运行hello程序</span><br><span class="line">qemu-mips hello				//在mips（大端序）下运行hello</span><br><span class="line">qemu-mipsel -g 1234 hello	//在mipsel（小端序）下运行hello，且在1234端口等待连接</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-<li><p>系统模式</p>
-<ul>
-<li><p>根据内核、磁盘重新生成一个系统</p>
-<ul>
-<li><p>命令格式        ”qemu-system- mispel [options]  disk_image”</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">-kernel	bzImage			使用"bzImage"作为内核镜像</span><br><span class="line">-hda/-hdb file			使用"file"作为磁盘0/1镜像</span><br><span class="line">-append cmdline 		使用"cmdline"作为内核命令行</span><br><span class="line">-nographic				禁止图形化输出，重定向到本机的控制台</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>网络配置</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">tunctl   tap0添加一个device</span><br><span class="line">ifconfig   tap0 up		启用该tap0</span><br><span class="line">brctl addif br0 tap0	将tap0绑定在br0桥接 </span><br><span class="line">配置qemu-ifup文件</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-<h4 id="第五天——chroot"><a href="#第五天——chroot" class="headerlink" title="第五天——chroot"></a>第五天——chroot</h4><ul>
-<li><p>作用</p>
-<ul>
-<li>生成一个独立的文件系统，（自定义根目录）</li>
-<li>我们需要将该系统内部对原系统的依赖copy进来</li>
-</ul>
-</li>
-<li><p>场景举例</p>
-<ul>
-<li>在研究qemu模拟系统的时候，arm架构或者mips架构的程序运行</li>
-<li>在获得固件的文件系统之后，由于原系统的内部程序对库的依赖，全是根目录下；若想正常模拟，必须将文件系统目录指定为根目录</li>
-</ul>
-</li>
-<li><p>举例</p>
-<ul>
-<li>将boot-fire作为根目录，qemu模拟运行boot-fire/bin/boa程序</li>
-</ul>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chroot boot-fire /qemu-mips /bin/boa</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<h4 id="第六天——tr"><a href="#第六天——tr" class="headerlink" title="第六天——tr"></a>第六天——tr</h4><ul>
-<li><p>将一组字符转换为另一组字符（translate）</p>
-<ul>
-<li><p>只能通过stdin接受命令行参数；set1与set2字符依次对应；set2多余不计，少则最后一位补上    </p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tr    [options]   set1   set2</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>set在连续时，可简写“起始字符-终止字符”</p>
-</li>
-</ul>
-</li>
-<li><p>实战演习</p>
-<ul>
-<li><p>输入中的字符大写转为小写</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo "WELCOME TO NEW YORK" | tr 'A-Z' 'a-z'</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>数字简单加、解密</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">echo 12345 | tr '0-9' '9876543210'</span><br><span class="line">87654			#已经加密</span><br><span class="line">echo 87654 | tr '0-9' '9876543210'</span><br><span class="line">12345			#已经解密</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>一句话的ROT13加密(加解密同)</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">echo "tr came, tr saw, tr conquered." | tr "a-zA-Z" "n-za-mN-ZA-M"</span><br><span class="line">ge pnzr, ge fnj, ge pbadhrerq.		#已加密</span><br><span class="line">echo "ge pnzr, ge fnj, ge pbadhrerq." | tr "a-zA-Z" "n-za-mN-ZA-M"</span><br><span class="line">tr came, tr saw, tr conquered.		#已解密</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-<li><p>其他用法</p>
-<ul>
-<li><p>tr删除字符        tr -d [set]</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">echo "Hello 123 world 456" | tr -d '0-9'</span><br><span class="line">Hello world			#去除了自然数</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>字符组补集            tr -c  set1   set2</p>
-<ul>
-<li><p>set1必有，set2可选</p>
-</li>
-<li><p>-c时，两者都得有</p>
-</li>
-<li><p>-d时，只能由set1</p>
-</li>
-<li><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">echo hello 1 char 2 next 4 | tr -d -c "0-9\n"</span><br><span class="line">124				#删除了0-9\n之外的所有字符</span><br><span class="line">echo hello 1 char 2 next 4 | tr -c "0-9" " "</span><br><span class="line">      1      2      4 		#将除0-9的字符全用空格替代</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-<li><p>tr压缩字符（删除重复出现的字符）         tr -s [待压缩的字符集合]</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">echo "Hello   world     girl" | tr -s ' '</span><br><span class="line">Hello world girl				#多余的空格取消了</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-</ul>
-<h4 id="第七天——校验和与核实"><a href="#第七天——校验和与核实" class="headerlink" title="第七天——校验和与核实"></a>第七天——校验和与核实</h4><ul>
-<li><h5 id="MD5"><a href="#MD5" class="headerlink" title="MD5"></a>MD5</h5><ul>
-<li><p>用法       md5sum    filename …</p>
-</li>
-<li><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">md5sum snp, exe.f</span><br><span class="line">1bf18d59dcc64449ca870891f2810a98  snp</span><br><span class="line">e40c9c6bb0076a4946f52a0ec33a4ebd  exe.f</span><br></pre></td></tr></table></figure>
-<p>保存文件的md5备份；定时比较是否变化</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">md5sum snp &gt; snp.md5</span><br><span class="line">md5sum -c snp.md5</span><br><span class="line">snp: OK</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">md5sum test &gt; test.md5</span><br><span class="line">md5sum -c test.md5</span><br><span class="line">test: FAILED</span><br><span class="line">md5sum: WARNING: 1 computed checksum did NOT match</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-<li><h5 id="SHA-1"><a href="#SHA-1" class="headerlink" title="SHA-1"></a>SHA-1</h5><ul>
-<li>用法同md5sum，这是sha1sum</li>
-</ul>
-</li>
-</ul>
-<h4 id="第八天-————scp"><a href="#第八天-————scp" class="headerlink" title="第八天 ————scp"></a>第八天 ————scp</h4><ul>
-<li><p>基于ssh与cat命令和管道的实现</p>
-</li>
-<li><p>在主机之间传送数据</p>
-</li>
-<li><p>参数格式</p>
-<ul>
-<li><p>scp   参数     原路径       目标路径</p>
-</li>
-<li><p>常用</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">scp local_file remote_username@remote_ip:remote_file</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-</ul>
-<h4 id="第九天——sort"><a href="#第九天——sort" class="headerlink" title="第九天——sort"></a>第九天——sort</h4><ul>
-<li><p>sort命令可以对文本文件和stdin进行排序；uniq通常配合使用，提取不重复的行。</p>
-<ul>
-<li><p>排序一组文件</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span>	cat &gt; file1.txt</span><br><span class="line">abc2</span><br><span class="line"><span class="meta">$</span>	cat &gt; file2.txt</span><br><span class="line">bcd</span><br><span class="line"><span class="meta">$</span>	sort file1.txt file2.txt</span><br><span class="line">abc</span><br><span class="line">bcd</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>按照数字排序</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span>	cat &gt; file3.txt</span><br><span class="line">12</span><br><span class="line">323</span><br><span class="line">4324</span><br><span class="line">3</span><br><span class="line">43</span><br><span class="line">1</span><br><span class="line"><span class="meta">$</span>	sort -n file3.txt </span><br><span class="line">1</span><br><span class="line">3</span><br><span class="line">12</span><br><span class="line">43</span><br><span class="line">323</span><br><span class="line">4324</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>按照逆序排序</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">tree@treepn:~$ sort -r file3.txt </span><br><span class="line">4324</span><br><span class="line">43</span><br><span class="line">323</span><br><span class="line">3</span><br><span class="line">12</span><br><span class="line">1</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>按照日期排序（小在前）</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">tree@treepn:~/cmd$ sort -M months.txt </span><br><span class="line">2018.12.01</span><br><span class="line">2019.3.01</span><br><span class="line">2019.3.03</span><br><span class="line">2019.4.01</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>合并两个已经排序的问价</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sort -m sorted1 sorted2</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>找出已经排序的文件中不重复的行</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">tree@treepn:~/cmd$ cat &gt; file</span><br><span class="line">21</span><br><span class="line">23</span><br><span class="line">1</span><br><span class="line">3</span><br><span class="line">1</span><br><span class="line">21</span><br><span class="line">tree@treepn:~/cmd$ sort file | uniq</span><br><span class="line">1</span><br><span class="line">21</span><br><span class="line">23</span><br><span class="line">3</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>检查文件是否已经排序过</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span>!/bin/sh</span><br><span class="line"><span class="meta">#</span>功能		检查是否已经排序</span><br><span class="line">sort -C filename;</span><br><span class="line">if [ $? -eq 0 ]; then</span><br><span class="line">	echo Sorted</span><br><span class="line">else </span><br><span class="line">	echo Unsorted</span><br><span class="line">fi</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>指定列</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sort -nrk 1 data.txt			#依据第一列、数字、逆序排列</span><br><span class="line">sort -k 2 data.txt				#第二列进行排序</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-</ul>
-<h4 id="第十天———–split"><a href="#第十天———–split" class="headerlink" title="第十天———–split"></a>第十天———–split</h4><ul>
-<li><p>split可以将文件进行切割,按照一定的规则将文件切割为更小的多个文件</p>
-<ul>
-<li>split [option1] filename [options]</li>
-</ul>
-</li>
-<li><p>实战</p>
-<ul>
-<li>按10byte一个文件,默认字母排序(3长度)</li>
-</ul>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">tree@treepn:~/cmd$	split -b 10 file.txt</span><br><span class="line">tree@treepn:~/cmd$ ls</span><br><span class="line">file.txt  months.txt  xaa  xab  xac  xad  xae  xaf  xag  xah  xai  xaj</span><br></pre></td></tr></table></figure>
-<ul>
-<li><p>数字文件\长度自定义</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">tree@treepn:~/cmd$ split -b 10 file.txt -d -a 4</span><br><span class="line">tree@treepn:~/cmd$ ls</span><br><span class="line">file.txt    x0000  x0002  x0004  x0006  x0008  xaa  xac  xae  xag  xai</span><br><span class="line">months.txt  x0001  x0003  x0005  x0007  x0009  xab  xad  xaf  xah  xaj</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>为分割后的文件指定文件前缀;默认以’x’前缀</p>
-<ul>
-<li><p>以split_file为前缀</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">tree@treepn:~/cmd$ split -b 10 file.txt -d -a 4 split_file</span><br><span class="line">tree@treepn:~/cmd$ ls</span><br><span class="line">file.txt    split_file0000  split_file0002  split_file0004  split_file0006  split_file0008</span><br><span class="line">months.txt  split_file0001  split_file0003  split_file0005  split_file0007  split_file0009</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>以行数分割文件(默认块大小)</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">tree@treepn:~/cmd$ split -l 3 file.txt </span><br><span class="line">tree@treepn:~/cmd$ ls</span><br><span class="line">file.txt  months.txt  xaa  xab  xac  xad</span><br><span class="line">tree@treepn:~/cmd$ cat xa</span><br><span class="line">cat: xa: No such file or directory</span><br><span class="line">tree@treepn:~/cmd$ cat xaa</span><br><span class="line">aa</span><br><span class="line">bb</span><br><span class="line">cc</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-<li><p>基于上下文分割文件———csplit</p>
-<ul>
-<li><p>依据行计数或者正则表达式</p>
-</li>
-<li><p>命令规则</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">/SERVER/	用来匹配特定行,分割过程从此开始</span><br><span class="line">/[REGEX]/	用于描述文本模式,它从当前行一直复制到(但不包括)SERVER的匹配行</span><br><span class="line">&#123;*&#125;		表示根据匹配重复执行操作,直到文件末尾.&#123;整数&#125;指定重复分割次数</span><br><span class="line">-s		命令进入静默模式,不打印信息</span><br><span class="line">-n		指定文件后缀名的数字个数</span><br><span class="line">-f		指定文件名的前缀</span><br><span class="line">-b		制定后缀格式,类似于printf的参数格式</span><br></pre></td></tr></table></figure></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-
-        </div>
-        <div class="post-tool">
-            <a class="btn-thumbs-up" href="javascript:void(0);" data-cid="52" title="95">
-                <i class="fa fa-thumbs-up" aria-hidden="true"></i> 打赏
-            </a>
-        </div>
-        
-        <div class="post-tags">标签：
-            
-        </div>
-        
-    </article>
-    
-    <p>本文代表个人观点，内容仅供参考。若有不恰当之处，望不吝赐教！</p>
-    
-    
-</div>
-<script src="../../../../js/busuanzi.pure.mini.js"></script>
-
-        </div><!-- end #main-->
-    </div><!-- end #body -->
-    <footer class="footer">
-    <div class="footer-inner">
-        <p>
-            <a href="/about" title="关于本站">关于本站</a>&nbsp;&nbsp<em>·</em>&nbsp;&nbsp
-            <!-- 自定义链接 -->
-            <a href="/help" title="help">急救中心</a>&nbsp;&nbsp<em>·</em>&nbsp;&nbsp
-            <a href="/app" title="App下载">App下载</a>
-        </p>
-        <p>
-            本站点采用<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享署名-非商业性使用-相同方式共享 4.0 国际许可协议</a>，已建立<a href="/timeline" id="siteBuildingTime"></a>天<br>
-            ©2017 基于<a href="http://hexo.io" target="_blank">Hexo</a>搭建
-            ，主题&nbsp<a href="https://github.com/tangkunyin/hexo-theme-jsimple" target="_blank">JSimple</a>
-            ，作者<a href="https://www.tangkunyin.com" target="_blank">唐先森</a>
-            ，Hosted by <a href="https://pages.coding.me" style="font-weight: bold">Coding Pages</a>
-        </p>
-        
-
-    </div>
-</footer>
-<script src="../../../../js/InsightSearch.js"></script>
-<script src="../../../../js/SimpleCore.js"></script>
-
-</div>
-<div class="fixed-btn">
-    <a class="btn-gotop" href="javascript:"> <i class="fa fa-angle-up"></i></a>
-</div>
-<script>
-    $(function () {
-        SimpleCore.init({
-            buildingTime: '11/22/2018',
-            current: $('.post-tags').length > 0 ? 'post' : 'archive',
-            snsQRCode: '/images/sns-qrcode.png',
-            donateImg: '/images/donate-qr.png',
-        });
-    });
-</script>
-</body>
-</html>
+block content
+  article#post(class="")
+    if (!top_img)
+      #post-title.plain= page.title || _p('no_title')
+      #post-meta
+        if (theme.post_meta.date_type)
+          - var date_type = theme.post_meta.date_type === 'updated' ? '' : 'date'
+          time.post-meta__date #[i.fa.fa-calendar(aria-hidden="true")] #[=date(page[date_type], config.date_format)]
+        if (theme.post_meta.categories && page.categories.data.length > 0)
+          if (theme.post_meta.date_type)
+            span.post-meta__separator |
+          each item, index in page.categories.data
+            i.fa.fa-inbox(aria-hidden="true")
+            a(href=url_for(item.path)).post-meta__categories  #[=item.name]
+            if (index < page.categories.data.length - 1)
+                i.fa.fa-angle-right.post-meta__separator(aria-hidden="true")
+        if (theme.disqus.enable && theme.disqus.count)
+          if (theme.post_meta.date_type || theme.post_meta.categories && page.categories.data.length > 0)
+            span.post-meta__separator |
+          i.fa.fa-comment-o(aria-hidden="true")
+          a(href=url_for(page.path) + '#disqus_thread')
+            span.disqus-comment-count(data-disqus-identifier=page.path)
+        if (theme.wordcount && theme.wordcount.enable)
+          span.post-meta__separator |
+          span.post-meta-wordcount
+            span= _p('post.wordcount') + ': '
+            span.word-count= wordcount(page.content)
+            span.post-meta__separator |
+            span= _p('post.min2read', min2read(page.content, {cn: 350, en: 160}))
+    #post-content.article-container!= page.content
+  if (theme.post_copyright && theme.post_copyright.enable)
+    .post-copyright
+      .post-copyright__author
+        span.post-copyright-meta= _p('post.copyright.author') + ": "
+        span.post-copyright-info
+          a(href=`mailto:${config.email}`) #[=config.author]
+      .post-copyright__type
+        span.post-copyright-meta= _p('post.copyright.link') + ": "
+        span.post-copyright-info
+          a(href=url_for(page.permalink)) #[=page.permalink]
+      .post-copyright__notice
+        span.post-copyright-meta= _p('post.copyright.copyright_notice') + ": "
+        span.post-copyright-info!= _p('post.copyright.copyright_content', theme.post_copyright.license_url, theme.post_copyright.license, config.url, config.title)
+  if (theme.post_meta.tags)
+    .post-meta__tag-list
+      each item, index in page.tags.data
+        a(href=url_for(item.path)).post-meta__tags #[=item.name]
+  if (theme.QR_code)
+    if (theme.QR_code.length > 0)
+      .post-qr-code
+        each item in theme.QR_code
+          .post-qr-code-item
+            img.post-qr-code__img(src=(item.itemlist||item).img)
+            .post-qr-code__desc=(item.itemlist||item).text
+  include includes/share/index.pug
+  include includes/pagination.pug
+  if (theme.adv && theme.adv.enable)
+    .post-adv!= theme.adv.info
+  if page.comments !== false
+    include includes/comments/index.pug
